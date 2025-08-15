@@ -1,1 +1,1 @@
-{"date":"2025-08-06T18:09:41+05:30","message":"Fix build loop caused by incorrectly exported component"}
+{"date":"2025-08-15T20:32:19+05:30","message":"Move constants to shared directory to avoid circular import"}
