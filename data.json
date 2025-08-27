@@ -1,1 +1,1 @@
-{"date":"2025-08-15T20:32:19+05:30","message":"Move constants to shared directory to avoid circular import"}
+{"date":"2025-08-27T19:51:37+05:30","message":"Adjust Tailwind config to avoid classname purge in production"}
