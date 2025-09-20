@@ -1,1 +1,1 @@
-{"date":"2025-08-30T12:44:33+05:30","message":"Fix slow build times by reducing bundle size of vendor libs"}
+{"date":"2025-09-20T21:47:30+05:30","message":"Fix build loop caused by incorrectly exported component"}
