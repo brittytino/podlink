@@ -1,1 +1,1 @@
-{"date":"2025-09-20T21:47:30+05:30","message":"Fix build loop caused by incorrectly exported component"}
+{"date":"2025-09-28T11:11:45+05:30","message":"Improve error logging in server actions for user registration"}
