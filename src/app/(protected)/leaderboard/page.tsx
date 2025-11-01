@@ -53,13 +53,13 @@ export default function LeaderboardPage() {
     : userPod?.rank || 0;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Trophy className="h-8 w-8 text-yellow-500" />
+    <div className="space-y-4 sm:space-y-6">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+          <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500" />
           Leaderboard
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           See how your pod ranks against others
         </p>
       </div>

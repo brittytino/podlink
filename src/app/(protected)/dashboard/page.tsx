@@ -103,16 +103,18 @@ export default async function DashboardPage() {
   const { user, checkIns, hasCheckedInToday, toolkitItems } = data;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Welcome back, {user.fullName}!</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
+          Welcome back, {user.fullName}! 👋
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
           {user.goalDescription || 'Your accountability journey continues'}
         </p>
       </div>
 
       {/* Streak Section */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
         <StreakDisplay streak={user.currentStreak} label="Your Streak" />
         <StreakDisplay
           streak={user.pod?.totalStreak || 0}
@@ -127,30 +129,30 @@ export default async function DashboardPage() {
       </div>
 
       {/* Daily Check-in */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Today's Check-In</CardTitle>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg sm:text-xl">Today's Check-In</CardTitle>
         </CardHeader>
         <CardContent>
           {hasCheckedInToday ? (
-            <div className="flex items-center justify-center gap-2 py-4 text-green-600">
-              <CheckCircle2 className="h-6 w-6" />
-              <span className="font-semibold">Already checked in today! Great job!</span>
+            <div className="flex items-center justify-center gap-2 sm:gap-3 py-4 sm:py-6 text-green-600 dark:text-green-400">
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-sm sm:text-base font-semibold">Already checked in today! Great job! 🎉</span>
             </div>
           ) : (
-            <div className="space-y-4">
-              <p className="text-center text-muted-foreground">
+            <div className="space-y-3 sm:space-y-4">
+              <p className="text-center text-sm sm:text-base text-muted-foreground px-2">
                 Did you stay on track with your goal today?
               </p>
-              <div className="grid gap-3 md:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <form
                   action={async () => {
                     'use server';
                     await handleCheckIn(user.id, true);
                   }}
                 >
-                  <Button type="submit" variant="default" className="w-full h-16">
-                    <CheckCircle2 className="mr-2 h-5 w-5" />
+                  <Button type="submit" variant="default" className="w-full h-14 sm:h-16 text-sm sm:text-base font-medium">
+                    <CheckCircle2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     Yes, I stayed on track!
                   </Button>
                 </form>
@@ -160,8 +162,8 @@ export default async function DashboardPage() {
                     await handleCheckIn(user.id, false);
                   }}
                 >
-                  <Button type="submit" variant="outline" className="w-full h-16">
-                    <XCircle className="mr-2 h-5 w-5" />
+                  <Button type="submit" variant="outline" className="w-full h-14 sm:h-16 text-sm sm:text-base font-medium">
+                    <XCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     No, I slipped today
                   </Button>
                 </form>
@@ -172,7 +174,7 @@ export default async function DashboardPage() {
       </Card>
 
       {/* Pod Members & Progress */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 sm:gap-4 grid-cols-1 lg:grid-cols-2">
         {user.pod && (
           <PodMembersList
             members={user.pod.members}

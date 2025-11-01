@@ -86,11 +86,11 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center">
+    <div className="min-h-[80vh] flex items-center justify-center px-3 sm:px-4">
       <div className="w-full max-w-2xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Let's Get Started</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Let's Get Started</h1>
+          <p className="text-sm sm:text-base text-muted-foreground px-2">
             Tell us about yourself so we can find the perfect accountability pod for you
           </p>
         </div>

@@ -21,6 +21,73 @@ const goalDescriptions: Record<GoalType, string[]> = {
   ],
 };
 
+// Actual user data provided
+const userData = [
+  { rollNo: '25MX301', name: 'ABISHEK S' },
+  { rollNo: '25MX302', name: 'Aishwarya R' },
+  { rollNo: '25MX303', name: 'Ajay Vishal B' },
+  { rollNo: '25MX304', name: 'Aravindh Kannan M S' },
+  { rollNo: '25MX305', name: 'Bhuvisha Sri Priya.P' },
+  { rollNo: '25MX306', name: 'Chittesh' },
+  { rollNo: '25MX307', name: 'DARUNYA SRI.M' },
+  { rollNo: '25MX308', name: 'Dayananda J' },
+  { rollNo: '25MX309', name: 'Deepa M' },
+  { rollNo: '25MX310', name: 'Dhakshanamoorthy S' },
+  { rollNo: '25MX311', name: 'Dinesh Kumar' },
+  { rollNo: '25MX312', name: 'S.Dinesh Kumar' },
+  { rollNo: '25MX313', name: 'G.Lalit Chandran' },
+  { rollNo: '25MX314', name: 'HARI ANAND B' },
+  { rollNo: '25MX315', name: 'Induja E' },
+  { rollNo: '25MX316', name: 'Jackson Solomon Raj M' },
+  { rollNo: '25MX317', name: 'Janani T' },
+  { rollNo: '25MX318', name: 'JEEVA SILVIYA J' },
+  { rollNo: '25MX319', name: 'Jessica.A' },
+  { rollNo: '25MX320', name: 'Joshnie T' },
+  { rollNo: '25MX321', name: 'Karthick K' },
+  { rollNo: '25MX322', name: 'Kasbiya. M' },
+  { rollNo: '25MX323', name: 'Keerthanaa J' },
+  { rollNo: '25MX324', name: 'Kevin Johnson A A' },
+  { rollNo: '25MX325', name: 'Kirsaan F' },
+  { rollNo: '25MX326', name: 'Meyappan R' },
+  { rollNo: '25MX327', name: 'Mithra N' },
+  { rollNo: '25MX328', name: 'MITHULESH N' },
+  { rollNo: '25MX329', name: 'Mohana Priya M' },
+  { rollNo: '25MX330', name: 'Monish P' },
+  { rollNo: '25MX331', name: 'Mugundhan KP' },
+  { rollNo: '25MX332', name: 'Muthu Sailappan' },
+  { rollNo: '25MX333', name: 'Naga Sruthi M' },
+  { rollNo: '25MX334', name: 'NANDHITHASRI T' },
+  { rollNo: '25MX335', name: 'Naveen pranab T' },
+  { rollNo: '25MX336', name: 'Nitheesh Muthu Krishnan C' },
+  { rollNo: '25MX337', name: 'Nithyashree C' },
+  { rollNo: '25MX338', name: 'Poorani R' },
+  { rollNo: '25MX339', name: 'PRABHAKAR O S' },
+  { rollNo: '25MX340', name: 'Puratchiyan' },
+  { rollNo: '25MX341', name: 'RADHU DHARSAN K M' },
+  { rollNo: '25MX342', name: 'ROHITHMAHESHWARAN K' },
+  { rollNo: '25MX343', name: 'SABARISH P' },
+  { rollNo: '25MX344', name: 'Satya Pramodh R' },
+  { rollNo: '25MX345', name: 'Shri Sanjay M' },
+  { rollNo: '25MX346', name: 'Siddarth M R' },
+  { rollNo: '25MX347', name: 'Sivapradeesh M' },
+  { rollNo: '25MX348', name: 'S.S.SOBAN' },
+  { rollNo: '25MX349', name: 'Sowmiya' },
+  { rollNo: '25MX350', name: 'SRIVIKASHNI S' },
+  { rollNo: '25MX351', name: 'SURIYA G V' },
+  { rollNo: '25MX352', name: 'Tamilini S' },
+  { rollNo: '25MX353', name: 'Trisha R' },
+  { rollNo: '25MX354', name: 'Tino Britty J' },
+  { rollNo: '25MX355', name: 'Vaishali S' },
+  { rollNo: '25MX356', name: 'Vignesh M' },
+  { rollNo: '25MX357', name: 'VijayaShri' },
+  { rollNo: '25MX358', name: 'VIKRAM SETHUPATHY S' },
+  { rollNo: '25MX359', name: 'Vishnuvardani K S' },
+  { rollNo: '25MX360', name: 'Yaswanth R T' },
+  { rollNo: '25MX361', name: 'Sanjana M' },
+  { rollNo: '25MX362', name: 'Narayanasamy' },
+  { rollNo: '25MX363', name: 'Tharun S' },
+];
+
 const podNames = [
   'Pod Alpha', 'Pod Beta', 'Pod Gamma', 'Pod Delta', 'Pod Epsilon',
   'Pod Zeta', 'Pod Eta', 'Pod Theta', 'Pod Iota', 'Pod Kappa',
@@ -40,12 +107,25 @@ const sampleMessages = [
 ];
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.log('🌱 Seeding database with 63 users...');
 
-  // Create 63 demo users (25mx301 to 25mx363)
+  // Clear existing data (optional - comment out if you want to keep existing data)
+  console.log('🧹 Cleaning existing data...');
+  await prisma.achievement.deleteMany();
+  await prisma.crisisToolkitItem.deleteMany();
+  await prisma.checkIn.deleteMany();
+  await prisma.podMessage.deleteMany();
+  await prisma.crisisAlert.deleteMany();
+  await prisma.user.deleteMany();
+  await prisma.pod.deleteMany();
+  console.log('✅ Existing data cleared');
+
+  // Create 63 users with actual names
   const users = [];
-  for (let i = 301; i <= 363; i++) {
-    const username = `25mx${i}`;
+  for (let i = 0; i < userData.length; i++) {
+    const { rollNo, name } = userData[i];
+    // Username and password are the same (rollNo in lowercase)
+    const username = rollNo.toLowerCase();
     const hashedPassword = await bcrypt.hash(username, 10);
     const goalType = i % 2 === 0 ? GoalType.QUIT_HABIT : GoalType.BUILD_HABIT;
     const goalDescArray = goalDescriptions[goalType];
@@ -56,7 +136,7 @@ async function main() {
         username,
         email: `${username}@podlink.demo`,
         password: hashedPassword,
-        fullName: `Demo User ${i}`,
+        fullName: name,
         timezone: 'Asia/Kolkata',
         availabilityHours: { start: '09:00', end: '22:00' },
         goalType,
@@ -64,14 +144,15 @@ async function main() {
         isDemoAccount: true,
         onboardingComplete: true,
         currentStreak: Math.floor(Math.random() * 30),
-        lastCheckIn: new Date(Date.now() - Math.random() * 86400000), // Random within last 24h
+        lastCheckIn: new Date(Date.now() - Math.random() * 86400000),
       },
     });
 
     users.push(user);
+    console.log(`✅ Created user: ${name} (${username})`);
   }
 
-  console.log(`✅ Created ${users.length} demo users`);
+  console.log(`\n✅ Created ${users.length} users\n`);
 
   // Create pods (3-4 members each)
   const pods = [];
@@ -96,13 +177,15 @@ async function main() {
     });
 
     pods.push({ pod, members: podMembers });
+    console.log(`✅ Created ${pod.name} with ${podMembers.length} members`);
     userIndex += membersCount;
     podIndex++;
   }
 
-  console.log(`✅ Created ${pods.length} pods`);
+  console.log(`\n✅ Created ${pods.length} pods\n`);
 
   // Create historical check-ins for each user (last 7 days)
+  console.log('📅 Creating check-in history...');
   for (const user of users) {
     for (let day = 0; day < 7; day++) {
       const date = new Date();
@@ -118,10 +201,10 @@ async function main() {
       });
     }
   }
-
-  console.log('✅ Created check-in history');
+  console.log('✅ Created check-in history\n');
 
   // Create pod messages
+  console.log('💬 Creating pod messages...');
   for (const { pod, members } of pods) {
     for (let i = 0; i < 15; i++) {
       const randomMember = members[Math.floor(Math.random() * members.length)];
@@ -137,10 +220,10 @@ async function main() {
       });
     }
   }
-
-  console.log('✅ Created pod messages');
+  console.log('✅ Created pod messages\n');
 
   // Create crisis alerts (2 per pod, 1 active, 1 resolved)
+  console.log('🚨 Creating crisis alerts...');
   for (const { pod, members } of pods) {
     // Active alert
     const activeMember = members[0];
@@ -167,10 +250,10 @@ async function main() {
       },
     });
   }
-
-  console.log('✅ Created crisis alerts');
+  console.log('✅ Created crisis alerts\n');
 
   // Create crisis toolkit items for each user
+  console.log('🛠️ Creating crisis toolkit items...');
   const toolkitTemplates = [
     { title: 'Take a walk', description: 'Go outside for 10 minutes of fresh air' },
     { title: 'Deep breathing', description: '5 deep breaths, count to 4 on each' },
@@ -193,10 +276,10 @@ async function main() {
       });
     }
   }
-
-  console.log('✅ Created crisis toolkit items');
+  console.log('✅ Created crisis toolkit items\n');
 
   // Create achievements
+  console.log('🏆 Creating achievements...');
   for (const { pod, members } of pods) {
     // Pod achievements
     if (pod.totalStreak >= 7) {
@@ -229,9 +312,12 @@ async function main() {
       }
     }
   }
+  console.log('✅ Created achievements\n');
 
-  console.log('✅ Created achievements');
   console.log('🎉 Seeding completed successfully!');
+  console.log('\n📝 Login Credentials:');
+  console.log('   Username: 25mx301 (or any roll number in lowercase)');
+  console.log('   Password: Same as username (e.g., 25mx301)\n');
 }
 
 main()

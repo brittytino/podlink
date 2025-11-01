@@ -23,8 +23,8 @@ export function ChatWindow({ messages, currentUserId }: ChatWindowProps) {
   }, [messages]);
 
   return (
-    <Card className="flex flex-col h-[500px]">
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+    <Card className="flex flex-col h-[400px] sm:h-[500px] lg:h-[600px] shadow-sm">
+      <ScrollArea className="flex-1 p-3 sm:p-4" ref={scrollRef}>
         <div className="space-y-4">
           {messages.map((message) => (
             <MessageBubble

@@ -33,15 +33,16 @@ export function LeaderboardTable({ pods }: LeaderboardTableProps) {
   };
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-16">Rank</TableHead>
-          <TableHead>Pod Name</TableHead>
-          <TableHead className="text-center">Members</TableHead>
-          <TableHead className="text-right">Total Streak</TableHead>
-        </TableRow>
-      </TableHeader>
+    <div className="overflow-x-auto -mx-3 sm:mx-0">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12 sm:w-16 text-xs sm:text-sm">Rank</TableHead>
+            <TableHead className="text-xs sm:text-sm">Pod Name</TableHead>
+            <TableHead className="text-center text-xs sm:text-sm">Members</TableHead>
+            <TableHead className="text-right text-xs sm:text-sm">Total Streak</TableHead>
+          </TableRow>
+        </TableHeader>
       <TableBody>
         {pods.map((pod, index) => (
           <TableRow
@@ -50,24 +51,24 @@ export function LeaderboardTable({ pods }: LeaderboardTableProps) {
               pod.isUserPod && 'bg-primary/10 border-l-4 border-l-primary'
             )}
           >
-            <TableCell className="font-medium">
+            <TableCell className="font-medium text-xs sm:text-sm">
               <div className="flex items-center justify-center">
                 {getRankIcon(index + 1)}
               </div>
             </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                <span className="font-semibold">{pod.name}</span>
+            <TableCell className="text-xs sm:text-sm">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold truncate">{pod.name}</span>
                 {pod.isUserPod && (
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-[10px] sm:text-xs shrink-0">
                     Your Pod
                   </Badge>
                 )}
               </div>
             </TableCell>
-            <TableCell className="text-center">{pod.memberCount}</TableCell>
-            <TableCell className="text-right">
-              <Badge variant="outline" className="font-semibold">
+            <TableCell className="text-center text-xs sm:text-sm">{pod.memberCount}</TableCell>
+            <TableCell className="text-right text-xs sm:text-sm">
+              <Badge variant="outline" className="font-semibold text-[10px] sm:text-xs">
                 {pod.totalStreak} 🔥
               </Badge>
             </TableCell>
@@ -75,5 +76,6 @@ export function LeaderboardTable({ pods }: LeaderboardTableProps) {
         ))}
       </TableBody>
     </Table>
+    </div>
   );
 }

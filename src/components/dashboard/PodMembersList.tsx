@@ -22,38 +22,38 @@ interface PodMembersListProps {
 
 export function PodMembersList({ members, podName }: PodMembersListProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
+    <Card className="shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <Users className="h-4 w-4 sm:h-5 sm:w-5" />
           {podName}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {members.map((member) => (
             <div
               key={member.id}
               className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
+              <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0">
                   <AvatarImage src={member.avatarUrl || ''} alt={member.fullName} />
-                  <AvatarFallback>
+                  <AvatarFallback className="text-xs sm:text-sm">
                     {member.fullName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-medium text-sm">{member.fullName}</p>
-                  <p className="text-xs text-muted-foreground">@{member.username}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm sm:text-base truncate">{member.fullName}</p>
+                  <p className="text-xs text-muted-foreground truncate">@{member.username}</p>
                 </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <Badge variant="secondary" className="text-xs">
+              <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
+                <Badge variant="secondary" className="text-[10px] sm:text-xs">
                   {member.currentStreak} 🔥
                 </Badge>
                 {member.lastCheckIn && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                     {formatDate(member.lastCheckIn)}
                   </span>
                 )}

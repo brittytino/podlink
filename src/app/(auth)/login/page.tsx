@@ -55,15 +55,15 @@ export default function LoginPage() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Welcome Back</CardTitle>
-        <CardDescription>Sign in to your PodLink account</CardDescription>
+    <Card className="shadow-lg border-0">
+      <CardHeader className="space-y-1 pb-4">
+        <CardTitle className="text-2xl sm:text-3xl font-bold">Welcome Back</CardTitle>
+        <CardDescription className="text-sm sm:text-base">Sign in to your PodLink account</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="username">Username</Label>
+      <CardContent className="space-y-4 sm:space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="username" className="text-sm sm:text-base font-medium">Username</Label>
             <Input
               id="username"
               type="text"
@@ -71,10 +71,11 @@ export default function LoginPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
+              className="h-11 sm:h-12 text-base"
             />
           </div>
-          <div>
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm sm:text-base font-medium">Password</Label>
             <Input
               id="password"
               type="password"
@@ -82,9 +83,10 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              className="h-11 sm:h-12 text-base"
             />
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full h-11 sm:h-12 text-base font-semibold" disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

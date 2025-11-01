@@ -71,55 +71,58 @@ export function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <Label htmlFor="fullName">Full Name</Label>
+    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+      <div className="space-y-2">
+        <Label htmlFor="fullName" className="text-sm sm:text-base font-medium">Full Name</Label>
         <Input
           id="fullName"
           value={formData.fullName}
           onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
           required
+          className="h-11 sm:h-12 text-base"
         />
       </div>
 
-      <div>
-        <Label htmlFor="username">Username</Label>
+      <div className="space-y-2">
+        <Label htmlFor="username" className="text-sm sm:text-base font-medium">Username</Label>
         <Input
           id="username"
           value={formData.username}
           onChange={(e) => setFormData({ ...formData, username: e.target.value })}
           required
+          className="h-11 sm:h-12 text-base"
         />
       </div>
 
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" value={formData.email} disabled />
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-sm sm:text-base font-medium">Email</Label>
+        <Input id="email" value={formData.email} disabled className="h-11 sm:h-12 text-base" />
         <p className="text-xs text-muted-foreground mt-1">Email cannot be changed</p>
       </div>
 
-      <div>
-        <Label htmlFor="goal">Goal Description</Label>
+      <div className="space-y-2">
+        <Label htmlFor="goal" className="text-sm sm:text-base font-medium">Goal Description</Label>
         <Textarea
           id="goal"
           value={formData.goalDescription}
           onChange={(e) => setFormData({ ...formData, goalDescription: e.target.value })}
           rows={3}
+          className="text-sm sm:text-base resize-none"
         />
       </div>
 
-      <div>
-        <Label htmlFor="timezone">Timezone</Label>
+      <div className="space-y-2">
+        <Label htmlFor="timezone" className="text-sm sm:text-base font-medium">Timezone</Label>
         <Select
           value={formData.timezone}
           onValueChange={(value) => setFormData({ ...formData, timezone: value })}
         >
-          <SelectTrigger>
+          <SelectTrigger className="h-11 sm:h-12 text-base">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {timezones.map((tz) => (
-              <SelectItem key={tz.value} value={tz.value}>
+              <SelectItem key={tz.value} value={tz.value} className="text-sm sm:text-base">
                 {tz.label}
               </SelectItem>
             ))}
@@ -127,7 +130,7 @@ export function ProfileForm({ user, onUpdateSuccess }: ProfileFormProps) {
         </Select>
       </div>
 
-      <Button type="submit" disabled={loading} className="w-full">
+      <Button type="submit" disabled={loading} className="w-full h-11 sm:h-12 text-base font-semibold">
         {loading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

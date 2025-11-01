@@ -30,14 +30,14 @@ export function Navbar() {
   const { user } = useAuth();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-              <span className="text-xl font-bold text-white">P</span>
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
+      <div className="container flex h-14 sm:h-16 items-center justify-between px-2 sm:px-4">
+        <div className="flex items-center gap-3 sm:gap-6">
+          <Link href="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 shadow-sm">
+              <span className="text-lg sm:text-xl font-bold text-white">P</span>
             </div>
-            <span className="hidden font-bold sm:inline-block text-xl">
+            <span className="hidden sm:inline-block font-bold text-lg sm:text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               PodLink
             </span>
           </Link>

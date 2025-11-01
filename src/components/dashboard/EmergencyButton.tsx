@@ -75,21 +75,21 @@ export function EmergencyButton({ userId, podId }: EmergencyButtonProps) {
       <Button
         size="lg"
         variant="destructive"
-        className="w-full h-16 text-lg font-bold animate-pulse hover:animate-none"
+        className="w-full h-14 sm:h-16 text-base sm:text-lg font-bold animate-pulse hover:animate-none shadow-lg hover:shadow-xl transition-shadow"
         onClick={() => setOpen(true)}
       >
-        <AlertCircle className="mr-2 h-6 w-6" />
+        <AlertCircle className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
         I Need Help Now!
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-red-600 text-lg sm:text-xl">
+              <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6" />
               Crisis Alert
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm sm:text-base">
               Your pod members will be notified immediately. You can add an optional message.
             </DialogDescription>
           </DialogHeader>
@@ -98,7 +98,7 @@ export function EmergencyButton({ userId, podId }: EmergencyButtonProps) {
             placeholder="Optional: Describe what you're feeling... (e.g., 'Having strong urges right now')"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="min-h-[100px]"
+            className="min-h-[100px] text-sm sm:text-base"
           />
 
           <DialogFooter>

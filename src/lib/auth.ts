@@ -14,38 +14,71 @@ export const authConfig: NextAuthConfig = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials): Promise<any> {
-        if (!credentials?.username || !credentials?.password) {
+        try {
+          if (!credentials?.username || !credentials?.password) {
+            return null;
+          }
+
+          const username = String(credentials.username).toLowerCase().trim();
+          const password = String(credentials.password).trim();
+
+          // Retry database query with exponential backoff
+          let user = null;
+          let retries = 3;
+          let delay = 500;
+
+          while (retries > 0 && !user) {
+            try {
+              user = await prisma.user.findUnique({
+                where: { username },
+              });
+              break;
+            } catch (error: any) {
+              retries--;
+              if (retries > 0 && (error?.code === 'P1001' || error?.message?.includes('connect'))) {
+                console.log(`Database connection error, retrying... (${retries} left)`);
+                await new Promise((resolve) => setTimeout(resolve, delay));
+                delay *= 2;
+              } else {
+                console.error('Auth database error:', error);
+                return null;
+              }
+            }
+          }
+
+          if (!user || !user.password) {
+            console.log(`User not found or no password: ${username}`);
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            password,
+            String(user.password)
+          );
+
+          if (!isPasswordValid) {
+            console.log(`Invalid password for user: ${username}`);
+            return null;
+          }
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.fullName,
+            image: user.avatarUrl,
+            username: user.username,
+            onboardingComplete: user.onboardingComplete,
+          };
+        } catch (error: any) {
+          console.error('Auth error:', error);
+          
+          // Don't expose database errors to client
+          if (error?.code === 'P1001') {
+            console.error('Database connection failed during authentication');
+          }
+          
           return null;
         }
-
-        const username = String(credentials.username);
-        const password = String(credentials.password);
-
-        const user = await prisma.user.findUnique({
-          where: { username },
-        });
-
-        if (!user || !user.password) {
-          return null;
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          password,
-          String(user.password)
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.fullName,
-          image: user.avatarUrl,
-          username: user.username,
-          onboardingComplete: user.onboardingComplete,
-        };
       },
     }),
     GoogleProvider({

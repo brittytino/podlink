@@ -73,19 +73,19 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <User className="h-8 w-8" />
+    <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+          <User className="h-6 w-6 sm:h-8 sm:w-8" />
           Profile Settings
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm sm:text-base text-muted-foreground">
           Manage your account and preferences
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">

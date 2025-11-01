@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { prisma } from '@/lib/prisma';
 
+async function retryDatabaseOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries = 3,
+  delay = 1000
+): Promise<T> {
+  let lastError: any;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+      // If it's a connection error, retry
+      if (error?.code === 'P1001' || error?.message?.includes('connect')) {
+        if (i < maxRetries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)));
+          continue;
+        }
+      }
+      throw error;
+    }
+  }
+  throw lastError;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession();
@@ -11,18 +35,27 @@ export async function POST(req: NextRequest) {
 
     const { userId, stayedOnTrack } = await req.json();
 
-    // Check if already checked in today
+    if (!userId || typeof stayedOnTrack !== 'boolean') {
+      return NextResponse.json(
+        { error: 'Invalid request data' },
+        { status: 400 }
+      );
+    }
+
+    // Check if already checked in today with retry
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const existingCheckIn = await prisma.checkIn.findFirst({
-      where: {
-        userId,
-        date: {
-          gte: today,
+    const existingCheckIn = await retryDatabaseOperation(() =>
+      prisma.checkIn.findFirst({
+        where: {
+          userId,
+          date: {
+            gte: today,
+          },
         },
-      },
-    });
+      })
+    );
 
     if (existingCheckIn) {
       return NextResponse.json(
@@ -31,52 +64,82 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create check-in
-    const checkIn = await prisma.checkIn.create({
-      data: {
-        userId,
-        stayedOnTrack,
-        date: new Date(),
-      },
-    });
+    // Create check-in with retry
+    const checkIn = await retryDatabaseOperation(() =>
+      prisma.checkIn.create({
+        data: {
+          userId,
+          stayedOnTrack,
+          date: new Date(),
+        },
+      })
+    );
 
-    // Update user streak
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { currentStreak: true, podId: true },
-    });
+    // Update user streak with retry
+    const user = await retryDatabaseOperation(() =>
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { currentStreak: true, podId: true },
+      })
+    );
 
-    const newStreak = stayedOnTrack ? (user?.currentStreak || 0) + 1 : 0;
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: {
-        currentStreak: newStreak,
-        lastCheckIn: new Date(),
-      },
-    });
+    const newStreak = stayedOnTrack ? (user.currentStreak || 0) + 1 : 0;
 
-    // Update pod total streak
-    if (user?.podId) {
-      const podMembers = await prisma.user.findMany({
-        where: { podId: user.podId },
-        select: { currentStreak: true },
-      });
+    await retryDatabaseOperation(() =>
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          currentStreak: newStreak,
+          lastCheckIn: new Date(),
+        },
+      })
+    );
+
+    // Update pod total streak with retry
+    if (user.podId) {
+      const podId = user.podId; // Type narrowing
+      const podMembers = await retryDatabaseOperation(() =>
+        prisma.user.findMany({
+          where: { podId },
+          select: { currentStreak: true },
+        })
+      );
 
       const totalStreak = podMembers.reduce(
         (sum: number, member: { currentStreak: number }) => sum + member.currentStreak,
         0
       );
 
-      await prisma.pod.update({
-        where: { id: user.podId },
-        data: { totalStreak },
-      });
+      await retryDatabaseOperation(() =>
+        prisma.pod.update({
+          where: { id: podId },
+          data: { totalStreak },
+        })
+      );
     }
 
     return NextResponse.json({ checkIn, newStreak });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Check-in error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    
+    // Provide more specific error messages
+    if (error?.code === 'P1001') {
+      return NextResponse.json(
+        { error: 'Database connection failed. Please try again.' },
+        { status: 503 }
+      );
+    }
+    
+    return NextResponse.json(
+      { 
+        error: 'Internal server error',
+        message: process.env.NODE_ENV === 'development' ? error?.message : undefined,
+      },
+      { status: 500 }
+    );
   }
 }

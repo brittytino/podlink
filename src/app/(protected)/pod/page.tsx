@@ -145,18 +145,18 @@ export default function PodPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Users className="h-8 w-8" />
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+            <Users className="h-6 w-6 sm:h-8 sm:w-8" />
             {podName}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">
             {members.length} member{members.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <Badge variant={isConnected ? 'default' : 'secondary'}>
+        <Badge variant={isConnected ? 'default' : 'secondary'} className="text-xs sm:text-sm">
           {isConnected ? '🟢 Connected' : '🔴 Connecting...'}
         </Badge>
       </div>
@@ -167,26 +167,26 @@ export default function PodPage() {
       )}
 
       {/* Pod Members */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Pod Members</CardTitle>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base sm:text-lg">Pod Members</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             {members.map((member) => (
               <div
                 key={member.id}
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card"
+                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
               >
-                <Avatar>
+                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
                   <AvatarImage src={member.avatarUrl || ''} alt={member.fullName} />
-                  <AvatarFallback>
+                  <AvatarFallback className="text-sm sm:text-base">
                     {member.fullName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="font-medium text-sm">{member.fullName}</p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm sm:text-base truncate">{member.fullName}</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     {member.currentStreak} day streak 🔥
                   </p>
                 </div>
@@ -197,12 +197,12 @@ export default function PodPage() {
       </Card>
 
       {/* Chat */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Group Chat</h2>
+      <div className="space-y-3 sm:space-y-4">
+        <h2 className="text-lg sm:text-xl font-semibold">Group Chat</h2>
         <ChatWindow messages={messages} currentUserId={session?.user?.id || ''} />
 
         {/* Message Input */}
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <Textarea
             placeholder="Send a message of support..."
             value={messageText}
@@ -213,10 +213,15 @@ export default function PodPage() {
                 handleSendMessage();
               }
             }}
-            className="min-h-[60px]"
+            className="min-h-[80px] sm:min-h-[60px] flex-1 text-sm sm:text-base"
           />
-          <Button onClick={handleSendMessage} size="icon" className="h-[60px] w-[60px]">
-            <Send className="h-5 w-5" />
+          <Button 
+            onClick={handleSendMessage} 
+            size="icon" 
+            className="h-[60px] w-full sm:w-[60px] sm:h-[60px] shrink-0"
+          >
+            <Send className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="sm:hidden ml-2">Send</span>
           </Button>
         </div>
       </div>

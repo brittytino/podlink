@@ -26,26 +26,26 @@ export function WeeklyProgress({ checkIns }: WeeklyProgressProps) {
   }, {} as Record<string, boolean>);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Calendar className="h-4 w-4" />
+    <Card className="shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+          <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
           Weekly Progress
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {last7Days.map((date, index) => {
             const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
             const hasCheckIn = date in checkInMap;
             const isSuccess = checkInMap[date];
 
             return (
-              <div key={date} className="flex items-center gap-3">
-                <span className="text-xs font-medium text-muted-foreground w-8">
+              <div key={date} className="flex items-center gap-2 sm:gap-3">
+                <span className="text-[10px] sm:text-xs font-medium text-muted-foreground w-8 sm:w-10 shrink-0">
                   {dayName}
                 </span>
-                <div className="flex-1 h-8 bg-muted rounded-lg overflow-hidden">
+                <div className="flex-1 h-7 sm:h-8 bg-muted rounded-lg overflow-hidden">
                   {hasCheckIn && (
                     <div
                       className={`h-full transition-all ${
@@ -57,7 +57,7 @@ export function WeeklyProgress({ checkIns }: WeeklyProgressProps) {
                     />
                   )}
                 </div>
-                <span className="text-xs w-12 text-right">
+                <span className="text-[10px] sm:text-xs w-10 sm:w-12 text-right shrink-0">
                   {hasCheckIn ? (isSuccess ? '✓ Yes' : '✗ No') : '-'}
                 </span>
               </div>
