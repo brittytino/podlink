@@ -1,10 +1,11 @@
-import { NextAuthOptions } from 'next-auth';
+import type { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { prisma } from './prisma';
+import NextAuth from 'next-auth';
 
-export const authOptions: NextAuthOptions = {
+export const authConfig: NextAuthConfig = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -12,23 +13,29 @@ export const authOptions: NextAuthOptions = {
         username: { label: 'Username', type: 'text' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<any> {
         if (!credentials?.username || !credentials?.password) {
-          throw new Error('Invalid credentials');
+          return null;
         }
 
+        const username = String(credentials.username);
+        const password = String(credentials.password);
+
         const user = await prisma.user.findUnique({
-          where: { username: credentials.username },
+          where: { username },
         });
 
         if (!user || !user.password) {
-          throw new Error('Invalid credentials');
+          return null;
         }
 
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        const isPasswordValid = await bcrypt.compare(
+          password,
+          String(user.password)
+        );
 
         if (!isPasswordValid) {
-          throw new Error('Invalid credentials');
+          return null;
         }
 
         return {
@@ -112,4 +119,7 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
   },
   secret: process.env.NEXTAUTH_SECRET,
-};
+} satisfies NextAuthConfig;
+
+// Create auth instance that can be used in middleware and route handlers
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

@@ -1,9 +1,10 @@
-import { PrismaClient, GoalType } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
+import { GoalType } from '../src/types';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-const goalDescriptions = {
+const goalDescriptions: Record<GoalType, string[]> = {
   QUIT_HABIT: [
     'Quit social media scrolling',
     'Stop procrastinating',

@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth-helper';
 import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -65,7 +64,7 @@ export async function POST(req: NextRequest) {
       });
 
       const totalStreak = podMembers.reduce(
-        (sum, member) => sum + member.currentStreak,
+        (sum: number, member: { currentStreak: number }) => sum + member.currentStreak,
         0
       );
 

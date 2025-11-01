@@ -1,44 +1,36 @@
-import { withAuth } from 'next-auth/middleware';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 
-export default withAuth(
-  function middleware(req) {
-    const token = req.nextauth.token;
-    const path = req.nextUrl.pathname;
+export default async function middleware(req: NextRequest) {
+  const session = await auth();
+  const path = req.nextUrl.pathname;
 
-    // Redirect to onboarding if not completed
-    if (
-      token &&
-      !token.onboardingComplete &&
-      path !== '/onboarding' &&
-      !path.startsWith('/api')
-    ) {
-      return NextResponse.redirect(new URL('/onboarding', req.url));
-    }
-
-    // Redirect to dashboard if trying to access onboarding when already completed
-    if (token && token.onboardingComplete && path === '/onboarding') {
-      return NextResponse.redirect(new URL('/dashboard', req.url));
-    }
-
+  // Allow auth routes and API routes
+  if (path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/api/auth')) {
     return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const path = req.nextUrl.pathname;
-        
-        // Allow auth routes
-        if (path.startsWith('/login') || path.startsWith('/register')) {
-          return true;
-        }
-
-        // Require token for protected routes
-        return !!token;
-      },
-    },
   }
-);
+
+  // Require authentication for protected routes
+  if (!session?.user) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  // Redirect to onboarding if not completed
+  if (
+    !session.user.onboardingComplete &&
+    path !== '/onboarding' &&
+    !path.startsWith('/api')
+  ) {
+    return NextResponse.redirect(new URL('/onboarding', req.url));
+  }
+
+  // Redirect to dashboard if trying to access onboarding when already completed
+  if (session.user.onboardingComplete && path === '/onboarding') {
+    return NextResponse.redirect(new URL('/dashboard', req.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

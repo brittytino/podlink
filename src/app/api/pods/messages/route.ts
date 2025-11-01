@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth-helper';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -33,7 +32,7 @@ export async function GET(req: NextRequest) {
       take: 50,
     });
 
-    const formattedMessages = messages.map((msg) => ({
+    const formattedMessages = messages.map((msg: { id: string; messageText: string; userId: string; createdAt: Date; user: { username: string; avatarUrl: string | null }; isCrisisResponse: boolean }) => ({
       id: msg.id,
       messageText: msg.messageText,
       userId: msg.userId,
@@ -52,7 +51,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }

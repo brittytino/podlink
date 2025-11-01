@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run dev:next\" \"npm run dev:socket\"",
+    "dev": "prisma generate && concurrently \"npm run dev:next\" \"npm run dev:socket\"",
     "dev:next": "next dev",
     "dev:socket": "node server.mjs",
     "build": "prisma generate && prisma migrate deploy && next build",
@@ -72,6 +72,7 @@
     "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.19.24",

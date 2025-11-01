@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth-helper';
 import { prisma } from '@/lib/prisma';
 
 const podNames = [
@@ -10,7 +9,7 @@ const podNames = [
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession();
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -70,7 +69,7 @@ export async function POST(req: NextRequest) {
     await prisma.user.updateMany({
       where: {
         id: {
-          in: waitingUsers.map((u) => u.id),
+          in: waitingUsers.map((u: { id: string }) => u.id),
         },
       },
       data: {

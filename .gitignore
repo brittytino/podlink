@@ -1,7 +1,11 @@
-# Node modules
+# =========================
+# Node.js dependencies
+# =========================
 node_modules/
 
+# =========================
 # Build output
+# =========================
 dist/
 build/
 out/
@@ -12,51 +16,56 @@ out/
 .cache/
 coverage/
 
+# =========================
 # Prisma generated files
-/src/generated/prisma/
+# =========================
+src/generated/prisma/
 
+# =========================
 # Environment files
+# =========================
+# Ignore all real env files
 .env
 .env.*
-!.env.local
+!.env.example   # Keep example env file if you use one
 
+# =========================
 # Logs
-logs
+# =========================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# =========================
 # OS files
+# =========================
 .DS_Store
 Thumbs.db
 
+# =========================
 # IDEs and editors
+# =========================
 .vscode/
 .idea/
 *.swp
 *.swo
 
+# =========================
 # Package managers
+# =========================
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Temporary files
+# =========================
+# Temporary / Misc files
+# =========================
 *.tmp
 *.temp
 *.bak
-
-# TypeScript
-*.tsbuildinfo
-
-# Optional: ignore local runtime data
-/.env.local
-/.env.development.local
-/.env.test.local
-/.env.production.local
-
-# Misc
 *.pid
 *.seed
+*.tsbuildinfo

@@ -1,5 +1,4 @@
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth-helper';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { StreakDisplay } from '@/components/dashboard/StreakDisplay';
@@ -51,7 +50,7 @@ async function getDashboardData(userId: string) {
   // Check if already checked in today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayCheckIn = checkIns.find((c) => {
+  const todayCheckIn = checkIns.find((c: { date: Date }) => {
     const checkInDate = new Date(c.date);
     checkInDate.setHours(0, 0, 0, 0);
     return checkInDate.getTime() === today.getTime();
@@ -66,12 +65,12 @@ async function getDashboardData(userId: string) {
 
   return {
     user,
-    checkIns: checkIns.map((c) => ({
+    checkIns: checkIns.map((c: { date: Date; stayedOnTrack: boolean }) => ({
       date: c.date.toISOString(),
       stayedOnTrack: c.stayedOnTrack,
     })),
     hasCheckedInToday: !!todayCheckIn,
-    toolkitItems: toolkitItems.map((item) => ({
+    toolkitItems: toolkitItems.map((item: { id: string; title: string }) => ({
       id: item.id,
       title: item.title,
     })),
@@ -89,7 +88,7 @@ async function handleCheckIn(userId: string, stayedOnTrack: boolean) {
 }
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session?.user) {
     redirect('/login');
