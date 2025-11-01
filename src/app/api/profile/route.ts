@@ -10,21 +10,26 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const searchParams = req.nextUrl.searchParams;
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
-    }
-
-    const items = await prisma.crisisToolkitItem.findMany({
-      where: { userId },
-      orderBy: { orderPosition: 'asc' },
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        fullName: true,
+        username: true,
+        email: true,
+        avatarUrl: true,
+        goalType: true,
+        goalDescription: true,
+        timezone: true,
+        availabilityHours: true,
+        currentStreak: true,
+        createdAt: true,
+      },
     });
 
-    return NextResponse.json({ items });
+    return NextResponse.json({ user });
   } catch (error) {
-    console.error('List toolkit items error:', error);
+    console.error('Get profile error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

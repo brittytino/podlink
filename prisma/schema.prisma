@@ -1,15 +1,149 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  username          String    @unique
+  password          String?
+  fullName          String    @map("full_name")
+  avatarUrl         String?   @map("avatar_url")
+  timezone          String    @default("UTC")
+  availabilityHours Json      @map("availability_hours")
+  goalType          GoalType  @map("goal_type")
+  goalDescription   String    @map("goal_description")
+  currentStreak     Int       @default(0) @map("current_streak")
+  lastCheckIn       DateTime? @map("last_check_in")
+  isDemoAccount     Boolean   @default(false) @map("is_demo_account")
+  onboardingComplete Boolean  @default(false) @map("onboarding_complete")
+  podId             String?   @map("pod_id")
+  
+  pod               Pod?               @relation(fields: [podId], references: [id])
+  crisisAlerts      CrisisAlert[]
+  messages          PodMessage[]
+  checkIns          CheckIn[]
+  toolkitItems      CrisisToolkitItem[]
+  achievements      Achievement[]
+  
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Pod {
+  id           String    @id @default(uuid())
+  name         String
+  totalStreak  Int       @default(0) @map("total_streak")
+  
+  members      User[]
+  messages     PodMessage[]
+  crisisAlerts CrisisAlert[]
+  achievements Achievement[]
+  
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("pods")
+}
+
+model CrisisAlert {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  podId         String        @map("pod_id")
+  message       String?
+  status        AlertStatus   @default(ACTIVE)
+  responseCount Int           @default(0) @map("response_count")
+  
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pod           Pod           @relation(fields: [podId], references: [id], onDelete: Cascade)
+  responses     PodMessage[]
+  
+  createdAt     DateTime      @default(now()) @map("created_at")
+  resolvedAt    DateTime?     @map("resolved_at")
+
+  @@map("crisis_alerts")
+}
+
+model PodMessage {
+  id               String       @id @default(uuid())
+  podId            String       @map("pod_id")
+  userId           String       @map("user_id")
+  messageText      String       @map("message_text")
+  isCrisisResponse Boolean      @default(false) @map("is_crisis_response")
+  alertId          String?      @map("alert_id")
+  
+  pod              Pod          @relation(fields: [podId], references: [id], onDelete: Cascade)
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alert            CrisisAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
+  
+  createdAt        DateTime     @default(now()) @map("created_at")
+
+  @@map("pod_messages")
+}
+
+model CheckIn {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  stayedOnTrack  Boolean  @map("stayed_on_track")
+  date           DateTime @default(now())
+  
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, date])
+  @@map("check_ins")
+}
+
+model CrisisToolkitItem {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  title         String
+  description   String
+  orderPosition Int      @map("order_position")
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("crisis_toolkit_items")
+}
+
+model Achievement {
+  id        String          @id @default(uuid())
+  podId     String?         @map("pod_id")
+  userId    String?         @map("user_id")
+  badgeType BadgeType       @map("badge_type")
+  
+  pod       Pod?            @relation(fields: [podId], references: [id], onDelete: Cascade)
+  user      User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  earnedAt  DateTime        @default(now()) @map("earned_at")
+
+  @@map("achievements")
+}
+
+enum GoalType {
+  QUIT_HABIT
+  BUILD_HABIT
+}
+
+enum AlertStatus {
+  ACTIVE
+  RESOLVED
+}
+
+enum BadgeType {
+  SEVEN_DAY_STREAK
+  THIRTY_DAY_STREAK
+  INSTANT_RESPONDER
+  POD_CHAMPION
 }
