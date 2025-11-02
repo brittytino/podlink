@@ -1,10 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, X, Loader2 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useSocket } from '@/hooks/useSocket';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 interface AlertNotificationProps {
   alert: {
@@ -19,8 +23,15 @@ interface AlertNotificationProps {
 
 export function AlertNotification({ alert, onResolve }: AlertNotificationProps) {
   const { toast } = useToast();
+  const { socket } = useSocket();
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [resolving, setResolving] = useState(false);
 
   const handleResolve = async () => {
+    if (resolving) return;
+    
+    setResolving(true);
     try {
       const response = await fetch('/api/alerts/resolve', {
         method: 'PATCH',
@@ -28,20 +39,38 @@ export function AlertNotification({ alert, onResolve }: AlertNotificationProps) 
         body: JSON.stringify({ alertId: alert.id }),
       });
 
-      if (response.ok) {
-        toast({
-          title: 'Alert Resolved',
-          description: 'Crisis alert has been marked as resolved.',
-        });
-        onResolve();
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to resolve alert');
       }
-    } catch (error) {
+
+      // Emit socket event to notify others
+      if (socket && session?.user?.podId) {
+        socket.emit('alert-resolved', { 
+          podId: session.user.podId, 
+          alertId: alert.id 
+        });
+      }
+
+      toast({
+        title: 'Alert Resolved',
+        description: 'Crisis alert has been marked as resolved.',
+      });
+      onResolve();
+    } catch (error: any) {
+      console.error('Resolve alert error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to resolve alert.',
+        description: error.message || 'Failed to resolve alert. Please try again.',
         variant: 'destructive',
       });
+    } finally {
+      setResolving(false);
     }
+  };
+
+  const handleSendEncouragement = () => {
+    router.push('/pod');
   };
 
   return (
@@ -57,8 +86,13 @@ export function AlertNotification({ alert, onResolve }: AlertNotificationProps) 
             size="sm"
             className="h-6 w-6 p-0"
             onClick={handleResolve}
+            disabled={resolving}
           >
-            <X className="h-4 w-4" />
+            {resolving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <X className="h-4 w-4" />
+            )}
           </Button>
         </CardTitle>
       </CardHeader>
@@ -74,7 +108,12 @@ export function AlertNotification({ alert, onResolve }: AlertNotificationProps) 
         <p className="text-xs text-muted-foreground">
           {formatDate(alert.createdAt)}
         </p>
-        <Button variant="destructive" size="sm" className="w-full">
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          className="w-full"
+          onClick={handleSendEncouragement}
+        >
           Send Encouragement
         </Button>
       </CardContent>

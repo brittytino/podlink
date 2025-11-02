@@ -130,3 +130,29 @@
     @apply touch-manipulation;
   }
 }
+
+@layer utilities {
+  /* Flicker animation for fire emoji */
+  @keyframes flicker {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    25% {
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+    50% {
+      opacity: 0.95;
+      transform: scale(0.98);
+    }
+    75% {
+      opacity: 0.9;
+      transform: scale(1.02);
+    }
+  }
+  
+  .animate-flicker {
+    animation: flicker 2s ease-in-out infinite;
+  }
+}

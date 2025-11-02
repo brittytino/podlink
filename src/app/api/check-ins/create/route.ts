@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     const user = await retryDatabaseOperation(() =>
       prisma.user.findUnique({
         where: { id: userId },
-        select: { currentStreak: true, podId: true },
+        select: { currentStreak: true, podId: true, lastCheckIn: true },
       })
     );
 
@@ -87,7 +87,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const newStreak = stayedOnTrack ? (user.currentStreak || 0) + 1 : 0;
+    // Calculate new streak based on last check-in
+    let newStreak = 0;
+    if (stayedOnTrack) {
+      if (user.lastCheckIn) {
+        const lastCheckInDate = new Date(user.lastCheckIn);
+        lastCheckInDate.setHours(0, 0, 0, 0);
+        
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+        
+        // If last check-in was yesterday, increment streak
+        // If last check-in was today (shouldn't happen due to duplicate check), keep current
+        // If last check-in was before yesterday, reset to 1
+        if (lastCheckInDate.getTime() === yesterday.getTime()) {
+          newStreak = (user.currentStreak || 0) + 1;
+        } else if (lastCheckInDate.getTime() === today.getTime()) {
+          // Already checked in today (shouldn't reach here, but handle edge case)
+          newStreak = user.currentStreak || 0;
+        } else {
+          // Missed days, start fresh at 1
+          newStreak = 1;
+        }
+      } else {
+        // First check-in ever
+        newStreak = 1;
+      }
+    } else {
+      // User slipped, reset streak to 0
+      newStreak = 0;
+    }
 
     await retryDatabaseOperation(() =>
       prisma.user.update({

@@ -6,9 +6,7 @@ import { EmergencyButton } from '@/components/dashboard/EmergencyButton';
 import { PodMembersList } from '@/components/dashboard/PodMembersList';
 import { WeeklyProgress } from '@/components/dashboard/WeeklyProgress';
 import { QuickAccessList } from '@/components/toolkit/QuickAccessList';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckInCard } from '@/components/dashboard/CheckInCard';
 
 async function getDashboardData(userId: string) {
   const user = await prisma.user.findUnique({
@@ -33,7 +31,6 @@ async function getDashboardData(userId: string) {
 
   if (!user) return null;
 
-  // Get last 7 days check-ins
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -47,7 +44,6 @@ async function getDashboardData(userId: string) {
     orderBy: { date: 'desc' },
   });
 
-  // Check if already checked in today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayCheckIn = checkIns.find((c: { date: Date }) => {
@@ -56,7 +52,6 @@ async function getDashboardData(userId: string) {
     return checkInDate.getTime() === today.getTime();
   });
 
-  // Get toolkit items
   const toolkitItems = await prisma.crisisToolkitItem.findMany({
     where: { userId },
     orderBy: { orderPosition: 'asc' },
@@ -77,16 +72,6 @@ async function getDashboardData(userId: string) {
   };
 }
 
-async function handleCheckIn(userId: string, stayedOnTrack: boolean) {
-  'use server';
-  
-  await fetch(`${process.env.NEXTAUTH_URL}/api/check-ins/create`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, stayedOnTrack }),
-  });
-}
-
 export default async function DashboardPage() {
   const session = await getServerSession();
 
@@ -103,91 +88,110 @@ export default async function DashboardPage() {
   const { user, checkIns, hasCheckedInToday, toolkitItems } = data;
 
   return (
-    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
-      <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
-          Welcome back, {user.fullName}! 👋
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          {user.goalDescription || 'Your accountability journey continues'}
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
       </div>
 
-      {/* Streak Section */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-        <StreakDisplay streak={user.currentStreak} label="Your Streak" />
-        <StreakDisplay
-          streak={user.pod?.totalStreak || 0}
-          label="Pod Total Streak"
-          isPod
-        />
-      </div>
-
-      {/* Emergency Button */}
-      <div>
-        <EmergencyButton userId={user.id} podId={user.podId || ''} />
-      </div>
-
-      {/* Daily Check-in */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg sm:text-xl">Today's Check-In</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {hasCheckedInToday ? (
-            <div className="flex items-center justify-center gap-2 sm:gap-3 py-4 sm:py-6 text-green-600 dark:text-green-400">
-              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6" />
-              <span className="text-sm sm:text-base font-semibold">Already checked in today! Great job! 🎉</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-6 sm:space-y-8">
+        {/* Header Section with Enhanced Design */}
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl blur-2xl -z-10 animate-pulse" />
+          <div className="bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-primary/10 shadow-2xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
+                    Welcome back, {user.fullName}!
+                  </h1>
+                  <span className="text-3xl sm:text-4xl animate-wave inline-block">👋</span>
+                </div>
+                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl leading-relaxed">
+                  {user.goalDescription || 'Your accountability journey continues today'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-sm font-medium text-primary">Active Now</span>
+              </div>
             </div>
-          ) : (
-            <div className="space-y-3 sm:space-y-4">
-              <p className="text-center text-sm sm:text-base text-muted-foreground px-2">
-                Did you stay on track with your goal today?
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <form
-                  action={async () => {
-                    'use server';
-                    await handleCheckIn(user.id, true);
-                  }}
-                >
-                  <Button type="submit" variant="default" className="w-full h-14 sm:h-16 text-sm sm:text-base font-medium">
-                    <CheckCircle2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                    Yes, I stayed on track!
-                  </Button>
-                </form>
-                <form
-                  action={async () => {
-                    'use server';
-                    await handleCheckIn(user.id, false);
-                  }}
-                >
-                  <Button type="submit" variant="outline" className="w-full h-14 sm:h-16 text-sm sm:text-base font-medium">
-                    <XCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                    No, I slipped today
-                  </Button>
-                </form>
+          </div>
+        </div>
+
+        {/* Streak Section - Enhanced Cards */}
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
+          <div className="group relative overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-red-500/10 to-pink-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative">
+              <StreakDisplay streak={user.currentStreak} label="Your Streak" />
+            </div>
+          </div>
+          <div className="group relative overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative">
+              <StreakDisplay
+                streak={user.pod?.totalStreak || 0}
+                label="Pod Total Streak"
+                isPod
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Emergency Button - Enhanced with Pulse Effect */}
+        <div className="relative group">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-orange-500/20 to-red-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="relative">
+            <EmergencyButton userId={user.id} podId={user.podId || ''} />
+          </div>
+        </div>
+
+        {/* Daily Check-in Card - Enhanced Design */}
+        <div className="relative overflow-hidden rounded-2xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent" />
+          <div className="relative">
+            <CheckInCard hasCheckedInToday={hasCheckedInToday} userId={user.id} />
+          </div>
+        </div>
+
+        {/* Pod Members & Progress - Enhanced Grid Layout */}
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+          {user.pod && (
+            <div className="group relative overflow-hidden rounded-2xl">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="relative h-full">
+                <PodMembersList
+                  members={user.pod.members}
+                  podName={user.pod.name}
+                />
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+          <div className="group relative overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            <div className="relative h-full">
+              <WeeklyProgress checkIns={checkIns} />
+            </div>
+          </div>
+        </div>
 
-      {/* Pod Members & Progress */}
-      <div className="grid gap-4 sm:gap-4 grid-cols-1 lg:grid-cols-2">
-        {user.pod && (
-          <PodMembersList
-            members={user.pod.members}
-            podName={user.pod.name}
-          />
+        {/* Quick Access Toolkit - Enhanced Card */}
+        {toolkitItems.length > 0 && (
+          <div className="relative overflow-hidden rounded-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5" />
+            <div className="relative">
+              <QuickAccessList items={toolkitItems} />
+            </div>
+          </div>
         )}
-        <WeeklyProgress checkIns={checkIns} />
+
+        {/* Footer Spacer for Mobile */}
+        <div className="h-6 sm:h-8" />
       </div>
 
-      {/* Quick Access Toolkit */}
-      {toolkitItems.length > 0 && (
-        <QuickAccessList items={toolkitItems} />
-      )}
+      
     </div>
   );
 }
