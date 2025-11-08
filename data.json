@@ -1,1 +1,1 @@
-{"date":"2025-11-17T10:47:15+05:30","message":"Add fallback for undefined session in server components"}
+{"date":"2025-11-08T21:29:01+05:30","message":"Fix build failure caused by missing optional dependency @swc/core"}
