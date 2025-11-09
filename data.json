@@ -1,1 +1,1 @@
-{"date":"2025-11-08T21:29:01+05:30","message":"Fix build failure caused by missing optional dependency @swc/core"}
+{"date":"2025-11-09T12:48:42+05:30","message":"Fix infinite re-render in Dashboard caused by useEffect deps"}
