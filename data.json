@@ -1,1 +1,1 @@
-{"date":"2025-11-09T12:48:42+05:30","message":"Fix infinite re-render in Dashboard caused by useEffect deps"}
+{"date":"2025-11-10T14:44:30+05:30","message":"Refactor Prisma queries to avoid blocking server functions"}
