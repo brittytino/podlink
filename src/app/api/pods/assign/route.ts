@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
-import { prisma } from '@/lib/prisma';
-
-const podNames = [
-  'Pod Alpha', 'Pod Beta', 'Pod Gamma', 'Pod Delta', 'Pod Epsilon',
-  'Pod Zeta', 'Pod Eta', 'Pod Theta', 'Pod Iota', 'Pod Kappa',
-];
+import prisma from '@/lib/prisma';
+import { assignUserToPod } from '@/lib/pod-assignment';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,70 +10,41 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { userId } = await req.json();
+    const { userId, podType = 'REAL' } = await req.json();
 
-    // Find users waiting for pod assignment
-    const waitingUsers = await prisma.user.findMany({
-      where: {
-        onboardingComplete: true,
-        podId: null,
+    // Get the current user's full details including availability hours
+    const currentUser = await (prisma.user.findUnique as any)({
+      where: { id: userId },
+      select: {
+        goalType: true,
+        goalDescription: true,
+        goalCategory: true,
+        availabilityHours: true,
+        currentStreak: true,
+        lastCheckIn: true,
+        createdAt: true,
       },
-      orderBy: { createdAt: 'asc' },
-      take: 4,
     });
 
-    if (waitingUsers.length < 3) {
-      // Not enough users for a pod yet - assign to existing pod if available
-      const existingPod = await prisma.pod.findFirst({
-        include: {
-          members: true,
-        },
-        where: {
-          members: {
-            some: {},
-          },
-        },
-      });
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
-      if (existingPod && existingPod.members.length < 4) {
-        await prisma.user.update({
-          where: { id: userId },
-          data: { podId: existingPod.id },
-        });
-
-        return NextResponse.json({ podId: existingPod.id });
-      }
-
+    if (!currentUser.goalCategory) {
       return NextResponse.json(
-        { error: 'Waiting for more users' },
-        { status: 202 }
+        { error: 'User must have a goal category selected' },
+        { status: 400 }
       );
     }
 
-    // Create new pod
-    const podCount = await prisma.pod.count();
-    const podName = podNames[podCount % podNames.length] || `Pod ${podCount + 1}`;
-
-    const pod = await prisma.pod.create({
-      data: {
-        name: podName,
-        totalStreak: 0,
-      },
-    });
-
-    // Assign users to pod
-    await prisma.user.updateMany({
-      where: {
-        id: {
-          in: waitingUsers.map((u: { id: string }) => u.id),
-        },
-      },
-      data: {
-        podId: pod.id,
-      },
-    });
-
-    return NextResponse.json({ podId: pod.id });
+    // Use shared pod assignment utility
+    const result = await assignUserToPod(
+      userId,
+      podType as 'REAL' | 'AI',
+      currentUser
+    );
+    
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Pod assignment error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

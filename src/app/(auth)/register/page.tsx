@@ -13,8 +13,6 @@ import { signIn } from 'next-auth/react';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    fullName: '',
-    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -35,6 +33,15 @@ export default function RegisterPage() {
       return;
     }
 
+    if (formData.password.length < 6) {
+      toast({
+        title: 'Error',
+        description: 'Password must be at least 6 characters',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -42,8 +49,6 @@ export default function RegisterPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fullName: formData.fullName,
-          username: formData.username,
           email: formData.email,
           password: formData.password,
         }),
@@ -52,12 +57,12 @@ export default function RegisterPage() {
       if (response.ok) {
         toast({
           title: 'Account Created!',
-          description: 'Signing you in...',
+          description: 'Your anonymous username has been generated. Signing you in...',
         });
 
-        // Auto sign in
+        // Auto sign in with email
         await signIn('credentials', {
-          username: formData.username,
+          email: formData.email,
           password: formData.password,
           redirect: false,
         });
@@ -90,27 +95,11 @@ export default function RegisterPage() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="Enter your full name"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              type="text"
-              placeholder="Choose a username"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              required
-            />
+          <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
+            <p className="text-sm text-muted-foreground">
+              🔒 <strong>Anonymous Platform:</strong> Your username will be automatically generated. 
+              Only your email is required for account creation.
+            </p>
           </div>
           <div>
             <Label htmlFor="email">Email</Label>
@@ -121,6 +110,7 @@ export default function RegisterPage() {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
+              className="h-11"
             />
           </div>
           <div>
@@ -128,11 +118,12 @@ export default function RegisterPage() {
             <Input
               id="password"
               type="password"
-              placeholder="Create a password"
+              placeholder="Create a password (min 6 characters)"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               required
               minLength={6}
+              className="h-11"
             />
           </div>
           <div>
@@ -144,6 +135,7 @@ export default function RegisterPage() {
               value={formData.confirmPassword}
               onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
               required
+              className="h-11"
             />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>

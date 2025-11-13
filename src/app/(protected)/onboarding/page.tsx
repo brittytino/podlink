@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { GoalSelection } from '@/components/onboarding/GoalSelection';
+import { PodTypeSelection } from '@/components/onboarding/PodTypeSelection';
+import { AvailabilityMessageInput } from '@/components/onboarding/AvailabilityMessageInput';
 import { TimezoneSelector } from '@/components/onboarding/TimezoneSelector';
 import { AvailabilityPicker } from '@/components/onboarding/AvailabilityPicker';
 import { Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -22,18 +24,37 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     goalType: 'BUILD_HABIT',
     goalDescription: '',
+    goalCategory: null as string | null,
+    podType: null as 'REAL' | 'AI' | null,
+    availabilityMessage: '',
     timezone: 'Asia/Kolkata',
     availabilityHours: { start: '09:00', end: '22:00' },
   });
 
-  const totalSteps = 3;
+  const totalSteps = 5;
   const progress = (step / totalSteps) * 100;
 
   const handleNext = () => {
-    if (step === 1 && !formData.goalDescription) {
+    if (step === 1 && !formData.goalDescription.trim()) {
       toast({
         title: 'Required Field',
-        description: 'Please describe your goal',
+        description: 'Please select a goal or describe your custom goal',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (step === 2 && !formData.podType) {
+      toast({
+        title: 'Required Field',
+        description: 'Please select a pod type',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (step === 3 && !formData.availabilityMessage.trim()) {
+      toast({
+        title: 'Required Field',
+        description: 'Please write your availability message',
         variant: 'destructive',
       });
       return;
@@ -108,16 +129,38 @@ export default function OnboardingPage() {
               <GoalSelection
                 goalType={formData.goalType}
                 goalDescription={formData.goalDescription}
+                goalCategory={formData.goalCategory}
                 onGoalTypeChange={(value) =>
-                  setFormData({ ...formData, goalType: value })
+                  setFormData({ ...formData, goalType: value, goalCategory: null })
                 }
                 onGoalDescriptionChange={(value) =>
                   setFormData({ ...formData, goalDescription: value })
+                }
+                onGoalCategoryChange={(value) =>
+                  setFormData({ ...formData, goalCategory: value })
                 }
               />
             )}
 
             {step === 2 && (
+              <PodTypeSelection
+                podType={formData.podType}
+                onPodTypeChange={(value) =>
+                  setFormData({ ...formData, podType: value })
+                }
+              />
+            )}
+
+            {step === 3 && (
+              <AvailabilityMessageInput
+                message={formData.availabilityMessage}
+                onMessageChange={(value) =>
+                  setFormData({ ...formData, availabilityMessage: value })
+                }
+              />
+            )}
+
+            {step === 4 && (
               <TimezoneSelector
                 timezone={formData.timezone}
                 onTimezoneChange={(value) =>
@@ -126,7 +169,7 @@ export default function OnboardingPage() {
               />
             )}
 
-            {step === 3 && (
+            {step === 5 && (
               <AvailabilityPicker
                 startTime={formData.availabilityHours.start}
                 endTime={formData.availabilityHours.end}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 
 async function retryDatabaseOperation<T>(
   operation: () => Promise<T>,

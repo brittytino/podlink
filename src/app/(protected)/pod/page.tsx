@@ -18,6 +18,7 @@ interface PodMember {
   id: string;
   username: string;
   fullName: string;
+  displayName?: string; // Anonymous name for privacy
   avatarUrl: string | null;
   currentStreak: number;
 }
@@ -53,6 +54,15 @@ export default function PodPage() {
         setMembers(data.members || []);
         setPodName(data.podName || 'Your Pod');
         setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching pod members:', error);
+        setLoading(false);
+        toast({
+          title: 'Error',
+          description: 'Failed to load pod members',
+          variant: 'destructive',
+        });
       });
 
     // Fetch active alerts
@@ -61,14 +71,18 @@ export default function PodPage() {
       .then((data) => {
         const active = data.alerts?.find((a: any) => a.status === 'ACTIVE');
         if (active) {
+          const displayName = active.user?.displayName || active.user?.username;
           setActiveAlert({
             id: active.id,
             userId: active.userId,
-            username: active.user.username,
+            username: displayName, // Use displayName for anonymity
             message: active.message,
             createdAt: active.createdAt,
           });
         }
+      })
+      .catch((error) => {
+        console.error('Error fetching alerts:', error);
       });
   }, [session?.user?.podId]);
 
@@ -105,14 +119,19 @@ export default function PodPage() {
     };
   }, [socket, session?.user, podId, activeAlert, toast]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!messageText.trim() || !session?.user || !podId) return;
 
-    sendMessage(
+    // Find current user's displayName from members
+    const currentMember = members.find(m => m.id === session.user.id);
+    const displayName = currentMember?.displayName || currentMember?.fullName;
+
+    await sendMessage(
       messageText,
       session.user.id,
       session.user.username || '',
-      session.user.image || null
+      session.user.image || null,
+      displayName
     );
     setMessageText('');
   };
@@ -173,25 +192,28 @@ export default function PodPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
-              >
-                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
-                  <AvatarImage src={member.avatarUrl || ''} alt={member.fullName} />
-                  <AvatarFallback className="text-sm sm:text-base">
-                    {member.fullName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm sm:text-base truncate">{member.fullName}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {member.currentStreak} day streak 🔥
-                  </p>
+            {members.map((member) => {
+              const displayName = member.displayName || member.fullName;
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                >
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
+                    <AvatarImage src={member.avatarUrl || ''} alt={displayName} />
+                    <AvatarFallback className="text-sm sm:text-base">
+                      {displayName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm sm:text-base truncate">{displayName}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
+                      {member.currentStreak} day streak 🔥
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

@@ -1,5 +1,5 @@
 import { getServerSession } from '@/lib/auth-helper';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { StreakDisplay } from '@/components/dashboard/StreakDisplay';
 import { EmergencyButton } from '@/components/dashboard/EmergencyButton';
@@ -18,11 +18,12 @@ async function getDashboardData(userId: string) {
             select: {
               id: true,
               fullName: true,
+              displayName: true, // Anonymous name for privacy
               username: true,
               avatarUrl: true,
               currentStreak: true,
               lastCheckIn: true,
-            },
+            } as any,
           },
         },
       },
@@ -86,6 +87,9 @@ export default async function DashboardPage() {
   }
 
   const { user, checkIns, hasCheckedInToday, toolkitItems } = data;
+  
+  // Type assertion for pod (Prisma includes it but TypeScript needs help)
+  const userWithPod = user as any;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 relative overflow-hidden">
@@ -112,9 +116,20 @@ export default async function DashboardPage() {
                   {user.goalDescription || 'Your accountability journey continues today'}
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-sm font-medium text-primary">Active Now</span>
+              <div className="flex items-center gap-3">
+                {/* Streak Badge */}
+                {user.currentStreak > 0 && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 shadow-sm">
+                    <span className="text-lg animate-flicker">🔥</span>
+                    <span className="text-sm font-bold text-amber-700 dark:text-amber-400">
+                      {user.currentStreak} days
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-medium text-primary">Active Now</span>
+                </div>
               </div>
             </div>
           </div>
@@ -132,7 +147,7 @@ export default async function DashboardPage() {
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
             <div className="relative">
               <StreakDisplay
-                streak={user.pod?.totalStreak || 0}
+                streak={userWithPod.pod?.totalStreak || 0}
                 label="Pod Total Streak"
                 isPod
               />
@@ -158,13 +173,13 @@ export default async function DashboardPage() {
 
         {/* Pod Members & Progress - Enhanced Grid Layout */}
         <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-          {user.pod && (
+          {userWithPod.pod && (
             <div className="group relative overflow-hidden rounded-2xl">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative h-full">
                 <PodMembersList
-                  members={user.pod.members}
-                  podName={user.pod.name}
+                  members={userWithPod.pod.members}
+                  podName={userWithPod.pod.name}
                 />
               </div>
             </div>

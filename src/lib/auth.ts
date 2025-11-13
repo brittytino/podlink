@@ -2,7 +2,7 @@ import type { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
-import { prisma } from './prisma';
+import prisma from './prisma';
 import NextAuth from 'next-auth';
 
 export const authConfig: NextAuthConfig = {
@@ -10,17 +10,20 @@ export const authConfig: NextAuthConfig = {
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        username: { label: 'Username', type: 'text' },
+        email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials): Promise<any> {
         try {
-          if (!credentials?.username || !credentials?.password) {
+          // Support both email and username for backward compatibility
+          const creds = credentials as { email?: string; username?: string; password?: string };
+          const emailOrUsername = creds?.email || creds?.username;
+          if (!emailOrUsername || !creds?.password) {
             return null;
           }
 
-          const username = String(credentials.username).toLowerCase().trim();
-          const password = String(credentials.password).trim();
+          const identifier = String(emailOrUsername).toLowerCase().trim();
+          const password = String(creds.password).trim();
 
           // Retry database query with exponential backoff
           let user = null;
@@ -29,8 +32,14 @@ export const authConfig: NextAuthConfig = {
 
           while (retries > 0 && !user) {
             try {
-              user = await prisma.user.findUnique({
-                where: { username },
+              // Try email first, then username for backward compatibility
+              user = await prisma.user.findFirst({
+                where: {
+                  OR: [
+                    { email: identifier },
+                    { username: identifier },
+                  ],
+                },
               });
               break;
             } catch (error: any) {
@@ -47,7 +56,7 @@ export const authConfig: NextAuthConfig = {
           }
 
           if (!user || !user.password) {
-            console.log(`User not found or no password: ${username}`);
+            console.log(`User not found or no password: ${identifier}`);
             return null;
           }
 
@@ -57,7 +66,7 @@ export const authConfig: NextAuthConfig = {
           );
 
           if (!isPasswordValid) {
-            console.log(`Invalid password for user: ${username}`);
+            console.log(`Invalid password for user: ${identifier}`);
             return null;
           }
 

@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { Home, Users, Shield, Trophy, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 const navItems = [
   { href: '/dashboard', label: 'Home', icon: Home },
@@ -15,6 +17,19 @@ const navItems = [
 
 export function MobileNav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    fetch('/api/user/streak')
+      .then((res) => res.json())
+      .then((data) => {
+        setStreak(data.streak || 0);
+      })
+      .catch(() => {});
+  }, [user?.id]);
 
   return (
     <>
@@ -24,20 +39,33 @@ export function MobileNav() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+            const isDashboard = item.href === '/dashboard';
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors',
+                  'flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors relative',
                   isActive
                     ? 'text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <div className="relative">
+                  <Icon className="h-5 w-5" />
+                  {/* Streak Badge on Dashboard */}
+                  {isDashboard && streak > 0 && (
+                    <span className="absolute -top-1 -right-1 text-xs">🔥</span>
+                  )}
+                </div>
                 <span className="text-xs font-medium">{item.label}</span>
+                {/* Streak count badge */}
+                {isDashboard && streak > 0 && (
+                  <span className="absolute -top-0.5 right-1 text-[10px] font-bold text-amber-600 dark:text-amber-400">
+                    {streak}
+                  </span>
+                )}
               </Link>
             );
           })}

@@ -40,29 +40,54 @@ export function EmergencyButton({ userId, podId }: EmergencyButtonProps) {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/alerts/create', {
+      // Use the new help endpoint that handles availability and AI responses
+      const response = await fetch('/api/help', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId,
           podId,
-          message: message || 'I need help right now!',
         }),
       });
 
       if (response.ok) {
+        const data = await response.json();
+
+        if (data.type === 'alert_created') {
+          toast({
+            title: 'Alert Sent! 🚨',
+            description: 'Your pod members have been notified.',
+          });
+          setOpen(false);
+          setMessage('');
+          router.push('/pod');
+        } else if (data.type === 'availability_message') {
+          toast({
+            title: `Message from ${data.from}`,
+            description: data.message,
+          });
+          setOpen(false);
+          setMessage('');
+        } else if (data.type === 'ai_response') {
+          toast({
+            title: `${data.source} says:`,
+            description: data.message,
+          });
+          setOpen(false);
+          setMessage('');
+        }
+      } else {
+        const errorData = await response.json();
         toast({
-          title: 'Alert Sent! 🚨',
-          description: 'Your pod members have been notified.',
+          title: 'Error',
+          description: errorData.error || 'Failed to get help. Please try again.',
+          variant: 'destructive',
         });
-        setOpen(false);
-        setMessage('');
-        router.push('/pod');
       }
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Failed to send alert. Please try again.',
+        description: 'Failed to get help. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -72,26 +97,27 @@ export function EmergencyButton({ userId, podId }: EmergencyButtonProps) {
 
   return (
     <>
+      {/* Large Thumb-Reachable Button - Fixed on Mobile, Prominent on Desktop */}
       <div className="relative group">
         {/* Animated Pulse Ring */}
-        <div className="absolute inset-0 rounded-2xl bg-red-500/20 animate-ping opacity-75 group-hover:opacity-0 transition-opacity" />
+        <div className="absolute inset-0 rounded-3xl bg-red-500/20 animate-ping opacity-75 group-hover:opacity-0 transition-opacity" />
         
         {/* Glow Effect */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-500/30 via-orange-500/30 to-red-500/30 blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-red-500/30 via-orange-500/30 to-red-500/30 blur-xl opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
         
         <Button
           size="lg"
-          className="relative w-full h-16 sm:h-20 text-base sm:text-lg font-bold bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 shadow-2xl hover:shadow-red-500/50 transition-all duration-300 group-hover:scale-[1.02] rounded-2xl border-2 border-red-400/50"
+          className="relative w-full h-20 sm:h-24 md:h-28 text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-red-600 via-red-500 to-orange-500 hover:from-red-700 hover:via-red-600 hover:to-orange-600 shadow-2xl hover:shadow-red-500/50 transition-all duration-300 group-hover:scale-[1.02] active:scale-[0.98] rounded-3xl border-4 border-red-400/50 touch-manipulation"
           onClick={() => setOpen(true)}
         >
-          <div className="flex items-center justify-center gap-3">
+          <div className="flex items-center justify-center gap-3 sm:gap-4">
             <div className="relative">
-              <AlertCircle className="h-6 w-6 sm:h-7 sm:w-7 animate-pulse" />
+              <AlertCircle className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 animate-pulse" />
               <div className="absolute inset-0 blur-md bg-white/50 rounded-full animate-pulse" />
             </div>
             <span className="relative">
               I Need Help Now!
-              <Zap className="absolute -top-1 -right-6 h-4 w-4 text-yellow-300 animate-bounce" />
+              <Zap className="absolute -top-1 -right-8 sm:-right-10 h-5 w-5 sm:h-6 sm:w-6 text-yellow-300 animate-bounce" />
             </span>
           </div>
         </Button>

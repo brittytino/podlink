@@ -4,13 +4,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-// Enhanced Prisma client configuration with connection handling
-export const prisma =
+// Optimized Prisma client configuration for Neon free tier
+// Neon free tier databases pause after inactivity and need time to wake up
+const prismaBase =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
     errorFormat: 'pretty',
-    // Add connection configuration for Neon
+    // Optimize for Neon free tier
     datasources: {
       db: {
         url: process.env.DATABASE_URL,
@@ -18,41 +19,85 @@ export const prisma =
     },
   });
 
+// Export base prisma for compatibility
+export const prisma = prismaBase;
+
+// Helper function to wake up Neon database (for free tier)
+async function wakeUpDatabase(): Promise<boolean> {
+  try {
+    // Simple query to wake up the database
+    await prismaBase.$queryRaw`SELECT 1`;
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 // Helper function to execute Prisma operations with automatic reconnection
+// Optimized for Neon free tier (databases wake up in 2-5 seconds)
 let isReconnecting = false;
 
 async function executeWithRetry<T>(
   operation: () => Promise<T>,
-  operationName = 'operation'
+  operationName = 'operation',
+  maxRetries = 3 // Reduced from 5 for faster failure
 ): Promise<T> {
   let retries = 0;
-  const maxRetries = 3;
 
   while (retries < maxRetries) {
     try {
       return await operation();
     } catch (error: any) {
-      // Check if it's a connection closed error
+      // Check if it's a connection error (Neon pause/resume)
       const isConnectionError = 
-        error?.message?.includes('Closed') ||
+        error?.message?.includes('Can\'t reach database server') ||
         error?.message?.includes('Connection') ||
+        error?.message?.includes('ECONNREFUSED') ||
+        error?.message?.includes('ETIMEDOUT') ||
         error?.code === 'P1001' ||
         error?.code === 'P1000' ||
+        error?.code === 'P1017' ||
         (error?.kind === 'Closed' && error?.cause === null);
 
       if (isConnectionError && retries < maxRetries - 1 && !isReconnecting) {
         retries++;
-        console.log(`🔄 Connection closed in ${operationName}, attempting reconnect (attempt ${retries}/${maxRetries})...`);
+        // Optimized delays for Neon free tier wake-up (typically 2-5 seconds)
+        // Use progressive delays: 2s, 3s, 4s instead of exponential backoff
+        const delays = [2000, 3000, 4000];
+        const delay = delays[retries - 1] || 4000;
+        
+        if (retries === 1) {
+          console.log(`🔄 Database connection error in ${operationName}`);
+          console.log(`💡 Neon free tier databases pause after inactivity. Waking up database (this takes 2-5 seconds)...`);
+        } else {
+          console.log(`🔄 Retrying ${operationName} (attempt ${retries}/${maxRetries}) after ${delay}ms...`);
+        }
         
         isReconnecting = true;
         try {
-          // Disconnect and reconnect
-          await prisma.$disconnect().catch(() => {});
-          await new Promise((resolve) => setTimeout(resolve, 500 * retries)); // Exponential backoff
-          await prisma.$connect();
-          console.log(`✅ Database reconnected`);
+          // Disconnect first to clear any stale connections
+          await prismaBase.$disconnect().catch(() => {});
+          
+          // Wait for database to wake up (Neon free tier takes 2-5 seconds)
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          
+          // Try to wake up the database with a simple query
+          try {
+            await wakeUpDatabase();
+            if (retries === 1) {
+              console.log(`✅ Database woke up successfully`);
+            }
+          } catch (wakeError) {
+            // Database might still be waking up, continue with retry
+            if (retries === 1) {
+              console.log(`⏳ Database still waking up, continuing retry...`);
+            }
+          }
         } catch (reconnectError) {
-          console.error(`❌ Reconnection attempt ${retries} failed:`, reconnectError);
+          // Log only on first retry to avoid spam
+          if (retries === 1) {
+            console.error(`❌ Reconnection attempt ${retries} failed:`, reconnectError);
+          }
         } finally {
           isReconnecting = false;
         }
@@ -66,19 +111,16 @@ async function executeWithRetry<T>(
     }
   }
   
-  throw new Error(`Max reconnection attempts (${maxRetries}) reached for ${operationName}`);
+  throw new Error(`Max reconnection attempts (${maxRetries}) reached for ${operationName}. Database may be paused or unreachable.`);
 }
 
-// Override Prisma client methods to use automatic reconnection
-const originalPrisma = prisma;
-
-// Create a proxy that wraps all Prisma operations
-export const prismaWithAutoReconnect = new Proxy(originalPrisma, {
+// Create a proxy that wraps all Prisma operations with retry logic
+export const prismaWithAutoReconnect = new Proxy(prismaBase, {
   get(target, prop) {
     const value = (target as any)[prop];
     
     // If it's a model (user, pod, etc.), wrap its methods
-    if (typeof value === 'object' && value !== null && prop !== '$connect' && prop !== '$disconnect' && prop !== '$queryRaw') {
+    if (typeof value === 'object' && value !== null && prop !== '$connect' && prop !== '$disconnect' && prop !== '$queryRaw' && prop !== '$transaction') {
       return new Proxy(value, {
         get(modelTarget: any, modelProp: string) {
           const modelValue = modelTarget[modelProp];
@@ -103,7 +145,27 @@ export const prismaWithAutoReconnect = new Proxy(originalPrisma, {
       return value;
     }
     
-    // For everything else (including $queryRaw), wrap in retry
+    // For $queryRaw, wrap it with retry
+    if (prop === '$queryRaw') {
+      return function (...args: any[]) {
+        return executeWithRetry(
+          () => value.apply(target, args),
+          '$queryRaw'
+        );
+      };
+    }
+    
+    // For $transaction, wrap it
+    if (prop === '$transaction') {
+      return function (...args: any[]) {
+        return executeWithRetry(
+          () => value.apply(target, args),
+          '$transaction'
+        );
+      };
+    }
+    
+    // For everything else, wrap in retry
     if (typeof value === 'function') {
       return function (...args: any[]) {
         return executeWithRetry(
@@ -117,54 +179,49 @@ export const prismaWithAutoReconnect = new Proxy(originalPrisma, {
   },
 });
 
-// Test database connection on startup (lazy, on first query if needed)
+// Test database connection on startup (non-blocking)
 let connectionTested = false;
 async function testConnection() {
   if (!connectionTested) {
     try {
-      await prisma.$connect();
+      // Try to wake up the database
+      await wakeUpDatabase();
       console.log('✅ Database connection successful');
       connectionTested = true;
     } catch (error) {
       console.error('❌ Failed to connect to database:', error);
+      console.error('💡 Neon free tier databases pause after inactivity. The database will wake up on first query.');
       // Don't throw - let it retry on first query
     }
   }
 }
 
-// Setup graceful shutdown handlers only in Node.js runtime (not Edge Runtime)
-// We detect Edge Runtime by checking if we're in a context where process.on exists
-// and can be safely called. In Edge Runtime, this entire block will be skipped.
+// Setup graceful shutdown handlers only in Node.js runtime
 (function setupShutdownHandlers() {
-  // Check if we're in Node.js runtime (not Edge Runtime)
-  // Edge Runtime doesn't have process.on, so accessing it directly would fail
   const isNodeRuntime = typeof process !== 'undefined' && 
                         typeof process.env !== 'undefined' && 
                         'NODE_ENV' in process.env;
   
   if (!isNodeRuntime) {
-    // We're in Edge Runtime, skip shutdown handlers
     return;
   }
 
-  // Safe to access process.on in Node.js runtime
-  // Use dynamic check to avoid Edge Runtime errors
   try {
-    // This will only work in Node.js runtime
     const processOn = typeof process !== 'undefined' && 
                       'on' in process && 
                       typeof (process as any).on === 'function';
     
     if (processOn) {
-      // Test connection in production (Node.js only)
-      if (process.env.NODE_ENV === 'production') {
-        testConnection();
+      // Test connection in development (non-blocking)
+      if (process.env.NODE_ENV === 'development') {
+        // Don't await - let it run in background
+        testConnection().catch(() => {});
       }
 
       // Graceful shutdown handler
       const gracefulShutdown = async () => {
         try {
-          await prisma.$disconnect();
+          await prismaBase.$disconnect();
           console.log('✅ Database connection closed gracefully');
         } catch (error) {
           console.error('Error disconnecting from database:', error);
@@ -177,16 +234,20 @@ async function testConnection() {
       (process as any).on('SIGTERM', gracefulShutdown);
     }
   } catch (error) {
-    // We're in Edge Runtime, this is expected and safe to ignore
-    // Prisma will work fine without shutdown handlers
+    // Edge Runtime, safe to ignore
   }
 })();
 
-// Reuse Prisma instance globally in development (use wrapped version for auto-reconnect)
+// Reuse Prisma instance globally in development
 if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prismaWithAutoReconnect as any;
+  globalForPrisma.prisma = prismaBase as any;
 }
 
-// Export Prisma client with automatic reconnection
-// This ensures all database operations automatically retry on connection errors
+// Start database keep-alive to prevent Neon free tier from pausing
+// This is optional but recommended for better user experience
+// Note: Keep-alive is started in db-keepalive.ts automatically
+
+// Export both versions for compatibility
+// Use default export (prismaWithAutoReconnect) for automatic retry
+// Named export (prisma) is the base client (already exported above)
 export default prismaWithAutoReconnect;

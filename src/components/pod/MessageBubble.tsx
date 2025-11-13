@@ -12,19 +12,20 @@ interface MessageBubbleProps {
 }
 
 export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
+  const displayName = message.displayName || message.username;
   return (
     <div className={cn('flex gap-3', isOwn && 'flex-row-reverse')}>
       <Avatar className="h-8 w-8">
-        <AvatarImage src={message.avatarUrl || ''} alt={message.username} />
+        <AvatarImage src={message.avatarUrl || ''} alt={displayName} />
         <AvatarFallback>
-          {message.username.charAt(0).toUpperCase()}
+          {displayName.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
       <div className={cn('flex flex-col gap-1', isOwn && 'items-end')}>
         <div className="flex items-center gap-2">
           <span className="text-xs font-medium text-muted-foreground">
-            {message.username}
+            {displayName}
           </span>
           <span className="text-xs text-muted-foreground">
             {formatDate(message.createdAt)}
