@@ -1,8 +1,8 @@
 // Gemini API utility for generating anonymous names and AI responses
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-// Use gemini-1.5-flash for faster responses, or gemini-1.5-pro for better quality
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+// Use gemini-2.0-flash-exp for free tier with latest capabilities
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-exp';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 interface GeminiResponse {

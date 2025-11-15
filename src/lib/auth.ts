@@ -138,7 +138,7 @@ export const authConfig: NextAuthConfig = {
               availabilityHours: { start: '09:00', end: '22:00' },
               // Don't set goal values - let onboarding handle this
               onboardingComplete: false,
-            },
+            } as any,
           });
         }
       }
@@ -175,7 +175,7 @@ export const authConfig: NextAuthConfig = {
         session.user.username = token.username as string;
         session.user.onboardingComplete = token.onboardingComplete as boolean;
         session.user.podId = token.podId as string | null;
-        session.user.image = (token.avatarUrl as string) || null;
+        session.user.image = (token.avatarUrl as string) || '';
       }
       return session;
     },

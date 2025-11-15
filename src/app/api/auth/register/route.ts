@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
         availabilityHours: { start: '09:00', end: '22:00' },
         // Don't set goal values - let onboarding handle this
         onboardingComplete: false,
-      },
+      } as any,
     });
 
     return NextResponse.json(

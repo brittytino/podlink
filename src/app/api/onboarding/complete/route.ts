@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         displayName, // Set anonymous name if not already set
         avatarUrl, // Set default avatar based on gender
         onboardingComplete: true,
-      },
+      } as any,
     });
 
     // Assign to a pod directly using shared utility

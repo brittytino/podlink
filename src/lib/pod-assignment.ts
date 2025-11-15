@@ -1,16 +1,13 @@
-// Shared pod assignment logic that can be used by API routes and other services
-
 import prisma from '@/lib/prisma';
+import { getSimilarGoalCategories } from '@/lib/goal-categories';
 import { generatePodName } from '@/lib/pod-names';
 import { generateAIBotName } from '@/lib/ai-bot-names';
-import { getSimilarGoalCategories } from '@/lib/goal-categories';
-import { doTimeBandsOverlap, calculateResponsivenessScore } from '@/lib/pod-matching';
 import bcrypt from 'bcryptjs';
 
 interface UserWithGoal {
   goalCategory: string | null;
-  goalType: string;
-  goalDescription: string;
+  goalType: string | null;
+  goalDescription: string | null;
 }
 
 interface UserWithDetails extends UserWithGoal {
@@ -20,421 +17,330 @@ interface UserWithDetails extends UserWithGoal {
   createdAt: Date;
 }
 
+// Comprehensive keyword mapping for goal descriptions
+const GOAL_KEYWORDS = {
+  QUIT_HABIT: {
+    // Addiction and substance-related
+    quit_pornography: ['porn', 'pornography', 'adult content', 'masturbat', 'sexual content', 'xxx', 'adult videos', 'sexual addiction'],
+    quit_smoking: ['smoke', 'smoking', 'cigarette', 'tobacco', 'vape', 'vaping', 'nicotine', 'e-cigarette', 'cigar'],
+    quit_alcohol: ['alcohol', 'drinking', 'beer', 'wine', 'liquor', 'drunk', 'booze', 'vodka', 'whiskey', 'cocktail'],
+    quit_gambling: ['gambling', 'bet', 'betting', 'poker', 'casino', 'lottery', 'scratch card', 'slot machine'],
+    
+    // Technology and social media
+    quit_social_media: ['social media', 'instagram', 'tiktok', 'facebook', 'twitter', 'snapchat', 'youtube', 'reddit', 'linkedin'],
+    quit_gaming: ['gaming', 'video game', 'game', 'xbox', 'playstation', 'steam', 'mobile game', 'online game'],
+    quit_late_night_phone: ['phone at night', 'late night phone', 'phone in bed', 'screen before bed', 'night scrolling'],
+    quit_binge_watching: ['binge watching', 'netflix', 'tv shows', 'streaming', 'television', 'movies all day'],
+    
+    // Food and eating habits
+    quit_junk_food: ['junk food', 'fast food', 'unhealthy food', 'processed food', 'candy', 'chips', 'soda', 'sugar'],
+    quit_energy_drinks: ['energy drink', 'red bull', 'monster', 'caffeine addiction', 'coffee addiction'],
+    quit_overeating: ['overeating', 'binge eating', 'emotional eating', 'food addiction', 'eating too much'],
+    
+    // Behavioral habits
+    quit_procrastination: ['procrastination', 'procrastinat', 'delaying', 'putting off', 'avoiding work', 'lazy', 'time wasting'],
+    quit_negative_self_talk: ['negative self talk', 'self criticism', 'negative thoughts', 'self doubt', 'inner critic'],
+    quit_nail_biting: ['nail biting', 'biting nails', 'nail chewing', 'picking nails'],
+    quit_overspending: ['overspending', 'shopping addiction', 'impulse buying', 'spending too much', 'financial waste'],
+    quit_lying: ['lying', 'dishonesty', 'being dishonest', 'telling lies', 'not truthful'],
+    quit_anger: ['anger', 'rage', 'getting angry', 'losing temper', 'aggressive', 'violent'],
+    quit_jealousy: ['jealousy', 'being jealous', 'envy', 'comparison', 'comparing myself'],
+    quit_gossiping: ['gossip', 'gossiping', 'talking behind back', 'spreading rumors', 'negative talk'],
+    quit_avoiding_responsibilities: ['avoiding responsibilities', 'avoiding duties', 'running away', 'escaping'],
+    quit_oversleeping: ['oversleeping', 'sleeping too much', 'snoozing', 'hitting snooze', 'waking up late']
+  },
+  
+  BUILD_HABIT: {
+    // Fitness and health
+    build_exercise: ['exercise', 'workout', 'gym', 'fitness', 'running', 'jogging', 'cardio', 'strength training', 'sports'],
+    build_stretching: ['stretching', 'yoga', 'flexibility', 'mobility', 'poses', 'stretch'],
+    build_cold_showers: ['cold shower', 'cold water', 'ice bath', 'cold therapy', 'cold exposure'],
+    
+    // Mental health and mindfulness
+    build_meditation: ['meditation', 'meditate', 'mindfulness', 'mindful', 'breathing', 'zen', 'calm'],
+    build_journaling: ['journaling', 'writing diary', 'daily reflection', 'gratitude journal', 'writing thoughts'],
+    build_prayer: ['prayer', 'praying', 'spiritual practice', 'worship', 'religious practice'],
+    
+    // Learning and productivity
+    build_reading: ['reading', 'books', 'reading books', 'study', 'learning', 'literature'],
+    build_learning: ['learning', 'skill', 'coding', 'programming', 'language', 'course', 'education'],
+    build_planning: ['planning', 'organizing', 'goal setting', 'scheduling', 'time management', 'planner'],
+    
+    // Health habits
+    build_water: ['drinking water', 'hydration', 'water intake', '8 glasses', 'staying hydrated'],
+    build_healthy_eating: ['healthy eating', 'nutritious food', 'meal prep', 'balanced diet', 'clean eating'],
+    build_sleep_schedule: ['sleep schedule', 'consistent sleep', 'sleep routine', 'bedtime', 'sleep hygiene'],
+    build_early_wake: ['early wake', 'waking up early', '5am', '6am', 'morning routine', 'early bird'],
+    
+    // Social and relationships
+    build_family_calls: ['calling family', 'family time', 'parents', 'family connection', 'staying in touch'],
+    build_compliments: ['compliments', 'complimenting', 'positive words', 'encouraging others', 'kindness'],
+    build_helping: ['helping others', 'acts of kindness', 'volunteering', 'being helpful', 'service'],
+    build_relationships: ['relationships', 'meaningful connections', 'deep conversations', 'friendship'],
+    
+    // Financial and creative
+    build_saving: ['saving money', 'financial discipline', 'budget', 'emergency fund', 'investing'],
+    build_creative: ['creative work', 'art', 'writing', 'music', 'drawing', 'painting', 'creativity'],
+    build_digital_detox: ['digital detox', 'screen free time', 'unplugged', 'device free', 'tech break']
+  }
+};
+
+/**
+ * Enhanced goal category detection from description
+ */
+function detectGoalCategoryFromDescription(
+  goalDescription: string,
+  goalType: 'QUIT_HABIT' | 'BUILD_HABIT'
+): string | null {
+  if (!goalDescription) return null;
+  
+  const description = goalDescription.toLowerCase().trim();
+  const keywords = GOAL_KEYWORDS[goalType];
+  
+  // Find the best matching category based on keyword matches
+  let bestCategory = null;
+  let maxMatches = 0;
+  
+  for (const [category, categoryKeywords] of Object.entries(keywords)) {
+    const matches = categoryKeywords.filter(keyword => 
+      description.includes(keyword.toLowerCase())
+    ).length;
+    
+    if (matches > maxMatches) {
+      maxMatches = matches;
+      bestCategory = category;
+    }
+  }
+  
+  return bestCategory;
+}
+
 export async function assignUserToPod(
   userId: string,
   podType: 'REAL' | 'AI',
   currentUser: UserWithDetails | UserWithGoal
 ): Promise<{ podId: string }> {
-  if (podType === 'AI') {
-    return await assignToAIPod(userId, currentUser as UserWithGoal);
-  } else {
-    return await assignToRealPod(userId, currentUser as UserWithDetails);
+  try {
+    console.log('Starting pod assignment for user:', userId);
+    
+    // Normalize user data
+    const normalizedUser = {
+      goalType: (currentUser.goalType as 'QUIT_HABIT' | 'BUILD_HABIT') || 'BUILD_HABIT',
+      goalDescription: currentUser.goalDescription || '',
+      goalCategory: currentUser.goalCategory,
+    };
+    
+    // Detect goal category from description if not set
+    if (!normalizedUser.goalCategory && normalizedUser.goalDescription) {
+      const detectedCategory = detectGoalCategoryFromDescription(
+        normalizedUser.goalDescription,
+        normalizedUser.goalType
+      );
+      normalizedUser.goalCategory = detectedCategory;
+      console.log(`Detected goal category: ${detectedCategory} for description: "${normalizedUser.goalDescription}"`);
+    }
+    
+    if (podType === 'AI') {
+      return await assignToAIPod(userId, normalizedUser);
+    } else {
+      return await assignToRealPod(userId, normalizedUser);
+    }
+  } catch (error) {
+    console.error('Pod assignment error:', error);
+    // Create a fallback single-user pod to prevent onboarding failure
+    return await createFallbackPod(userId, currentUser);
   }
 }
 
-async function assignToRealPod(userId: string, currentUser: UserWithDetails): Promise<{ podId: string }> {
+/**
+ * Assign user to a real pod with other users
+ */
+async function assignToRealPod(userId: string, currentUser: UserWithGoal): Promise<{ podId: string }> {
   try {
-    // Get similar goal categories for matching
-    // If goalCategory is null or custom, try to match by goal description keywords
-    let similarCategories: string[] = [];
+    // Look for existing pods with similar goals and space
+    const similarCategories = currentUser.goalCategory ? 
+      getSimilarGoalCategories(currentUser.goalCategory) : [];
     
-    if (currentUser.goalCategory) {
-      similarCategories = getSimilarGoalCategories(currentUser.goalCategory);
-    } else if (currentUser.goalDescription) {
-      // Dynamic matching based on goal description keywords
-      const description = currentUser.goalDescription.toLowerCase();
-      
-      // Match keywords to categories based on goal type
-      if (currentUser.goalType === 'BUILD_HABIT') {
-        if (description.includes('read') || description.includes('book')) {
-          similarCategories = ['build_reading'];
-        } else if (description.includes('exercise') || description.includes('workout') || description.includes('gym') || description.includes('fitness')) {
-          similarCategories = ['build_exercise', 'build_stretching'];
-        } else if (description.includes('meditation') || description.includes('mindful')) {
-          similarCategories = ['build_meditation', 'build_journaling'];
-        } else if (description.includes('water') || description.includes('hydrat')) {
-          similarCategories = ['build_water'];
-        } else if (description.includes('sleep') || description.includes('wake')) {
-          similarCategories = ['build_sleep_schedule', 'build_early_wake'];
-        } else if (description.includes('plan') || description.includes('organiz')) {
-          similarCategories = ['build_planning'];
-        } else {
-          // Default build categories
-          similarCategories = ['build_exercise', 'build_meditation', 'build_reading'];
-        }
-      } else {
-        // QUIT_HABIT matching
-        if (description.includes('porn') || description.includes('adult content') || description.includes('masturbat')) {
-          similarCategories = ['quit_pornography'];
-        } else if (description.includes('social media') || description.includes('instagram') || description.includes('tiktok') || description.includes('facebook') || description.includes('twitter')) {
-          similarCategories = ['quit_social_media', 'quit_late_night_phone'];
-        } else if (description.includes('smoke') || description.includes('cigarette') || description.includes('vape')) {
-          similarCategories = ['quit_smoking'];
-        } else if (description.includes('alcohol') || description.includes('drink') || description.includes('drunk')) {
-          similarCategories = ['quit_alcohol'];
-        } else if (description.includes('game') || description.includes('gaming') || description.includes('video game')) {
-          similarCategories = ['quit_gaming'];
-        } else if (description.includes('procrastinat') || description.includes('delay') || description.includes('lazy')) {
-          similarCategories = ['quit_procrastination', 'quit_avoiding_responsibilities'];
-        } else if (description.includes('junk') || description.includes('fast food') || description.includes('unhealthy food')) {
-          similarCategories = ['quit_junk_food'];
-        } else {
-          // Default quit categories
-          similarCategories = ['quit_procrastination', 'quit_negative_self_talk', 'quit_social_media'];
-        }
-      }
-    } else {
-      // Fallback to default categories based on goal type
-      similarCategories = currentUser.goalType === 'QUIT_HABIT' 
-        ? ['quit_procrastination']
-        : ['build_exercise'];
-    }
-    
-    const userAvailabilityHours = currentUser.availabilityHours || { start: '09:00', end: '22:00' };
-
-    // Ensure goalType is valid
-    const goalType = currentUser.goalType === 'QUIT_HABIT' || currentUser.goalType === 'BUILD_HABIT'
-      ? currentUser.goalType
-      : 'BUILD_HABIT'; // Default fallback
-
-    // Find existing pods with matching goal type (QUIT_HABIT or BUILD_HABIT) and similar categories
-    // Primary matching: Same goal type (quit bad habits together, build good habits together)
     const whereClause: any = {
       podType: 'REAL',
-      goalType: goalType, // Match by mindset: quit together or build together
+      goalType: currentUser.goalType,
       members: {
         some: {
           isAI: false,
         },
       },
     };
-
-    // Secondary matching: Similar goal categories within the same goal type
+    
+    // Add category filtering if we have categories
     if (similarCategories.length > 0) {
-      whereClause.goalCategory = { in: similarCategories };
-    } else if (currentUser.goalDescription) {
-      // Match pods with similar goal descriptions or any category of same type
-      const description = currentUser.goalDescription.toLowerCase();
-      const firstWord = description.split(' ')[0];
-      if (firstWord && firstWord.length > 2) {
-        whereClause.OR = [
-          { goalDescription: { contains: firstWord, mode: 'insensitive' } },
-          { goalCategory: { not: null } }, // Include pods with any category as fallback
-        ];
-      }
+      whereClause.goalCategory = { in: [currentUser.goalCategory, ...similarCategories] };
     }
-
-    const candidatePods = await (prisma.pod.findMany as any)({
+    
+    // Find candidate pods (not full, has space for new member)
+    const candidatePods = await prisma.pod.findMany({
       where: whereClause,
       include: {
         members: {
-          where: {
-            isAI: false,
-          },
-          select: {
-            id: true,
-            availabilityHours: true,
-            currentStreak: true,
-            lastCheckIn: true,
-            createdAt: true,
-          },
+          where: { isAI: false },
         },
       },
     });
-
-    // Score and find best matching pod with time-band overlap
-    let bestPod: any = null;
-    let bestScore = 0;
-
-    for (const pod of candidatePods) {
-      if (pod.members && pod.members.length >= 1 && pod.members.length < 4) {
-        // Check time-band overlap with all existing members
-        let hasOverlap = true;
-        let totalScore = 0;
-
-        for (const member of pod.members) {
-          const memberHours = member.availabilityHours || { start: '09:00', end: '22:00' };
-          if (!doTimeBandsOverlap(userAvailabilityHours, memberHours)) {
-            hasOverlap = false;
-            break;
-          }
-          // Calculate responsiveness score
-          totalScore += calculateResponsivenessScore(
-            {
-              availabilityHours: userAvailabilityHours,
-              currentStreak: currentUser.currentStreak || 0,
-              lastCheckIn: currentUser.lastCheckIn,
-              createdAt: currentUser.createdAt,
-            },
-            {
-              availabilityHours: memberHours,
-              currentStreak: member.currentStreak || 0,
-              lastCheckIn: member.lastCheckIn,
-              createdAt: member.createdAt,
-            }
-          );
-        }
-
-        if (hasOverlap) {
-          const avgScore = totalScore / Math.max(pod.members.length, 1);
-          if (avgScore > bestScore) {
-            bestScore = avgScore;
-            bestPod = pod;
-          }
-        }
-      }
-    }
-
-    // If we found a good matching pod, assign user to it
-    if (bestPod) {
+    
+    // Find a pod with space
+    const availablePod = candidatePods.find(pod => pod.members.length < 4);
+    
+    if (availablePod) {
       await prisma.user.update({
         where: { id: userId },
-        data: { podId: bestPod.id },
+        data: { podId: availablePod.id },
       });
-      return { podId: bestPod.id };
+      console.log(`Assigned user ${userId} to existing pod ${availablePod.id}`);
+      return { podId: availablePod.id };
     }
+    
+    // No existing pods with space, create single-user pod
+    return await createFallbackPod(userId, currentUser);
+    
+  } catch (error) {
+    console.error('Error in assignToRealPod:', error);
+    return await createFallbackPod(userId, currentUser);
+  }
+}
 
-    // Find other users waiting with similar goals and time-band overlap
-    // Match by same goal type (quit together or build together) and similar categories
-    const similarUsersWhere: any = {
-      onboardingComplete: true,
-      podId: null,
-      isAI: false,
-      id: { not: userId },
-      goalType: goalType, // Same mindset: quit or build
-    };
-
-    // Only filter by category if we have categories, otherwise match by goal type only
-    if (similarCategories.length > 0) {
-      similarUsersWhere.goalCategory = { in: similarCategories };
-    }
-
-    const similarUsers = await (prisma.user.findMany as any)({
-      where: similarUsersWhere,
-      select: {
-        id: true,
-        availabilityHours: true,
-        currentStreak: true,
-        lastCheckIn: true,
-        createdAt: true,
+/**
+ * Assign user to AI pod
+ */
+async function assignToAIPod(userId: string, currentUser: UserWithGoal): Promise<{ podId: string }> {
+  try {
+    // Check if user already has an AI pod
+    const existingAIPod = await prisma.pod.findFirst({
+      where: {
+        podType: 'AI',
+        members: { some: { id: userId } },
       },
-      orderBy: { createdAt: 'asc' },
-      take: 10, // Get more candidates to score
     });
-
-    // Score users by responsiveness and time-band overlap
-    const scoredUsers = similarUsers
-      .map((user: any) => {
-        const userHours = user.availabilityHours || { start: '09:00', end: '22:00' };
-        const hasOverlap = doTimeBandsOverlap(userAvailabilityHours, userHours);
-        if (!hasOverlap) return null;
-
-        const score = calculateResponsivenessScore(
-          {
-            availabilityHours: userAvailabilityHours,
-            currentStreak: currentUser.currentStreak || 0,
-            lastCheckIn: currentUser.lastCheckIn,
-            createdAt: currentUser.createdAt,
-          },
-          {
-            availabilityHours: userHours,
-            currentStreak: user.currentStreak || 0,
-            lastCheckIn: user.lastCheckIn,
-            createdAt: user.createdAt,
-          }
-        );
-
-        return { ...user, score };
-      })
-      .filter((u: any) => u !== null)
-      .sort((a: any, b: any) => b.score - a.score)
-      .slice(0, 2); // Top 2 matches (so pod has max 3 members)
-
-    // If we have at least 1 other user with similar goals and time overlap, create a new pod
-    if (scoredUsers.length >= 1) {
-      const podMembers = [userId, ...scoredUsers.slice(0, 2).map((u: any) => u.id)];
-
-      // Get existing pod names to ensure uniqueness
-      const allPodsForName = await prisma.pod.findMany({
-        select: { name: true },
-      });
-      const existingNames = allPodsForName.map((p: { name: string }) => p.name);
-
-      const podName = await generatePodName(
-        'REAL',
-        existingNames,
-        currentUser.goalCategory,
-        currentUser.goalDescription
-      );
-
-      const pod = await (prisma.pod.create as any)({
-        data: {
-          name: podName,
-          totalStreak: 0,
-          podType: 'REAL',
-          goalType: goalType, // Store goal type for matching
-          goalCategory: currentUser.goalCategory,
-        },
-      });
-
-      // Assign users to pod
-      await prisma.user.updateMany({
-        where: {
-          id: { in: podMembers },
-        },
-        data: {
-          podId: pod.id,
-        },
-      });
-
-      return { podId: pod.id };
+    
+    if (existingAIPod) {
+      return { podId: existingAIPod.id };
     }
+    
+    // Create new AI pod
+    return await createNewAIPod(userId, currentUser);
+    
+  } catch (error) {
+    console.error('Error in assignToAIPod:', error);
+    return await createNewAIPod(userId, currentUser);
+  }
+}
 
-    // Create pod with just this user (will be filled later by rebalancer)
-    const allPods = await prisma.pod.findMany({
+/**
+ * Create new AI pod with bots
+ */
+async function createNewAIPod(userId: string, currentUser: UserWithGoal): Promise<{ podId: string }> {
+  try {
+    const podCategory = currentUser.goalCategory || 'general';
+    
+    const existingPods = await prisma.pod.findMany({
       select: { name: true },
     });
-    const existingNames = allPods.map((p: { name: string }) => p.name);
+    const existingNames = existingPods.map(p => p.name);
     const podName = await generatePodName(
-      'REAL',
+      'AI',
       existingNames,
-      currentUser.goalCategory,
-      currentUser.goalDescription
+      podCategory,
+      currentUser.goalDescription || ''
     );
-
-    const pod = await (prisma.pod.create as any)({
+    
+    const pod = await prisma.pod.create({
       data: {
         name: podName,
         totalStreak: 0,
-        podType: 'REAL',
-        goalType: goalType, // Store goal type for matching
-        goalCategory: currentUser.goalCategory,
+        podType: 'AI',
+        goalType: currentUser.goalType as 'QUIT_HABIT' | 'BUILD_HABIT',
+        goalCategory: podCategory,
       },
     });
-
+    
+    // Assign user to pod
     await prisma.user.update({
       where: { id: userId },
       data: { podId: pod.id },
     });
-
+    
+    // Create 1-2 AI bots
+    const botCount = Math.floor(Math.random() * 2) + 1;
+    const existingBotNames: string[] = [];
+    
+    for (let i = 0; i < botCount; i++) {
+      const botName = generateAIBotName(existingBotNames);
+      existingBotNames.push(botName);
+      
+      const botEmail = `ai-${botName.toLowerCase()}-${pod.id.slice(0, 8)}@podlink.ai`;
+      const botUsername = `ai_${botName.toLowerCase()}_${pod.id.slice(0, 8)}`;
+      const hashedPassword = await bcrypt.hash('ai-bot-password', 10);
+      
+      await prisma.user.create({
+        data: {
+          username: botUsername,
+          email: botEmail,
+          password: hashedPassword,
+          fullName: botName,
+          displayName: botName,
+          timezone: 'UTC',
+          availabilityHours: { start: '00:00', end: '23:59' },
+          goalType: currentUser.goalType as 'QUIT_HABIT' | 'BUILD_HABIT',
+          goalDescription: currentUser.goalDescription || '',
+          goalCategory: podCategory,
+          isAI: true,
+          onboardingComplete: true,
+          podId: pod.id,
+          currentStreak: 0,
+          availabilityMessage: "I'm always here to support you! 💪",
+        },
+      });
+    }
+    
+    console.log(`Created new AI pod ${pod.id} with ${botCount} bots for user ${userId}`);
     return { podId: pod.id };
   } catch (error) {
-    console.error('Error in assignToRealPod:', error);
-    // Don't throw - return a podId anyway to avoid breaking onboarding
-    // The user can be reassigned later
+    console.error('Error creating AI pod:', error);
     throw error;
   }
 }
 
-async function assignToAIPod(userId: string, currentUser: UserWithGoal): Promise<{ podId: string }> {
-  // Check if user is already in an AI pod
-  const existingAIPod = await (prisma.pod.findFirst as any)({
-    where: {
-      podType: 'AI',
-      members: {
-        some: {
-          id: userId,
-        },
+async function createFallbackPod(userId: string, currentUser: UserWithGoal): Promise<{ podId: string }> {
+  try {
+    const podCategory = currentUser.goalCategory || 'general';
+    
+    const existingPods = await prisma.pod.findMany({
+      select: { name: true },
+    });
+    const existingNames = existingPods.map(p => p.name);
+    const podName = await generatePodName(
+      'REAL',
+      existingNames,
+      podCategory,
+      currentUser.goalDescription || ''
+    );
+    
+    const pod = await prisma.pod.create({
+      data: {
+        name: podName,
+        totalStreak: 0,
+        podType: 'REAL',
+        goalType: currentUser.goalType as 'QUIT_HABIT' | 'BUILD_HABIT',
+        goalCategory: podCategory,
       },
-    },
-    include: {
-      members: true,
-    },
-  });
-
-  if (existingAIPod) {
-    return { podId: existingAIPod.id };
-  }
-
-  // Check for existing AI pod with same goal category
-  const similarAIPod = await (prisma.pod.findFirst as any)({
-    where: {
-      podType: 'AI',
-      goalCategory: currentUser.goalCategory,
-      members: {
-        some: {
-          isAI: false,
-        },
-      },
-    },
-    include: {
-      members: {
-        where: {
-          isAI: false,
-        },
-      },
-    },
-  });
-
-  if (similarAIPod && similarAIPod.members && similarAIPod.members.length < 2) {
-    // Add user to existing AI pod
+    });
+    
     await prisma.user.update({
       where: { id: userId },
-      data: { podId: similarAIPod.id },
+      data: { podId: pod.id },
     });
-    return { podId: similarAIPod.id };
+    
+    return { podId: pod.id };
+  } catch (error) {
+    console.error('Error creating fallback pod:', error);
+    throw new Error('Failed to assign pod');
   }
-
-  // Create a new AI pod with AI bots
-  const existingPods = await prisma.pod.findMany({
-    select: { name: true },
-  });
-  const existingNames = existingPods.map((p) => p.name);
-  const podName = await generatePodName(
-    'AI',
-    existingNames,
-    currentUser.goalCategory,
-    currentUser.goalDescription
-  );
-
-  const pod = await (prisma.pod.create as any)({
-    data: {
-      name: podName,
-      totalStreak: 0,
-      podType: 'AI',
-      goalCategory: currentUser.goalCategory!,
-    },
-  });
-
-  // Assign the real user to the pod
-  await prisma.user.update({
-    where: { id: userId },
-    data: { podId: pod.id },
-  });
-
-  // Create 1-2 AI bots for the pod
-  const botCount = Math.floor(Math.random() * 2) + 1; // 1 or 2 bots
-  const existingBotNames: string[] = [];
-
-  for (let i = 0; i < botCount; i++) {
-    const botName = generateAIBotName(existingBotNames);
-    existingBotNames.push(botName);
-
-    const botEmail = `ai-${botName.toLowerCase()}-${pod.id.slice(0, 8)}@podlink.ai`;
-    const botUsername = `ai_${botName.toLowerCase()}_${pod.id.slice(0, 8)}`;
-    const hashedPassword = await bcrypt.hash('ai-bot-password', 10);
-
-    await (prisma.user.create as any)({
-      data: {
-        username: botUsername,
-        email: botEmail,
-        password: hashedPassword,
-        fullName: botName,
-        displayName: botName, // AI bots use their name as display name
-        timezone: 'UTC',
-        availabilityHours: { start: '00:00', end: '23:59' },
-        goalType: currentUser.goalType,
-        goalDescription: currentUser.goalDescription,
-        goalCategory: currentUser.goalCategory!,
-        isAI: true,
-        onboardingComplete: true,
-        podId: pod.id,
-        currentStreak: 0,
-        availabilityMessage: "I'm always here to support you! 💪",
-      },
-    });
-  }
-
-  return { podId: pod.id };
 }
-
