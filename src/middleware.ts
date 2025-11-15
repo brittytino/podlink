@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth';
+import { getToken } from 'next-auth/jwt';
 
 export default async function middleware(req: NextRequest) {
-  const session = await auth();
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const path = req.nextUrl.pathname;
 
   // Allow auth routes and API routes
@@ -11,7 +11,7 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Require authentication for protected routes
-  if (!session?.user) {
+  if (!token) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
@@ -21,7 +21,7 @@ export default async function middleware(req: NextRequest) {
 
   // Redirect to onboarding if not completed
   if (
-    !onboardingComplete &&
+    !(token as any).onboardingComplete &&
     path !== '/onboarding' &&
     !path.startsWith('/api')
   ) {
@@ -29,7 +29,7 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Redirect to dashboard if trying to access onboarding when already completed
-  if (onboardingComplete && path === '/onboarding') {
+  if ((token as any).onboardingComplete && path === '/onboarding') {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
