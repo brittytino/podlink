@@ -155,4 +155,159 @@
   .animate-flicker {
     animation: flicker 2s ease-in-out infinite;
   }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: oklch(0.556 0 0);
+    border-radius: 4px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.708 0 0);
+  }
+  
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: oklch(0.708 0 0);
+  }
+  
+  .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.556 0 0);
+  }
+
+  /* Modern chat styles */
+  .chat-container {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(0.556 0 0) transparent;
+  }
+
+  /* Mobile safe area */
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Smooth animations */
+  .transition-smooth {
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Message bubble hover effects */
+  .message-bubble {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .message-bubble:hover {
+    @apply shadow-sm;
+  }
+
+  /* Typing indicator animation */
+  @keyframes typing {
+    0%, 60% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+    30% {
+      transform: translateY(-10px);
+      opacity: 1;
+    }
+  }
+
+  .typing-dot {
+    animation: typing 1.4s infinite;
+  }
+
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+
+  /* Enhanced focus states */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    backdrop-filter: blur(16px);
+    background: oklch(1 0 0 / 0.8);
+  }
+
+  .dark .glass {
+    background: oklch(0.145 0 0 / 0.8);
+  }
+
+  /* Toast styling for better visibility */
+  [data-sonner-toast] {
+    color: #000000 !important;
+  }
+  
+  [data-sonner-toast] [data-description] {
+    color: #000000 !important;
+    opacity: 1 !important;
+    font-weight: 500 !important;
+  }
+  
+  [data-sonner-toast] [data-title] {
+    color: #000000 !important;
+    font-weight: 600 !important;
+  }
+
+  /* Custom toast classes for specific variants */
+  .toast-destructive,
+  .toast-destructive * {
+    color: #000000 !important;
+  }
+
+  .toast-success,
+  .toast-success * {
+    color: #000000 !important;
+  }
+
+  .toast-default,
+  .toast-default *,
+  .toast-custom,
+  .toast-custom * {
+    color: #000000 !important;
+  }
+
+  /* Dark mode toast styling */
+  .dark [data-sonner-toast] {
+    color: #ffffff !important;
+  }
+  
+  .dark [data-sonner-toast] [data-description] {
+    color: #ffffff !important;
+    opacity: 0.9 !important;
+  }
+  
+  .dark [data-sonner-toast] [data-title] {
+    color: #ffffff !important;
+  }
+
+  .dark .toast-destructive,
+  .dark .toast-destructive * {
+    color: #ffffff !important;
+  }
+
+  .dark .toast-success,
+  .dark .toast-success * {
+    color: #ffffff !important;
+  }
+
+  .dark .toast-default,
+  .dark .toast-default *,
+  .dark .toast-custom,
+  .dark .toast-custom * {
+    color: #ffffff !important;
+  }
 }

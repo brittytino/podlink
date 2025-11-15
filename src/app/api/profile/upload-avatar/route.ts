@@ -20,13 +20,16 @@ export async function POST(req: NextRequest) {
     // Upload to Cloudinary
     const url = await uploadToCloudinary(file);
 
-    // Update user avatar
-    await prisma.user.update({
+    // Update user avatar in database
+    const user = await prisma.user.update({
       where: { id: session.user.id },
       data: { avatarUrl: url },
+      select: {
+        avatarUrl: true,
+      },
     });
 
-    return NextResponse.json({ url });
+    return NextResponse.json({ url: user.avatarUrl });
   } catch (error) {
     console.error('Avatar upload error:', error);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

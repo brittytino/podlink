@@ -23,6 +23,7 @@ interface ProfileFormProps {
     goalDescription: string;
     timezone: string;
     availabilityHours: { start: string; end: string };
+    gender?: string | null;
   };
   onUpdateSuccess: () => void;
 }

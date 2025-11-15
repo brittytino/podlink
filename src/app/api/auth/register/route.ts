@@ -65,8 +65,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         timezone: 'UTC',
         availabilityHours: { start: '09:00', end: '22:00' },
-        goalType: 'BUILD_HABIT',
-        goalDescription: '',
+        // Don't set goal values - let onboarding handle this
         onboardingComplete: false,
       },
     });

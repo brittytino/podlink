@@ -20,9 +20,10 @@ model User {
   avatarUrl         String?   @map("avatar_url")
   timezone          String    @default("UTC")
   availabilityHours Json      @map("availability_hours")
-  goalType          GoalType  @map("goal_type")
-  goalDescription   String    @map("goal_description")
+  goalType          GoalType? @map("goal_type")
+  goalDescription   String?   @map("goal_description")
   goalCategory      String?   @map("goal_category")
+  gender            String?   // Added gender field
   currentStreak     Int       @default(0) @map("current_streak")
   lastCheckIn       DateTime? @map("last_check_in")
   isDemoAccount     Boolean   @default(false) @map("is_demo_account")

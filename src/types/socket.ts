@@ -7,6 +7,7 @@ export interface SocketMessage {
   avatarUrl: string | null;
   createdAt: string;
   isCrisisResponse: boolean;
+  isAI?: boolean; // Whether this message is from an AI bot
 }
 
 export interface CrisisAlertEvent {

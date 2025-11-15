@@ -9,15 +9,19 @@ import { Badge } from '@/components/ui/badge';
 import { User, Loader2, Flame, Calendar, Target } from 'lucide-react';
 
 interface UserProfile {
+  id: string;
   fullName: string;
   username: string;
   email: string;
   goalDescription: string;
   goalType: string;
+  goalCategory: string | null;
   timezone: string;
   availabilityHours: { start: string; end: string };
   currentStreak: number;
   avatarUrl: string | null;
+  gender: string | null;
+  lastCheckIn: string | null;
   createdAt: string;
 }
 
@@ -30,34 +34,25 @@ export default function ProfilePage() {
     if (!session?.user?.id) return;
 
     try {
-      const response = await fetch(`/api/profile?userId=${session.user.id}`);
-      const data = await response.json();
-      setProfile(data.user);
+      const response = await fetch('/api/profile');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.user) {
+          setProfile(data.user);
+        }
+      }
     } catch (error) {
-      console.error('Failed to fetch profile');
+      console.error('Failed to fetch profile:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Use session data initially
-    if (session?.user) {
-      setProfile({
-        fullName: session.user.name || '',
-        username: session.user.username || '',
-        email: session.user.email || '',
-        goalDescription: '',
-        goalType: 'BUILD_HABIT',
-        timezone: 'Asia/Kolkata',
-        availabilityHours: { start: '09:00', end: '22:00' },
-        currentStreak: 0,
-        avatarUrl: session.user.image || null,
-        createdAt: new Date().toISOString(),
-      });
-      setLoading(false);
+    if (session?.user?.id) {
+      fetchProfile();
     }
-  }, [session?.user]);
+  }, [session?.user?.id]);
 
   if (loading || !profile) {
     return (
@@ -134,9 +129,11 @@ export default function ProfilePage() {
           <AvatarUpload
             currentAvatar={profile.avatarUrl}
             userName={profile.fullName}
-            onUploadSuccess={(url) => {
+            onUploadSuccess={async (url) => {
               setProfile({ ...profile, avatarUrl: url });
-              update({ image: url });
+              await update({ avatarUrl: url });
+              // Refresh profile to get updated data
+              fetchProfile();
             }}
           />
         </CardContent>

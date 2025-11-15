@@ -37,19 +37,28 @@ export async function generatePodName(
   const availableNames = FALLBACK_POD_NAMES.filter(name => !existingNames.includes(name));
   
   if (availableNames.length === 0) {
-    // If all names are used, append a number
-    const baseName = FALLBACK_POD_NAMES[Math.floor(Math.random() * FALLBACK_POD_NAMES.length)];
-    let counter = 1;
-    let newName = `${baseName}-${counter}`;
-    while (existingNames.includes(newName)) {
-      counter++;
-      newName = `${baseName}-${counter}`;
+    // If all names are used, create compound names
+    const baseNames = [...FALLBACK_POD_NAMES];
+    const suffixes = ['Rising', 'Victory', 'Unity', 'Progress', 'Strength', 'Valor', 'Noble', 'Prime'];
+    
+    let attempts = 0;
+    while (attempts < 100) {
+      const base = baseNames[Math.floor(Math.random() * baseNames.length)];
+      const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+      const newName = `${suffix} ${base}`;
+      
+      if (!existingNames.includes(newName)) {
+        return newName;
+      }
+      attempts++;
     }
-    return newName;
+    
+    // Last resort: use timestamp in base36
+    const timestamp = Date.now().toString(36).slice(-4);
+    return `Pod_${timestamp}`;
   }
   
   const selectedName = availableNames[Math.floor(Math.random() * availableNames.length)];
-  // Add timestamp suffix for uniqueness
-  return `${selectedName}-${Date.now().toString().slice(-4)}`;
+  return selectedName;
 }
 

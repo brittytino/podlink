@@ -32,17 +32,22 @@ export default function LoginPage() {
       if (result?.error) {
         toast({
           title: 'Login Failed',
-          description: 'Invalid email or password',
+          description: 'The email or password you entered is incorrect. Please try again.',
           variant: 'destructive',
         });
       } else {
+        toast({
+          title: 'Welcome Back!',
+          description: 'Successfully signed in to your account.',
+          variant: 'success',
+        });
         router.push('/dashboard');
         router.refresh();
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Something went wrong',
+        title: 'Connection Error',
+        description: 'Unable to connect to the server. Please check your internet connection and try again.',
         variant: 'destructive',
       });
     } finally {

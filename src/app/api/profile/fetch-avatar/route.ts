@@ -39,12 +39,15 @@ export async function POST(req: NextRequest) {
     
     // Update user avatar with the fetched URL
     // Note: The avatar API URLs are stable, so we can cache them directly
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: session.user.id },
       data: { avatarUrl: avatarUrl },
+      select: {
+        avatarUrl: true,
+      },
     });
 
-    return NextResponse.json({ url: avatarUrl });
+    return NextResponse.json({ url: user.avatarUrl || avatarUrl });
   } catch (error) {
     console.error('Avatar fetch error:', error);
     return NextResponse.json({ error: 'Failed to fetch avatar' }, { status: 500 });

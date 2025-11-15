@@ -26,8 +26,8 @@ export default function RegisterPage() {
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: 'Error',
-        description: 'Passwords do not match',
+        title: 'Password Mismatch',
+        description: 'The passwords you entered do not match. Please try again.',
         variant: 'destructive',
       });
       return;
@@ -35,8 +35,8 @@ export default function RegisterPage() {
 
     if (formData.password.length < 6) {
       toast({
-        title: 'Error',
-        description: 'Password must be at least 6 characters',
+        title: 'Password Too Short',
+        description: 'Your password must be at least 6 characters long. Please choose a stronger password.',
         variant: 'destructive',
       });
       return;
@@ -58,6 +58,7 @@ export default function RegisterPage() {
         toast({
           title: 'Account Created!',
           description: 'Your anonymous username has been generated. Signing you in...',
+          variant: 'success',
         });
 
         // Auto sign in with email
@@ -70,16 +71,33 @@ export default function RegisterPage() {
         router.push('/onboarding');
       } else {
         const data = await response.json();
+        
+        // Handle specific error messages with user-friendly text
+        let errorTitle = 'Registration Failed';
+        let errorDescription = data.error || 'Something went wrong. Please try again.';
+        
+        if (data.error?.toLowerCase().includes('email already exists') || 
+            data.error?.toLowerCase().includes('user with this email')) {
+          errorTitle = 'Email Already Registered';
+          errorDescription = 'An account with this email already exists. Please sign in instead.';
+        } else if (data.error?.toLowerCase().includes('email and password are required')) {
+          errorTitle = 'Missing Information';
+          errorDescription = 'Please provide both email and password to create an account.';
+        } else if (data.error?.toLowerCase().includes('internal server error')) {
+          errorTitle = 'Server Error';
+          errorDescription = 'We encountered an issue creating your account. Please try again in a moment.';
+        }
+        
         toast({
-          title: 'Registration Failed',
-          description: data.error || 'Something went wrong',
+          title: errorTitle,
+          description: errorDescription,
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Something went wrong',
+        title: 'Connection Error',
+        description: 'Unable to connect to the server. Please check your internet connection and try again.',
         variant: 'destructive',
       });
     } finally {

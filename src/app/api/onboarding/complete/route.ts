@@ -18,12 +18,13 @@ export async function POST(req: NextRequest) {
       availabilityMessage,
       timezone,
       availabilityHours,
+      gender,
     } = await req.json();
 
-    // Get current user to check if displayName exists
+    // Get current user to check if displayName and avatarUrl exist
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { displayName: true },
+      select: { displayName: true, avatarUrl: true },
     });
 
     // Generate anonymous display name if not already set
@@ -39,6 +40,13 @@ export async function POST(req: NextRequest) {
       displayName = await generateAnonymousName(existingNames);
     }
 
+    // Generate default avatar based on gender if not already set
+    let avatarUrl = currentUser?.avatarUrl;
+    if (!avatarUrl && gender) {
+      const genderType = gender === 'male' ? 'boy' : 'girl';
+      avatarUrl = `https://avatar.iran.liara.run/public/${genderType}?username=${session.user.id}`;
+    }
+
     // Update user with onboarding data
     const user = await prisma.user.update({
       where: { id: session.user.id },
@@ -49,7 +57,9 @@ export async function POST(req: NextRequest) {
         availabilityMessage,
         timezone,
         availabilityHours,
+        gender,
         displayName, // Set anonymous name if not already set
+        avatarUrl, // Set default avatar based on gender
         onboardingComplete: true,
       },
     });
@@ -82,6 +92,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       podId: podId,
+      avatarUrl: user.avatarUrl,
     });
   } catch (error) {
     console.error('Onboarding completion error:', error);
