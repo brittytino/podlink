@@ -5,6 +5,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // Optimize for Neon free tier
+  // Use connection pooling URL (ends with -pooler) for better performance
+  // Direct connection URL (without -pooler) for migrations
 }
 
 model User {
@@ -13,16 +16,21 @@ model User {
   username          String    @unique
   password          String?
   fullName          String    @map("full_name")
+  displayName       String?   @map("display_name") // Anonymous name shown to others
   avatarUrl         String?   @map("avatar_url")
   timezone          String    @default("UTC")
   availabilityHours Json      @map("availability_hours")
-  goalType          GoalType  @map("goal_type")
-  goalDescription   String    @map("goal_description")
+  goalType          GoalType? @map("goal_type")
+  goalDescription   String?   @map("goal_description")
+  goalCategory      String?   @map("goal_category")
+  gender            String?   // Added gender field
   currentStreak     Int       @default(0) @map("current_streak")
   lastCheckIn       DateTime? @map("last_check_in")
   isDemoAccount     Boolean   @default(false) @map("is_demo_account")
   onboardingComplete Boolean  @default(false) @map("onboarding_complete")
   podId             String?   @map("pod_id")
+  availabilityMessage String? @map("availability_message")
+  isAI              Boolean   @default(false) @map("is_ai")
   
   pod               Pod?               @relation(fields: [podId], references: [id])
   crisisAlerts      CrisisAlert[]
@@ -41,6 +49,10 @@ model Pod {
   id           String    @id @default(uuid())
   name         String
   totalStreak  Int       @default(0) @map("total_streak")
+  podType      PodType   @default(REAL) @map("pod_type")
+  goalType     GoalType? @map("goal_type") // Match users with same mindset (quit or build)
+  goalCategory String?   @map("goal_category")
+  lastShownMessageUserId String? @map("last_shown_message_user_id")
   
   members      User[]
   messages     PodMessage[]
@@ -60,6 +72,8 @@ model CrisisAlert {
   message       String?
   status        AlertStatus   @default(ACTIVE)
   responseCount Int           @default(0) @map("response_count")
+  lastShownMessageUserId String? @map("last_shown_message_user_id")
+  aiResponses   Json?         @map("ai_responses")
   
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   pod           Pod           @relation(fields: [podId], references: [id], onDelete: Cascade)
@@ -146,4 +160,9 @@ enum BadgeType {
   THIRTY_DAY_STREAK
   INSTANT_RESPONDER
   POD_CHAMPION
+}
+
+enum PodType {
+  REAL
+  AI
 }

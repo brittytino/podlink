@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -24,7 +24,7 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        username,
+        email,
         password,
         redirect: false,
       });
@@ -32,17 +32,22 @@ export default function LoginPage() {
       if (result?.error) {
         toast({
           title: 'Login Failed',
-          description: 'Invalid username or password',
+          description: 'The email or password you entered is incorrect. Please try again.',
           variant: 'destructive',
         });
       } else {
+        toast({
+          title: 'Welcome Back!',
+          description: 'Successfully signed in to your account.',
+          variant: 'success',
+        });
         router.push('/dashboard');
         router.refresh();
       }
     } catch (error) {
       toast({
-        title: 'Error',
-        description: 'Something went wrong',
+        title: 'Connection Error',
+        description: 'Unable to connect to the server. Please check your internet connection and try again.',
         variant: 'destructive',
       });
     } finally {
@@ -63,13 +68,13 @@ export default function LoginPage() {
       <CardContent className="space-y-4 sm:space-y-5">
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-sm sm:text-base font-medium">Username</Label>
+            <Label htmlFor="email" className="text-sm sm:text-base font-medium">Email</Label>
             <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               className="h-11 sm:h-12 text-base"
             />

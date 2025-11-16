@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
-import { prisma } from '@/lib/prisma';
+import prisma from '@/lib/prisma';
 
 export async function PATCH(req: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { fullName, username, goalDescription, timezone, availabilityHours } =
+    const { fullName, username, goalDescription, timezone, availabilityHours, gender } =
       await req.json();
 
     const user = await prisma.user.update({
@@ -20,6 +20,7 @@ export async function PATCH(req: NextRequest) {
         goalDescription,
         timezone,
         availabilityHours,
+        ...(gender !== undefined && { gender }),
       },
     });
 

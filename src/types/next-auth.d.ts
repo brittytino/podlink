@@ -29,5 +29,6 @@ declare module 'next-auth/jwt' {
     username: string;
     onboardingComplete: boolean;
     podId: string | null;
+    avatarUrl: string | null;
   }
 }

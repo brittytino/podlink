@@ -1,5 +1,6 @@
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { createServer as createHttpServer } from 'http';
 
 const httpServer = createServer();
 
@@ -74,12 +75,13 @@ io.on('connection', (socket) => {
     console.log(`${username} joined pod ${podId}`);
   });
 
-  socket.on('send-message', ({ podId, message, userId, username, avatarUrl }) => {
+  socket.on('send-message', ({ podId, message, userId, username, displayName, avatarUrl }) => {
     io.to(podId).emit('new-message', {
       id: message.id,
       messageText: message.messageText,
       userId,
       username,
+      displayName: displayName || username, // Use displayName for anonymity
       avatarUrl,
       createdAt: message.createdAt,
       isCrisisResponse: message.isCrisisResponse,
@@ -122,7 +124,37 @@ io.on('connection', (socket) => {
   });
 });
 
+// HTTP endpoint for emitting events from API routes
+const emitServer = createHttpServer((req, res) => {
+  if (req.method === 'POST' && req.url === '/emit') {
+    let body = '';
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+    req.on('end', () => {
+      try {
+        const { room, event, data } = JSON.parse(body);
+        io.to(room).emit(event, data);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+      } catch (error) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid request' }));
+      }
+    });
+  } else {
+    res.writeHead(404);
+    res.end('Not found');
+  }
+});
+
 const PORT = process.env.SOCKET_PORT || 3001;
+const EMIT_PORT = process.env.SOCKET_EMIT_PORT || 3002;
+
 httpServer.listen(PORT, () => {
   console.log(`🔌 Socket.io server running on port ${PORT}`);
+});
+
+emitServer.listen(EMIT_PORT, () => {
+  console.log(`📡 Socket emit server running on port ${EMIT_PORT}`);
 });

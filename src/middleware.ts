@@ -15,6 +15,10 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
+  // Check localStorage as backup for onboarding completion (for client-side routing)
+  // Server-side: rely on session, but client can also check localStorage
+  const onboardingComplete = session.user.onboardingComplete;
+
   // Redirect to onboarding if not completed
   if (
     !(token as any).onboardingComplete &&

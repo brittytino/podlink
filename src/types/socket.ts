@@ -3,9 +3,11 @@ export interface SocketMessage {
   messageText: string;
   userId: string;
   username: string;
+  displayName?: string; // Anonymous name for privacy
   avatarUrl: string | null;
   createdAt: string;
   isCrisisResponse: boolean;
+  isAI?: boolean; // Whether this message is from an AI bot
 }
 
 export interface CrisisAlertEvent {

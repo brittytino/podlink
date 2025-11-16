@@ -18,6 +18,11 @@ const goalDescriptions: Record<GoalType, string[]> = {
     'Meditate regularly',
     'Drink more water',
     'Wake up early',
+    'Practice gratitude',
+    'Learn a new skill',
+    'Maintain a journal',
+    'Get organized',
+    'Eat healthier',
   ],
 };
 

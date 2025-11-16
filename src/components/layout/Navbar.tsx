@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
+import { clearUserSession } from '@/lib/cleanup';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -298,7 +299,10 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer text-red-600"
-                  onClick={() => signOut({ callbackUrl: '/login' })}
+                  onClick={() => {
+                    clearUserSession();
+                    signOut({ callbackUrl: '/login' });
+                  }}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out

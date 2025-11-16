@@ -14,7 +14,8 @@
     "lint": "next lint",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:test": "node scripts/test-db-connection.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

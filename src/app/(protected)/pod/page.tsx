@@ -2,22 +2,23 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { ChatWindow } from '@/components/pod/ChatWindow';
 import { AlertNotification } from '@/components/pod/AlertNotification';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useSocket } from '@/hooks/useSocket';
 import { usePodMessages } from '@/hooks/usePodMessages';
-import { Send, Users, Loader2, Smile, Paperclip, Menu, MessageCircle, MoreVertical } from 'lucide-react';
+import { Send, Users, Loader2, AlertTriangle, Settings, Phone, Video, Search, MoreVertical, Smile, Paperclip, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 interface PodMember {
   id: string;
   username: string;
   fullName: string;
+  displayName?: string; // Anonymous name for privacy
   avatarUrl: string | null;
   currentStreak: number;
 }
@@ -38,10 +39,11 @@ export default function PodPage() {
   const [messageText, setMessageText] = useState('');
   const [activeAlert, setActiveAlert] = useState<CrisisAlert | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showMembersList, setShowMembersList] = useState(false);
   const { toast } = useToast();
 
   const podId = session?.user?.podId;
-  const { messages, sendMessage } = usePodMessages(podId || null);
+  const { messages, sendMessage, isAITyping } = usePodMessages(podId || null);
 
   useEffect(() => {
     if (!session?.user?.podId) return;
@@ -53,6 +55,15 @@ export default function PodPage() {
         setMembers(data.members || []);
         setPodName(data.podName || 'Your Pod');
         setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error fetching pod members:', error);
+        setLoading(false);
+        toast({
+          title: 'Error',
+          description: 'Failed to load pod members',
+          variant: 'destructive',
+        });
       });
 
     // Fetch active alerts
@@ -61,14 +72,18 @@ export default function PodPage() {
       .then((data) => {
         const active = data.alerts?.find((a: any) => a.status === 'ACTIVE');
         if (active) {
+          const displayName = active.user?.displayName || active.user?.username;
           setActiveAlert({
             id: active.id,
             userId: active.userId,
-            username: active.user.username,
+            username: displayName, // Use displayName for anonymity
             message: active.message,
             createdAt: active.createdAt,
           });
         }
+      })
+      .catch((error) => {
+        console.error('Error fetching alerts:', error);
       });
   }, [session?.user?.podId]);
 
@@ -105,14 +120,19 @@ export default function PodPage() {
     };
   }, [socket, session?.user, podId, activeAlert, toast]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!messageText.trim() || !session?.user || !podId) return;
 
-    sendMessage(
+    // Find current user's displayName from members
+    const currentMember = members.find(m => m.id === session.user.id);
+    const displayName = currentMember?.displayName || currentMember?.fullName;
+
+    await sendMessage(
       messageText,
       session.user.id,
       session.user.username || '',
-      session.user.image || null
+      session.user.image || null,
+      displayName
     );
     setMessageText('');
   };
@@ -124,177 +144,293 @@ export default function PodPage() {
     setActiveAlert(null);
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading your pod...</p>
+        </div>
       </div>
     );
   }
 
   if (!podId) {
     return (
-      <div className="text-center py-12">
-        <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <h2 className="text-2xl font-bold mb-2">No Pod Yet</h2>
-        <p className="text-muted-foreground">
-          You'll be assigned to an accountability pod soon!
-        </p>
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted/20">
+        <div className="text-center space-y-6 max-w-md mx-auto p-6">
+          <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+            <Users className="h-10 w-10 text-primary" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold">No Pod Yet</h2>
+            <p className="text-muted-foreground">
+              You'll be assigned to an accountability pod soon! Hang tight while we find the perfect group for you.
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-        <div className="flex-1">
-          <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <Users className="h-6 w-6 sm:h-8 sm:w-8" />
-            {podName}
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground mt-1">
-            {members.length} member{members.length !== 1 ? 's' : ''}
-          </p>
-        </div>
-        <Badge variant={isConnected ? 'default' : 'secondary'} className="text-xs sm:text-sm">
-          {isConnected ? '🟢 Connected' : '🔴 Connecting...'}
-        </Badge>
-      </div>
-
-      {/* Active Crisis Alert */}
+    <div className="h-screen flex flex-col bg-gradient-to-br from-background to-muted/20 relative overflow-hidden">
+      {/* Crisis Alert Banner */}
       {activeAlert && (
-        <AlertNotification alert={activeAlert} onResolve={handleResolveAlert} />
+        <div className="absolute top-0 left-0 right-0 z-50">
+          <AlertNotification alert={activeAlert} onResolve={handleResolveAlert} />
+        </div>
       )}
 
-      {/* Pod Members */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base sm:text-lg">Pod Members</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {members.map((member) => (
-              <div
-                key={member.id}
-                className="flex items-center gap-3 p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
-              >
-                <Avatar className="h-10 w-10 sm:h-12 sm:w-12">
-                  <AvatarImage src={member.avatarUrl || ''} alt={member.fullName} />
-                  <AvatarFallback className="text-sm sm:text-base">
-                    {member.fullName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm sm:text-base truncate">{member.fullName}</p>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
-                    {member.currentStreak} day streak 🔥
-                  </p>
-                </div>
-              </div>
-            ))}
+      {/* Main Layout */}
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar - Members List (Desktop) */}
+        <div className={cn(
+          "hidden lg:flex flex-col bg-card border-r border-border w-80 transition-all duration-300",
+          showMembersList ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        )}>
+          {/* Sidebar Header */}
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold text-lg">{podName}</h2>
+              <Badge variant={isConnected ? 'default' : 'secondary'} className="text-xs">
+                {isConnected ? '● Online' : '○ Offline'}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {members.length} member{members.length !== 1 ? 's' : ''} active
+            </p>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Chat Area */}
-      <div className="flex-1 flex flex-col bg-card md:rounded-2xl md:shadow-lg overflow-hidden min-h-0">
-          {/* Chat Header */}
-          <div className="flex-shrink-0 px-4 py-3 bg-gradient-to-r from-muted/30 to-transparent border-b backdrop-blur-sm">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                
-                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="h-5 w-5 text-primary" />
+          {/* Members List */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {members.map((member) => {
+              const displayName = member.displayName || member.fullName;
+              const isCurrentUser = member.id === session?.user?.id;
+              return (
+                <div
+                  key={member.id}
+                  className={cn(
+                    "flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-muted/50 cursor-pointer",
+                    isCurrentUser && "bg-primary/5 border border-primary/20"
+                  )}
+                >
+                  <div className="relative">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={member.avatarUrl || ''} alt={displayName} />
+                      <AvatarFallback className="text-sm font-medium">
+                        {displayName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-card rounded-full"></div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-sm truncate">{displayName}</p>
+                      {isCurrentUser && (
+                        <span className="text-xs text-primary font-medium">(You)</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 mt-1">
+                      <span className="text-xs text-muted-foreground">
+                        {member.currentStreak} day streak
+                      </span>
+                      <span className="text-orange-500">🔥</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="font-semibold text-sm md:text-base truncate">Group Chat</h2>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {members.length} member{members.length !== 1 ? 's' : ''} • {messages.length} message{messages.length !== 1 ? 's' : ''}
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main Chat Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Chat Header */}
+          <div className="flex items-center justify-between p-4 bg-card/50 backdrop-blur-sm border-b border-border">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                onClick={() => setShowMembersList(!showMembersList)}
+              >
+                <Users className="h-5 w-5" />
+              </Button>
+              
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
+                    <Users className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border border-card rounded-full"></div>
+                </div>
+                <div>
+                  <h1 className="font-semibold text-lg">{podName}</h1>
+                  <p className="text-xs text-muted-foreground">
+                    {members.length} member{members.length !== 1 ? 's' : ''} • {isConnected ? 'Online' : 'Connecting...'}
                   </p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl flex-shrink-0">
-                <MoreVertical className="h-4 w-4" />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="hidden sm:flex">
+                <Search className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="hidden sm:flex">
+                <Phone className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon" className="hidden sm:flex">
+                <Video className="h-5 w-5" />
+              </Button>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-5 w-5" />
               </Button>
             </div>
           </div>
 
-          {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto px-3 md:px-4 lg:px-6 py-4 bg-gradient-to-b from-muted/5 to-transparent custom-scrollbar">
-            <ChatWindow messages={messages} currentUserId={session?.user?.id || ''} />
-            
-            {messages.length === 0 && (
-              <div className="h-full flex items-center justify-center p-4">
-                <div className="text-center space-y-3 max-w-sm">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl flex items-center justify-center mx-auto">
-                    <MessageCircle className="h-8 w-8 text-primary/50" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="font-medium text-muted-foreground text-sm md:text-base">No messages yet</p>
-                    <p className="text-xs md:text-sm text-muted-foreground/70">
-                      Start the conversation by sending a message below
-                    </p>
+          {/* Messages Area */}
+          <div className="flex-1 overflow-hidden relative">
+            <div className="h-full overflow-y-auto px-4 lg:px-6 py-4 bg-gradient-to-b from-muted/5 to-transparent chat-container custom-scrollbar">
+              <ChatWindow 
+                messages={messages} 
+                currentUserId={session?.user?.id || ''} 
+                isAITyping={isAITyping}
+              />
+              
+              {messages.length === 0 && (
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center space-y-4 max-w-sm">
+                    <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-primary/5 rounded-full flex items-center justify-center mx-auto">
+                      <Users className="h-10 w-10 text-primary/50" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="font-semibold text-lg">Welcome to your pod!</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Start the conversation and connect with your accountability partners
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* Message Input Area */}
-          <div className="flex-shrink-0 p-3 md:p-4 bg-muted/30 border-t backdrop-blur-sm safe-area-inset-bottom">
-            <div className="flex items-end gap-2 max-w-4xl mx-auto">
-              {/* Input Container */}
-              <div className="flex-1 bg-card rounded-2xl border-2 border-muted focus-within:border-primary/50 transition-all shadow-sm">
-                <div className="flex items-end gap-1 md:gap-2 p-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-9 w-9 rounded-xl flex-shrink-0 hover:bg-muted hidden sm:flex"
-                  >
-                    <Smile className="h-5 w-5 text-muted-foreground" />
+          {/* Message Input */}
+          <div className="p-4 bg-card/50 backdrop-blur-sm border-t border-border">
+            <div className="flex items-center gap-3 max-w-4xl mx-auto">
+              <Button variant="ghost" size="icon" className="hidden sm:flex text-muted-foreground">
+                <Plus className="h-5 w-5" />
+              </Button>
+              
+              <div className="flex-1 relative">
+                <Input
+                  placeholder="Type a message..."
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="pr-20 bg-muted/50 border-muted focus:border-primary/50 rounded-full py-3 px-4 text-sm resize-none transition-all duration-200"
+                />
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                    <Smile className="h-4 w-4" />
                   </Button>
-                  
-                  <Textarea
-                    placeholder="Type a message..."
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                    className="flex-1 min-h-[40px] max-h-[120px] resize-none border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 p-2 text-sm md:text-base placeholder:text-muted-foreground/60"
-                    rows={1}
-                  />
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-9 w-9 rounded-xl flex-shrink-0 hover:bg-muted hidden sm:flex"
-                  >
-                    <Paperclip className="h-5 w-5 text-muted-foreground" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground hidden sm:flex">
+                    <Paperclip className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
-              {/* Send Button */}
               <Button 
                 onClick={handleSendMessage}
                 disabled={!messageText.trim()}
                 size="icon"
-                className="h-[52px] w-[52px] rounded-2xl bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                className="h-12 w-12 rounded-full bg-gradient-to-br from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl disabled:opacity-50 transition-all duration-200"
               >
                 <Send className="h-5 w-5" />
               </Button>
             </div>
-            
-            {/* Hint Text - Hidden on mobile */}
-            <p className="hidden sm:block text-xs text-muted-foreground/70 mt-2 text-center">
-              Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">Enter</kbd> to send • <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">Shift</kbd> + <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">Enter</kbd> for new line
-            </p>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Members Overlay */}
+      {showMembersList && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setShowMembersList(false)}
+        >
+          <div 
+            className="w-80 h-full bg-card border-r border-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Mobile sidebar content - same as desktop */}
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-lg">{podName}</h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowMembersList(false)}
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                {members.length} member{members.length !== 1 ? 's' : ''} active
+              </p>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {members.map((member) => {
+                const displayName = member.displayName || member.fullName;
+                const isCurrentUser = member.id === session?.user?.id;
+                return (
+                  <div
+                    key={member.id}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
+                      isCurrentUser && "bg-primary/5 border border-primary/20"
+                    )}
+                  >
+                    <div className="relative">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={member.avatarUrl || ''} alt={displayName} />
+                        <AvatarFallback className="text-sm font-medium">
+                          {displayName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-card rounded-full"></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-sm truncate">{displayName}</p>
+                        {isCurrentUser && (
+                          <span className="text-xs text-primary font-medium">(You)</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="text-xs text-muted-foreground">
+                          {member.currentStreak} day streak
+                        </span>
+                        <span className="text-orange-500">🔥</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
