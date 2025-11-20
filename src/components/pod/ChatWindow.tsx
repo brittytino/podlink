@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { MessageBubble } from './MessageBubble';
 import { TypingIndicator } from './TypingIndicator';
 import { SocketMessage } from '@/types/socket';
@@ -13,7 +13,6 @@ interface ChatWindowProps {
 
 export function ChatWindow({ messages, currentUserId, isAITyping }: ChatWindowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -29,7 +28,7 @@ export function ChatWindow({ messages, currentUserId, isAITyping }: ChatWindowPr
     }
     groups[messageDate].push(message);
     return groups;
-  }, {});
+  }, {} as { [date: string]: SocketMessage[] });
 
   const formatDateLabel = (dateString: string) => {
     const date = new Date(dateString);
@@ -42,30 +41,32 @@ export function ChatWindow({ messages, currentUserId, isAITyping }: ChatWindowPr
     } else if (date.toDateString() === yesterday.toDateString()) {
       return 'Yesterday';
     } else {
-      return date.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
       });
     }
   };
 
   return (
-    <div className="space-y-4 pb-4">
+    <div
+      ref={scrollRef}
+      className="flex-1 overflow-auto space-y-4 pb-6 pr-2 lg:pr-6 sm:pb-4"
+      aria-live="polite"
+    >
       {Object.entries(groupedMessages).map(([date, dateMessages]) => (
         <div key={date} className="space-y-3">
           {/* Date Separator */}
           <div className="flex justify-center py-2">
             <div className="bg-muted/80 backdrop-blur-sm px-3 py-1 rounded-full">
-              <span className="text-xs font-medium text-muted-foreground">
-                {formatDateLabel(date)}
-              </span>
+              <span className="text-xs font-medium text-muted-foreground">{formatDateLabel(date)}</span>
             </div>
           </div>
 
           {/* Messages for this date */}
-          <div className="space-y-3">
+          <div className="space-y-3 px-2 sm:px-0">
             {dateMessages.map((message) => (
               <MessageBubble
                 key={message.id}
@@ -76,8 +77,12 @@ export function ChatWindow({ messages, currentUserId, isAITyping }: ChatWindowPr
           </div>
         </div>
       ))}
-      
-      {isAITyping && <TypingIndicator />}
+
+      {isAITyping && (
+        <div className="px-2 sm:px-0">
+          <TypingIndicator />
+        </div>
+      )}
     </div>
   );
 }
