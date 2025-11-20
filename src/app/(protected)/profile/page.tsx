@@ -68,44 +68,47 @@ export default function ProfilePage() {
   });
 
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
+    // outer container: comfortable padding on all screen sizes, center and limit width
+    <div className="px-4 py-8 sm:py-10 lg:py-12 max-w-5xl mx-auto space-y-6">
+      {/* Header */}
       <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold flex items-center gap-3">
           <User className="h-6 w-6 sm:h-8 sm:w-8" />
           Profile Settings
         </h1>
-        <p className="text-sm sm:text-base text-muted-foreground">
-          Manage your account and preferences
+        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
+          Manage your account and preferences — update your avatar, personal details, and goal settings to
+          keep your habit journey in sync.
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3">
-        <Card>
+      {/* Stats Cards: responsive grid with consistent card styling */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-150">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Current Streak</p>
-                <p className="text-2xl font-bold">{profile.currentStreak}</p>
+                <p className="text-2xl sm:text-3xl font-bold">{profile.currentStreak}</p>
               </div>
               <Flame className="h-8 w-8 text-orange-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-150">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="text-lg font-bold">{memberSince}</p>
+                <p className="text-lg sm:text-xl font-bold">{memberSince}</p>
               </div>
               <Calendar className="h-8 w-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-150">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
@@ -120,39 +123,62 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      {/* Avatar Upload */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Picture</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <AvatarUpload
-            currentAvatar={profile.avatarUrl}
-            userName={profile.fullName}
-            onUploadSuccess={async (url) => {
-              setProfile({ ...profile, avatarUrl: url });
-              await update({ avatarUrl: url });
-              // Refresh profile to get updated data
-              fetchProfile();
-            }}
-          />
-        </CardContent>
-      </Card>
+      {/* Main content: use a responsive two-column layout on large screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left column: Avatar (spans full width on small screens) */}
+        <div className="lg:col-span-1">
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader>
+              <CardTitle>Profile Picture</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-center gap-4">
+                <AvatarUpload
+                  currentAvatar={profile.avatarUrl}
+                  userName={profile.fullName}
+                  onUploadSuccess={async (url) => {
+                    setProfile({ ...profile, avatarUrl: url });
+                    await update({ avatarUrl: url });
+                    // Refresh profile to get updated data
+                    fetchProfile();
+                  }}
+                />
+                <p className="text-sm text-muted-foreground text-center max-w-xs">
+                  Upload a square image (recommended 400×400). Your avatar will be visible to other members.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Profile Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Personal Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProfileForm
-            user={profile}
-            onUpdateSuccess={() => {
-              fetchProfile();
-            }}
-          />
-        </CardContent>
-      </Card>
+        {/* Right column: Form (spans two columns on large screens for comfortable width) */}
+        <div className="lg:col-span-2">
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <ProfileForm
+                  user={profile}
+                  onUpdateSuccess={() => {
+                    fetchProfile();
+                  }}
+                />
+
+                {/* Small helper / meta info row at the bottom for smaller screens */}
+                <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
+                  <span>Timezone: <span className="font-medium text-foreground">{profile.timezone}</span></span>
+                  <span>Availability: <span className="font-medium text-foreground">{profile.availabilityHours.start} - {profile.availabilityHours.end}</span></span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Spacing at the bottom for comfortable scrolling on small devices */}
+      <div className="h-6 lg:h-10" />
     </div>
   );
 }
