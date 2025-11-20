@@ -23,11 +23,13 @@ interface PodMembersListProps {
 
 export function PodMembersList({ members, podName }: PodMembersListProps) {
   return (
-    <Card className="shadow-sm">
+    <Card className="rounded-2xl shadow-sm border">
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-          <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-          {podName}
+        <CardTitle className="flex items-center gap-3 text-sm sm:text-base md:text-lg font-semibold">
+          
+          <div className="text-2xl sm:text-3xl md:text-4xl font-['Bebas_Neue',sans-serif] font-extrabold leading-none">
+            <span className="text-[#ff5370]">{podName}</span> Members
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -37,26 +39,28 @@ export function PodMembersList({ members, podName }: PodMembersListProps) {
             return (
               <div
                 key={member.id}
-                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border bg-card hover:bg-accent/40 transition-colors"
               >
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                  <Avatar className="h-9 w-9 sm:h-10 sm:w-10 shrink-0">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 ring-2 ring-white shadow-sm">
                     <AvatarImage src={member.avatarUrl || ''} alt={displayName} />
-                    <AvatarFallback className="text-xs sm:text-sm">
+                    <AvatarFallback className="text-sm sm:text-base">
                       {displayName.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
+
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm sm:text-base truncate">{displayName}</p>
-                    <p className="text-xs text-muted-foreground truncate">@{member.username}</p>
+                    <p className="font-medium text-sm sm:text-base md:text-lg truncate">{displayName}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">@{member.username}</p>
                   </div>
                 </div>
-                <div className="flex flex-col items-end gap-1 shrink-0 ml-2">
-                  <Badge variant="secondary" className="text-[10px] sm:text-xs">
+
+                <div className="flex flex-col items-end gap-2 sm:gap-1 shrink-0 ml-4">
+                  <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-1 rounded-md">
                     {member.currentStreak} 🔥
                   </Badge>
                   {member.lastCheckIn && (
-                    <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
+                    <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
                       {formatDate(member.lastCheckIn)}
                     </span>
                   )}
@@ -66,6 +70,12 @@ export function PodMembersList({ members, podName }: PodMembersListProps) {
           })}
         </div>
       </CardContent>
+      <style jsx>{`
+        /* Make list feel denser on large screens and more touch-friendly on mobile */
+        @media (min-width: 1024px) {
+          .card-list-item { padding: 1rem; }
+        }
+      `}</style>
     </Card>
   );
 }
