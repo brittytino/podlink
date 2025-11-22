@@ -1,1 +1,1 @@
-{"date":"2025-11-10T14:44:30+05:30","message":"Refactor Prisma queries to avoid blocking server functions"}
+{"date":"2025-11-22T13:03:14+05:30","message":"Rewrite dynamic route to support legacy slug format"}
