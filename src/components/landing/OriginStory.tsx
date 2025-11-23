@@ -6,10 +6,10 @@ import { MessageCircle, TrendingUp, Users, Heart } from 'lucide-react';
 export default function OriginStory() {
   const redditPost = {
     subreddit: 'r/GetMotivated',
-    author: 'u/accountability_seeker',
-    time: '8 months ago',
+    author: 'u/StockRiver5299',
+    time: 'a month ago',
     upvotes: '12.4k',
-    comments: '847',
+    comments: '147',
     title: 'I built an app to solve the #1 reason people fail their goals - lack of accountability',
     content: `After watching my friends (and myself) fail New Year's resolutions year after year, I realized the problem wasn't motivation - it was accountability.
 
@@ -27,9 +27,9 @@ The beta is live. Would love your thoughts.`,
   };
 
   const linkedinPost = {
-    author: 'Sarah Chen',
-    role: 'Product Manager at Microsoft',
-    time: '6 months ago',
+    author: 'Mridula S',
+    role: 'Fashion Designer at StyleHub',
+    time: '2 months ago',
     reactions: '3,847',
     comments: '421',
     reposts: '892',

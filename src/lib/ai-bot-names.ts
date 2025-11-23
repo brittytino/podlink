@@ -1,9 +1,18 @@
 // Friendly AI bot names for AI pods
 export const AI_BOT_NAMES = [
-  'Alex', 'Sam', 'Jordan', 'Casey', 'Morgan', 'Riley', 'Taylor', 'Quinn',
-  'Avery', 'Cameron', 'Dakota', 'Emery', 'Finley', 'Harper', 'Jamie',
-  'Kai', 'Logan', 'Noah', 'Parker', 'River', 'Sage', 'Skylar', 'Phoenix',
+  // Girls
+  'Anika', 'Nila', 'Diya', 'Yaazhini', 'Ishita',
+  'Meera', 'Shruti', 'Varsha', 'Harini', 'Kavya',
+
+  // Boys
+  'Yuvan', 'Surya', 'Kavin', 'Aadhav', 'Vikram',
+  'Pranav', 'Arjun', 'Rithvik', 'Karthik', 'Sharan',
+
+  // Unisex / modern Tamil vibe
+  'Aadhira', 'Thiya', 'Navin', 'Maya', 'Aaru',
+  'Vinu', 'Sena', 'Riyaan', 'Laya', 'Tanu'
 ];
+
 
 /**
  * Generates a random AI bot name

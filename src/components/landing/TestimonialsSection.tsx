@@ -5,14 +5,15 @@ import { Star, ChevronLeft, ChevronRight, Quote, CheckCircle, TrendingUp, Award 
 
 const testimonials = [
   {
-    name: 'Sarah Chen',
+    name: 'Devadharshini V',
     role: 'Product Manager',
-    company: 'Microsoft',
-    avatar: '👩‍💼',
+    company: 'FR8',
+    avatar: 'https://avatar.iran.liara.run/public/girl?username=devadharshini',
+    gender: 'girl',
     goal: 'Daily meditation practice',
     streak: 127,
     rating: 5,
-    quote: 'PodLink transformed my inconsistent meditation habit into a 127-day streak. My pod celebrates every milestone, and knowing they check in daily keeps me accountable. This is the missing piece in personal development.',
+    quote: 'I struggled with maintaining a meditation routine for years. This platform transformed my inconsistent habit into a 127-day streak. My pod celebrates every milestone, and their daily check-ins keep me accountable. It\'s exactly what I needed.',
     verified: true,
     achievement: 'Longest Streak Winner',
     beforeAfter: {
@@ -21,14 +22,15 @@ const testimonials = [
     }
   },
   {
-    name: 'Marcus Rodriguez',
-    role: 'Software Engineer',
-    company: 'Google',
-    avatar: '👨‍💻',
+    name: 'Anushri R',
+    role: 'Interior Designer',
+    company: 'designX',
+    avatar: 'https://avatar.iran.liara.run/public/girl?username=anushri',
+    gender: 'girl',
     goal: 'Learn Spanish fluently',
     streak: 89,
     rating: 5,
-    quote: 'I tried Duolingo for years but never stuck with it. With PodLink, I have 5 people who actually care about my progress. We share resources, practice together, and celebrate wins. 89 days strong!',
+    quote: 'I tried multiple language apps but never stuck with them. Here, I have 5 people who genuinely care about my progress. We share resources, practice together, and celebrate wins. 89 days strong and still going!',
     verified: true,
     achievement: 'Pod MVP',
     beforeAfter: {
@@ -37,14 +39,15 @@ const testimonials = [
     }
   },
   {
-    name: 'Emily Watson',
-    role: 'Fitness Coach',
+    name: 'Nithika R',
+    role: 'CS Executive',
     company: 'Independent',
-    avatar: '💪',
+    avatar: 'https://avatar.iran.liara.run/public/girl?username=nithika',
+    gender: 'girl',
     goal: 'Early morning workouts',
     streak: 156,
     rating: 5,
-    quote: 'As a fitness coach, I know accountability is everything. PodLink gave me the support I preach to my clients. My 5am workouts are non-negotiable now because my pod is counting on me.',
+    quote: 'As a fitness enthusiast, I understand the power of accountability. This platform gave me the support system I needed. My 5am workouts are now non-negotiable because my pod counts on me, and I count on them.',
     verified: true,
     achievement: '5am Club Member',
     beforeAfter: {
@@ -53,14 +56,15 @@ const testimonials = [
     }
   },
   {
-    name: 'David Kim',
+    name: 'Ranganathan KP',
     role: 'Entrepreneur',
     company: 'StartupCo',
-    avatar: '🚀',
+    avatar: 'https://avatar.iran.liara.run/public/boy?username=ranganathan',
+    gender: 'boy',
     goal: 'Write 500 words daily',
     streak: 73,
     rating: 5,
-    quote: 'Writer\'s block was killing my startup blog. My PodLink pod holds me accountable for 500 words daily. Some days it\'s hard, but they push me through. 73 days later, I have a book draft!',
+    quote: 'Writer\'s block was affecting my startup blog. My pod holds me accountable for 500 words daily. Some days are tough, but they push me through. 73 days later, I have a complete book draft ready!',
     verified: true,
     achievement: 'Content Creator',
     beforeAfter: {
@@ -69,14 +73,15 @@ const testimonials = [
     }
   },
   {
-    name: 'Priya Patel',
+    name: 'Swetha S',
     role: 'Medical Student',
-    company: 'Johns Hopkins',
-    avatar: '👩‍⚕️',
+    company: 'AIIMS Delhi',
+    avatar: 'https://avatar.iran.liara.run/public/girl?username=swetha',
+    gender: 'girl',
     goal: 'Study 3 hours daily',
     streak: 94,
     rating: 5,
-    quote: 'Medical school is brutal. My PodLink pod keeps me sane and focused. When I\'m stressed, they\'re there. When I succeed, they celebrate. The crisis support feature saved me during exam week.',
+    quote: 'Medical school is incredibly demanding. My pod keeps me focused and motivated. When I\'m stressed, they support me. When I succeed, they celebrate with me. The crisis support feature was invaluable during exam week.',
     verified: true,
     achievement: 'Academic Excellence',
     beforeAfter: {
@@ -85,14 +90,15 @@ const testimonials = [
     }
   },
   {
-    name: 'Alex Thompson',
+    name: 'Dharshini S',
     role: 'Designer',
-    company: 'Adobe',
-    avatar: '🎨',
+    company: 'Divine Infotech',
+    avatar: 'https://avatar.iran.liara.run/public/girl?username=dharshini',
+    gender: 'girl',
     goal: 'Daily creative practice',
     streak: 112,
     rating: 5,
-    quote: 'Creative burnout is real. PodLink\'s anonymous mode let me be vulnerable about my struggles. My pod supports me through creative blocks and celebrates breakthrough moments. 112 days of creating!',
+    quote: 'Creative burnout is a real challenge. The anonymous mode allowed me to be vulnerable about my struggles. My pod supports me through creative blocks and celebrates every breakthrough. 112 days of consistent creativity!',
     verified: true,
     achievement: 'Creative Streak',
     beforeAfter: {
@@ -127,9 +133,17 @@ const TestimonialCard = ({ testimonial, isActive }: { testimonial: typeof testim
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div className="flex items-center gap-4">
-              {/* Avatar */}
-              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-4xl shadow-lg">
-                {testimonial.avatar}
+              {/* Avatar - Real Image */}
+              <div className="relative">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden shadow-lg ring-4 ring-white">
+                  <img 
+                    src={testimonial.avatar} 
+                    alt={testimonial.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {/* Online indicator */}
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-white"></div>
               </div>
 
               {/* User info */}
@@ -150,7 +164,7 @@ const TestimonialCard = ({ testimonial, isActive }: { testimonial: typeof testim
             </div>
 
             {/* Achievement badge */}
-            <div className="hidden md:block bg-gradient-to-br from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+            <div className="hidden md:flex bg-gradient-to-br from-yellow-400 to-orange-400 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg items-center gap-2">
               <Award size={16} />
               {testimonial.achievement}
             </div>
@@ -288,8 +302,8 @@ export default function TestimonialsSection() {
           {[
             { label: 'Average Rating', value: '4.9/5', icon: '⭐' },
             { label: 'Success Rate', value: '92%', icon: '🎯' },
-            { label: 'Active Members', value: '1,247', icon: '👥' },
-            { label: 'Total Streaks', value: '847', icon: '🔥' }
+            { label: 'Active Members', value: '447', icon: '👥' },
+            { label: 'Total Streaks', value: '147', icon: '🔥' }
           ].map((stat, idx) => (
             <motion.div
               key={idx}
