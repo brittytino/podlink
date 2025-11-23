@@ -5,11 +5,11 @@ import { Github, Twitter, Linkedin, Mail, Heart, ArrowRight, Send } from 'lucide
 
 const footerLinks = {
   product: [
-    { label: 'Features', href: '#features' },
-    { label: 'How It Works', href: '#how-it-works' },
+    { label: 'Features', href: '/features' },
+    { label: 'How It Works', href: '/how-it-works' },
     { label: 'Testimonials', href: '#testimonials' },
-    { label: 'Pricing', href: '#pricing' },
-    { label: 'FAQ', href: '#faq' }
+    { label: 'Pricing', href: '/pricing' },
+    { label: 'FAQ', href: '/faq' }
   ],
   company: [
     { label: 'About Us', href: '/about' },

@@ -18,11 +18,11 @@ export default function Navigation({ scrollDirection, githubStars, isStarred, se
   const [isLoading, setIsLoading] = useState(true);
 
   const navLinks = [
-    { href: '#home', label: 'Home' },
-    { href: '#story', label: 'Story' },
-    { href: '#features', label: 'Features' },
-    { href: '#how-it-works', label: 'How It Works' },
-    { href: '#testimonials', label: 'Testimonials' },
+    { href: '/', label: 'Home' },
+    { href: '/#story', label: 'Story' },
+    { href: '/#features', label: 'Features' },
+    { href: '/#how-it-works', label: 'How It Works' },
+    { href: '/#testimonials', label: 'Testimonials' },
   ];
 
   // Fetch real GitHub stars and forks
