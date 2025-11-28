@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { signIn } from 'next-auth/react';
 
@@ -17,7 +17,12 @@ export default function RegisterPage() {
     password: '',
     confirmPassword: '',
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
+
   const router = useRouter();
   const { toast } = useToast();
 
@@ -35,8 +40,8 @@ export default function RegisterPage() {
 
     if (formData.password.length < 6) {
       toast({
-        title: 'Password Too Short',
-        description: 'Your password must be at least 6 characters long. Please choose a stronger password.',
+        title: 'Weak Password',
+        description: 'Your password must be at least 6 characters long.',
         variant: 'destructive',
       });
       return;
@@ -57,11 +62,10 @@ export default function RegisterPage() {
       if (response.ok) {
         toast({
           title: 'Account Created!',
-          description: 'Your anonymous username has been generated. Signing you in...',
+          description: 'Signing you in...',
           variant: 'success',
         });
 
-        // Auto sign in with email
         await signIn('credentials', {
           email: formData.email,
           password: formData.password,
@@ -71,33 +75,24 @@ export default function RegisterPage() {
         router.push('/onboarding');
       } else {
         const data = await response.json();
-        
-        // Handle specific error messages with user-friendly text
-        let errorTitle = 'Registration Failed';
-        let errorDescription = data.error || 'Something went wrong. Please try again.';
-        
-        if (data.error?.toLowerCase().includes('email already exists') || 
-            data.error?.toLowerCase().includes('user with this email')) {
-          errorTitle = 'Email Already Registered';
-          errorDescription = 'An account with this email already exists. Please sign in instead.';
-        } else if (data.error?.toLowerCase().includes('email and password are required')) {
-          errorTitle = 'Missing Information';
-          errorDescription = 'Please provide both email and password to create an account.';
-        } else if (data.error?.toLowerCase().includes('internal server error')) {
-          errorTitle = 'Server Error';
-          errorDescription = 'We encountered an issue creating your account. Please try again in a moment.';
+        let title = 'Registration Failed';
+        let desc = data.error || 'Something went wrong.';
+
+        if (data.error?.toLowerCase().includes('email already')) {
+          title = 'Email Already Exists';
+          desc = 'Try signing in instead.';
         }
-        
+
         toast({
-          title: errorTitle,
-          description: errorDescription,
+          title,
+          description: desc,
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Connection Error',
-        description: 'Unable to connect to the server. Please check your internet connection and try again.',
+        title: 'Network Error',
+        description: 'Unable to reach server.',
         variant: 'destructive',
       });
     } finally {
@@ -106,57 +101,93 @@ export default function RegisterPage() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create Account</CardTitle>
-        <CardDescription>Join PodLink and find your accountability partners</CardDescription>
+    <Card className="w-full max-w-md shadow-lg border-0">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="text-2xl font-bold">Join PodLink</CardTitle>
+        <CardDescription className="text-base">
+          Create your account in seconds
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="mb-4 p-3 bg-primary/5 rounded-lg border border-primary/20">
-            <p className="text-sm text-muted-foreground">
-              🔒 <strong>Anonymous Platform:</strong> Your username will be automatically generated. 
-              Only your email is required for account creation.
-            </p>
-          </div>
-          <div>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
+          <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-              className="h-11"
-            />
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                className="h-11 pl-10"
+                required
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+              />
+            </div>
           </div>
-          <div>
+
+          {/* Password */}
+          <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a password (min 6 characters)"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              required
-              minLength={6}
-              className="h-11"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Create a password"
+                className="h-11 pl-10 pr-10"
+                minLength={6}
+                required
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-2.5 text-muted-foreground"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
-          <div>
+
+          {/* Confirm Password */}
+          <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>
-            <Input
-              id="confirmPassword"
-              type="password"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              required
-              className="h-11"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+              <Input
+                id="confirmPassword"
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="Confirm your password"
+                className="h-11 pl-10 pr-10"
+                required
+                value={formData.confirmPassword}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    confirmPassword: e.target.value,
+                  })
+                }
+              />
+              <button
+                type="button"
+                className="absolute right-3 top-2.5 text-muted-foreground"
+                onClick={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
+              >
+                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
           </div>
-          <Button type="submit" className="w-full" disabled={loading}>
+
+          <Button className="w-full h-11 sm:h-12 text-base font-semibold" disabled={loading} type="submit">
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -168,6 +199,7 @@ export default function RegisterPage() {
           </Button>
         </form>
       </CardContent>
+
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
           Already have an account?{' '}
