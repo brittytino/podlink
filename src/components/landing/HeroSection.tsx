@@ -21,7 +21,7 @@ export default function HeroSection({ statsCount, activePill, pillMessages }: He
   const opacity = useTransform(scrollY, [0, 200], [1, 0.3]);
 
   return (
-    <section id="home" className="relative min-h-screen pt-16">
+    <section id="home" className="relative min-h-screen">
       {/* Background with wider container */}
       <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50/20 flex items-center overflow-hidden">
         
