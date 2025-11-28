@@ -30,61 +30,60 @@ export function AvailabilityMessageInput({
   onMessageChange,
 }: AvailabilityMessageInputProps) {
   return (
-    <div className="space-y-8 lg:space-y-10 max-h-[calc(100vh-400px)] lg:max-h-none overflow-hidden">
-      <div className="text-center lg:text-left space-y-3 lg:space-y-4">
-        <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="text-center sm:text-left space-y-2 sm:space-y-3">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
           Create Your Support Message
         </h2>
-        <p className="text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto lg:mx-0">
-          Write an encouraging message that will be shown to your pod members when you're not available to help them
+        <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+          Write an encouraging message for your pod members when you're unavailable
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Message Input */}
-        <div className="space-y-6">
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <MessageCircle className="h-6 w-6 lg:h-7 lg:w-7 text-primary" />
-              <Label htmlFor="availability-message" className="text-lg lg:text-xl font-bold text-foreground">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+              <Label htmlFor="availability-message" className="text-base sm:text-lg font-bold text-foreground">
                 Your Message
               </Label>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-5 w-5 lg:h-6 lg:w-6 text-muted-foreground cursor-help" />
+                    <Info className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground cursor-help flex-shrink-0" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-sm p-4">
                     <p className="text-sm leading-relaxed">
                       This message will be shown to your pod members when you're
-                      unavailable and they need encouragement. It rotates with other
-                      members' messages to provide continuous support.
+                      unavailable and they need encouragement.
                     </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </div>
-            <p className="text-sm lg:text-base text-muted-foreground leading-relaxed">
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
               Make it personal, encouraging, and supportive. Your words can make a real difference!
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <Textarea
               id="availability-message"
               placeholder="Write your encouraging message here... Be authentic and supportive!"
               value={message}
               onChange={(e) => onMessageChange(e.target.value)}
-              className="min-h-[180px] lg:min-h-[220px] xl:min-h-[240px] resize-none text-base lg:text-lg border-2 rounded-xl focus:border-primary"
+              className="min-h-[160px] sm:min-h-[180px] lg:min-h-[220px] resize-none text-sm sm:text-base border-2 rounded-xl focus:border-primary"
               maxLength={500}
             />
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 text-sm lg:text-base text-muted-foreground">
-                <Heart className="h-4 w-4 lg:h-5 lg:w-5 text-pink-500" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-pink-500 flex-shrink-0" />
                 <span>Your words matter</span>
               </div>
               <span className={cn(
-                "text-sm lg:text-base font-medium",
+                "text-xs sm:text-sm font-medium",
                 message.length > 450 ? "text-orange-500" : 
                 message.length > 400 ? "text-yellow-500" : "text-muted-foreground"
               )}>
@@ -95,15 +94,15 @@ export function AvailabilityMessageInput({
         </div>
 
         {/* Message Suggestions */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <Star className="h-6 w-6 lg:h-7 lg:w-7 text-yellow-500" />
-            <h3 className="text-lg lg:text-xl font-bold text-foreground">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Star className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500 flex-shrink-0" />
+            <h3 className="text-base sm:text-lg font-bold text-foreground">
               Need Inspiration?
             </h3>
           </div>
           
-          <div className="space-y-4 max-h-[300px] lg:max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="space-y-3 sm:space-y-4 max-h-[300px] lg:max-h-[400px] overflow-y-auto pr-2">
             {suggestionMessages.map((suggestion, index) => (
               <Card
                 key={index}
@@ -112,20 +111,20 @@ export function AvailabilityMessageInput({
                   'hover:border-primary hover:shadow-md hover:scale-[1.01]',
                   'active:scale-[0.99]',
                   message === suggestion 
-                    ? 'border-primary bg-primary/10 shadow-md' 
-                    : 'border-border hover:bg-accent/50'
+                    ? 'border-primary bg-primary/5 shadow-md' 
+                    : 'border-border hover:bg-primary/5'
                 )}
                 onClick={() => onMessageChange(suggestion)}
               >
-                <CardContent className="p-4 lg:p-5">
-                  <div className="space-y-3">
-                    <p className="text-sm lg:text-base leading-relaxed text-foreground">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="space-y-2 sm:space-y-3">
+                    <p className="text-xs sm:text-sm leading-relaxed text-foreground">
                       {suggestion}
                     </p>
                     <Button 
                       variant={message === suggestion ? "default" : "outline"} 
                       size="sm"
-                      className="w-full"
+                      className="w-full text-xs sm:text-sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         onMessageChange(suggestion);
@@ -145,25 +144,25 @@ export function AvailabilityMessageInput({
       {message && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           <Card className="border-2 border-primary/20 bg-primary/5">
-            <CardContent className="p-6 lg:p-8">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <MessageCircle className="h-6 w-6 lg:h-7 lg:w-7 text-primary" />
-                  <h3 className="text-lg lg:text-xl font-bold text-foreground">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">
                     Preview: How your message will appear
                   </h3>
                 </div>
                 
-                <div className="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-border">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Heart className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
+                <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-border">
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Heart className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-sm lg:text-base text-muted-foreground mb-1">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-1">
                         Support message from you:
                       </p>
-                      <p className="text-sm lg:text-base text-foreground leading-relaxed">
+                      <p className="text-xs sm:text-sm text-foreground leading-relaxed break-words">
                         {message}
                       </p>
                     </div>

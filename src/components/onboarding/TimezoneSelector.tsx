@@ -33,7 +33,7 @@ interface TimezoneSelectorProps {
 
 export function TimezoneSelector({ timezone, onTimezoneChange }: TimezoneSelectorProps) {
   const selectedTimezone = timezones.find(tz => tz.value === timezone);
-  const currentTime = new Date().toLocaleTimeString('en-US', { 
+  const currentTime = new Date().toLocaleTimeString('en-US', {
     timeZone: timezone,
     hour: '2-digit',
     minute: '2-digit',
@@ -41,60 +41,93 @@ export function TimezoneSelector({ timezone, onTimezoneChange }: TimezoneSelecto
   });
 
   return (
-    <div className="space-y-8 lg:space-y-10 max-h-[calc(100vh-400px)] lg:max-h-none overflow-hidden">
-      <div className="text-center lg:text-left space-y-3 lg:space-y-4">
-        <h2 className="text-2xl lg:text-3xl xl:text-4xl font-bold text-foreground">
+    <div className="space-y-6 sm:space-y-8">
+      <div className="text-center sm:text-left space-y-2 sm:space-y-3">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
           Select Your Timezone
         </h2>
-        <p className="text-base lg:text-lg text-muted-foreground max-w-3xl mx-auto lg:mx-0">
-          We'll match you with pod members in similar timezones so someone is always available when you need support
+        <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">
+          We'll match you with pod members in similar timezones for better availability
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 xl:gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Timezone Selector */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3">
-            <Globe className="h-6 w-6 lg:h-7 lg:w-7 text-primary" />
-            <Label className="text-lg lg:text-xl font-bold text-foreground">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+            <Label className="text-base sm:text-lg font-bold text-foreground">
               Choose Your Location
             </Label>
           </div>
 
           <Select value={timezone} onValueChange={onTimezoneChange}>
-            <SelectTrigger className="h-14 lg:h-16 text-base lg:text-lg border-2 rounded-xl focus:border-primary">
+            <SelectTrigger
+              className="
+      h-12 sm:h-14 w-full
+      rounded-lg border
+      px-4
+      flex items-center justify-between
+      text-sm sm:text-base
+      bg-background
+      focus:outline-none focus:ring-2 focus:ring-primary
+    "
+            >
               <SelectValue placeholder="Select your timezone" />
             </SelectTrigger>
-            <SelectContent>
+
+            <SelectContent
+              position="popper"
+              className="
+      w-[var(--radix-select-trigger-width)]
+      rounded-lg border bg-popover shadow-lg
+      animate-in fade-in-0 zoom-in-95
+      max-h-72 overflow-y-auto
+    "
+            >
               {timezones.map((tz) => (
-                <SelectItem key={tz.value} value={tz.value} className="py-3">
-                  <div className="flex items-center justify-between w-full">
-                    <div>
-                      <div className="font-semibold">{tz.label}</div>
-                      <div className="text-sm text-muted-foreground">{tz.region} • {tz.offset}</div>
-                    </div>
-                  </div>
+                <SelectItem
+                  key={tz.value}
+                  value={tz.value}
+                  className="
+          cursor-pointer
+          py-3 px-4
+          rounded-md
+          hover:bg-accent
+          focus:bg-accent
+          focus:text-accent-foreground
+          text-sm sm:text-base
+        "
+                >
+                  <span className="font-medium text-sm sm:text-base">
+                    {tz.label} -
+                    <span className="text-muted-foreground text-xs sm:text-sm">
+                      {tz.region} • {tz.offset}
+                    </span>
+                  </span>
+
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
+
           {/* Benefits */}
-          <div className="space-y-4">
-            <h3 className="text-base lg:text-lg font-semibold text-foreground">
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-sm sm:text-base font-semibold text-foreground">
               Why timezone matters:
             </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-sm lg:text-base text-muted-foreground">
-                <Users className="h-5 w-5 text-blue-500 flex-shrink-0" />
+            <div className="space-y-2 sm:space-y-3">
+              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <span>Better pod member matching</span>
               </div>
-              <div className="flex items-center gap-3 text-sm lg:text-base text-muted-foreground">
-                <Clock className="h-5 w-5 text-green-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <span>Real-time availability sync</span>
               </div>
-              <div className="flex items-center gap-3 text-sm lg:text-base text-muted-foreground">
-                <MapPin className="h-5 w-5 text-purple-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
                 <span>Local community connections</span>
               </div>
             </div>
@@ -102,39 +135,37 @@ export function TimezoneSelector({ timezone, onTimezoneChange }: TimezoneSelecto
         </div>
 
         {/* Selected Timezone Info */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {selectedTimezone && (
             <Card className="border-2 border-primary/20 bg-primary/5">
-              <CardContent className="p-6 lg:p-8">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-6 w-6 lg:h-7 lg:w-7 text-primary" />
-                    <h3 className="text-lg lg:text-xl font-bold text-foreground">
+              <CardContent className="p-4 sm:p-6">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+                    <h3 className="text-base sm:text-lg font-bold text-foreground">
                       Selected Timezone
                     </h3>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <div className="bg-white rounded-xl p-4 lg:p-6 shadow-sm border border-border">
-                      <div className="space-y-3">
-                        <div>
-                          <h4 className="font-semibold text-base lg:text-lg text-foreground">
-                            {selectedTimezone.label}
-                          </h4>
-                          <p className="text-sm lg:text-base text-muted-foreground">
-                            {selectedTimezone.region} • {selectedTimezone.offset}
-                          </p>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 pt-2 border-t">
-                          <Clock className="h-4 w-4 lg:h-5 lg:w-5 text-primary" />
-                          <span className="text-sm lg:text-base text-muted-foreground">
-                            Current time:
-                          </span>
-                          <span className="font-semibold text-base lg:text-lg text-foreground">
-                            {currentTime}
-                          </span>
-                        </div>
+
+                  <div className="bg-white rounded-xl p-3 sm:p-4 shadow-sm border border-border">
+                    <div className="space-y-2 sm:space-y-3">
+                      <div>
+                        <h4 className="font-semibold text-sm sm:text-base text-foreground">
+                          {selectedTimezone.label}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          {selectedTimezone.region} • {selectedTimezone.offset}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2 border-t">
+                        <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">
+                          Current time:
+                        </span>
+                        <span className="font-semibold text-sm sm:text-base text-foreground">
+                          {currentTime}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -143,30 +174,30 @@ export function TimezoneSelector({ timezone, onTimezoneChange }: TimezoneSelecto
             </Card>
           )}
 
-          {/* Timezone Map Visual (Placeholder) */}
+          {/* Timezone Map Visual */}
           <Card className="border-2 border-border">
-            <CardContent className="p-6 lg:p-8">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <Globe className="h-6 w-6 lg:h-7 lg:w-7 text-blue-500" />
-                  <h3 className="text-lg lg:text-xl font-bold text-foreground">
+            <CardContent className="p-4 sm:p-6">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <Globe className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">
                     Global Pod Network
                   </h3>
                 </div>
-                
+
                 <div className="space-y-3">
-                  <p className="text-sm lg:text-base text-muted-foreground leading-relaxed">
+                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                     Join thousands of users worldwide working on their goals in accountability pods.
                   </p>
-                  
-                  <div className="grid grid-cols-2 gap-4 pt-2">
+
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 pt-2">
                     <div className="text-center">
-                      <div className="text-lg lg:text-xl font-bold text-blue-600">24/7</div>
-                      <div className="text-xs lg:text-sm text-muted-foreground">Global Coverage</div>
+                      <div className="text-base sm:text-lg font-bold text-primary">24/7</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Global Coverage</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-lg lg:text-xl font-bold text-green-600">50+</div>
-                      <div className="text-xs lg:text-sm text-muted-foreground">Active Timezones</div>
+                      <div className="text-base sm:text-lg font-bold text-primary">50+</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">Active Timezones</div>
                     </div>
                   </div>
                 </div>

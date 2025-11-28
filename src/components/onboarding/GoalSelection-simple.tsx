@@ -30,30 +30,18 @@ export function GoalSelection({
                 goalType === 'BUILD_HABIT' ? GOOD_HABITS_TO_BUILD : [];
 
   return (
-    <div className="space-y-8 max-h-[calc(100vh-300px)] overflow-hidden">
-      {/* Welcome Section */}
-      {!goalType && (
-        <div className="text-center space-y-6">
-          <h2 className="text-3xl font-bold text-foreground">
-            What's your goal?
-          </h2>
-          <p className="text-lg text-muted-foreground">
-            Choose the type of goal you want to work on
-          </p>
-        </div>
-      )}
-
-      {/* Goal Type Selection - Simple Buttons */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Goal Type Selection */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {/* Quit a Habit */}
         <Button
           variant={goalType === 'QUIT_HABIT' ? 'default' : 'outline'}
           size="lg"
           className={cn(
-            'h-auto p-8 flex flex-col items-center space-y-4 transition-all duration-200',
+            'h-auto p-6 sm:p-8 flex flex-col items-center space-y-3 sm:space-y-4 transition-all duration-200 rounded-xl',
             goalType === 'QUIT_HABIT'
-              ? 'bg-red-500 hover:bg-red-600 text-white border-red-500'
-              : 'border-2 hover:border-red-400 hover:bg-red-50'
+              ? 'bg-primary hover:bg-primary/90 text-white border-primary shadow-sm'
+              : 'border-2 hover:border-primary/50 hover:bg-primary/5'
           )}
           onClick={() => {
             console.log('Quit Habit clicked');
@@ -61,29 +49,29 @@ export function GoalSelection({
           }}
         >
           <div className={cn(
-            'w-16 h-16 rounded-full border-4 flex items-center justify-center',
+            'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all',
             goalType === 'QUIT_HABIT'
-              ? 'border-white bg-white'
-              : 'border-red-200 bg-red-50'
+              ? 'bg-white/20'
+              : 'bg-primary/10'
           )}>
             <Target className={cn(
-              'h-8 w-8',
-              goalType === 'QUIT_HABIT' ? 'text-red-500' : 'text-red-500'
+              'h-7 w-7 sm:h-8 sm:w-8',
+              goalType === 'QUIT_HABIT' ? 'text-white' : 'text-primary'
             )} />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-bold mb-2">
+            <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">
               Quit a Habit
             </h3>
             <p className={cn(
-              'text-sm leading-relaxed',
-              goalType === 'QUIT_HABIT' ? 'text-red-100' : 'text-muted-foreground'
+              'text-xs sm:text-sm leading-relaxed',
+              goalType === 'QUIT_HABIT' ? 'text-white/90' : 'text-muted-foreground'
             )}>
               Stop doing something that's holding you back
             </p>
           </div>
           {goalType === 'QUIT_HABIT' && (
-            <Check className="h-6 w-6 text-white" />
+            <Check className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
           )}
         </Button>
 
@@ -92,10 +80,10 @@ export function GoalSelection({
           variant={goalType === 'BUILD_HABIT' ? 'default' : 'outline'}
           size="lg"
           className={cn(
-            'h-auto p-8 flex flex-col items-center space-y-4 transition-all duration-200',
+            'h-auto p-6 sm:p-8 flex flex-col items-center space-y-3 sm:space-y-4 transition-all duration-200 rounded-xl',
             goalType === 'BUILD_HABIT'
-              ? 'bg-green-500 hover:bg-green-600 text-white border-green-500'
-              : 'border-2 hover:border-green-400 hover:bg-green-50'
+              ? 'bg-primary hover:bg-primary/90 text-white border-primary shadow-sm'
+              : 'border-2 hover:border-primary/50 hover:bg-primary/5'
           )}
           onClick={() => {
             console.log('Build Habit clicked');
@@ -103,47 +91,47 @@ export function GoalSelection({
           }}
         >
           <div className={cn(
-            'w-16 h-16 rounded-full border-4 flex items-center justify-center',
+            'w-14 h-14 sm:w-16 sm:h-16 rounded-full flex items-center justify-center transition-all',
             goalType === 'BUILD_HABIT'
-              ? 'border-white bg-white'
-              : 'border-green-200 bg-green-50'
+              ? 'bg-white/20'
+              : 'bg-primary/10'
           )}>
             <TrendingUp className={cn(
-              'h-8 w-8',
-              goalType === 'BUILD_HABIT' ? 'text-green-500' : 'text-green-500'
+              'h-7 w-7 sm:h-8 sm:w-8',
+              goalType === 'BUILD_HABIT' ? 'text-white' : 'text-primary'
             )} />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-bold mb-2">
+            <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">
               Build a Habit
             </h3>
             <p className={cn(
-              'text-sm leading-relaxed',
-              goalType === 'BUILD_HABIT' ? 'text-green-100' : 'text-muted-foreground'
+              'text-xs sm:text-sm leading-relaxed',
+              goalType === 'BUILD_HABIT' ? 'text-white/90' : 'text-muted-foreground'
             )}>
               Start doing something positive consistently
             </p>
           </div>
           {goalType === 'BUILD_HABIT' && (
-            <Check className="h-6 w-6 text-white" />
+            <Check className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
           )}
         </Button>
       </div>
 
       {/* Goal Description Section */}
       {goalType && (
-        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="text-center">
-            <h3 className="text-xl font-bold mb-2">
+        <div className="space-y-5 sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="text-center sm:text-left">
+            <h3 className="text-lg sm:text-xl font-bold mb-2">
               Describe your specific goal
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Tell us what exactly you want to {goalType === 'QUIT_HABIT' ? 'quit' : 'build'}
             </p>
           </div>
           
           {/* Simple Text Area */}
-          <div className="max-w-2xl mx-auto">
+          <div className="w-full">
             <Textarea
               placeholder={`e.g., ${
                 goalType === 'QUIT_HABIT' 
@@ -152,34 +140,34 @@ export function GoalSelection({
               }`}
               value={goalDescription}
               onChange={(e) => onGoalDescriptionChange(e.target.value)}
-              className="min-h-[120px] text-base resize-none border-2 rounded-xl"
+              className="min-h-[100px] sm:min-h-[120px] text-sm sm:text-base resize-none border-2 rounded-xl focus:ring-2 focus:ring-primary/20"
             />
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2">
               {goalDescription.trim() 
                 ? "Great! We'll help you connect with others working on similar goals."
                 : 'Describe your specific goal in detail for better matching.'}
             </p>
           </div>
 
-          {/* Quick Goal Examples */}
-          <div className="max-w-4xl mx-auto">
-            <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+          {/* Quick Goal Examples - Fully Responsive */}
+          <div className="w-full">
+            <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
               Popular {goalType === 'QUIT_HABIT' ? 'Habits to Quit' : 'Habits to Build'}
             </h4>
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
               {goals.slice(0, 6).map((goal) => (
                 <Button
                   key={goal.id}
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="h-auto p-3 text-left justify-start"
+                  className="h-auto py-3 px-3 sm:px-4 text-left justify-start hover:bg-primary/5 hover:border-primary/50 transition-all rounded-lg"
                   onClick={() => {
                     onGoalCategoryChange(goal.id);
                     onGoalDescriptionChange(goal.label);
                   }}
                 >
-                  <div className="truncate">
-                    <div className="font-medium text-sm">{goal.label}</div>
+                  <div className="w-full">
+                    <div className="font-medium text-xs sm:text-sm line-clamp-2">{goal.label}</div>
                   </div>
                 </Button>
               ))}
@@ -188,23 +176,23 @@ export function GoalSelection({
 
           {/* Selected Goal Summary */}
           {goalDescription.trim() && (
-            <div className="max-w-2xl mx-auto p-4 bg-primary/10 rounded-xl border-2 border-primary/20">
+            <div className="w-full p-4 sm:p-5 bg-primary/5 rounded-xl border border-primary/20">
               <div className="flex items-start gap-3">
                 <div className={cn(
-                  'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
-                  goalType === 'QUIT_HABIT' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'
+                  'w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center flex-shrink-0',
+                  'bg-primary/10'
                 )}>
                   {goalType === 'QUIT_HABIT' ? (
-                    <Target className="h-4 w-4" />
+                    <Target className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   ) : (
-                    <TrendingUp className="h-4 w-4" />
+                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                   )}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-primary mb-1">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs sm:text-sm font-semibold text-primary mb-1">
                     Your Selected Goal:
                   </p>
-                  <p className="text-sm font-medium">{goalDescription}</p>
+                  <p className="text-sm sm:text-base font-medium text-foreground break-words">{goalDescription}</p>
                 </div>
               </div>
             </div>
