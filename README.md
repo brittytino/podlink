@@ -66,7 +66,361 @@
 - **Version Control**: Git
 
 
-## 📦 Installation
+## �️ Database Schema
+
+PodLink uses **PostgreSQL** (via Neon) with **Prisma ORM** for type-safe database access. The schema is designed for scalability and efficient querying.
+
+### Entity Relationship Diagram
+
+```
+┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│     User     │────────>│     Pod      │<────────│ CrisisAlert  │
+│              │  podId  │              │  podId  │              │
+└──────┬───────┘         └──────┬───────┘         └──────┬───────┘
+       │                        │                        │
+       │                        │                        │
+       v                        v                        v
+┌──────────────┐         ┌──────────────┐         ┌──────────────┐
+│   CheckIn    │         │ PodMessage   │         │ Achievement  │
+└──────────────┘         └──────────────┘         └──────────────┘
+       │
+       v
+┌──────────────┐
+│CrisisToolkit │
+│    Item      │
+└──────────────┘
+```
+
+### Core Models
+
+#### User Model
+The central entity representing registered users and AI bots.
+
+```prisma
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  username            String    @unique
+  password            String?                    // Null for OAuth users
+  fullName            String
+  displayName         String?                    // Anonymous name for privacy
+  avatarUrl           String?                    // Cloudinary URL
+  timezone            String    @default("UTC")
+  availabilityHours   Json                       // { start: "09:00", end: "17:00" }
+  goalType            GoalType?                  // QUIT_HABIT or BUILD_HABIT
+  goalDescription     String?
+  goalCategory        String?                    // e.g., "Smoking", "Exercise"
+  gender              String?                    // For avatar generation
+  currentStreak       Int       @default(0)
+  lastCheckIn         DateTime?
+  isDemoAccount       Boolean   @default(false)
+  onboardingComplete  Boolean   @default(false)
+  podId               String?                    // Foreign key to Pod
+  availabilityMessage String?                    // Custom support message
+  isAI                Boolean   @default(false)  // True for AI pod members
+  
+  // Relations
+  pod                 Pod?               @relation(fields: [podId], references: [id])
+  crisisAlerts        CrisisAlert[]
+  messages            PodMessage[]
+  checkIns            CheckIn[]
+  toolkitItems        CrisisToolkitItem[]
+  achievements        Achievement[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+```
+
+**Key Features:**
+- UUID primary key for security
+- Unique email and username constraints
+- JSON field for flexible availability scheduling
+- Support for both real users and AI bots
+- Automatic timestamp tracking
+
+#### Pod Model
+Groups of 4-6 users working toward similar goals.
+
+```prisma
+model Pod {
+  id                     String    @id @default(uuid())
+  name                   String                       // e.g., "The Determined Dragons"
+  totalStreak            Int       @default(0)
+  podType                PodType   @default(REAL)    // REAL or AI
+  goalType               GoalType?                    // QUIT_HABIT or BUILD_HABIT
+  goalCategory           String?                      // For matching similar goals
+  lastShownMessageUserId String?                      // Round-robin message display
+  
+  // Relations
+  members                User[]
+  messages               PodMessage[]
+  crisisAlerts           CrisisAlert[]
+  achievements           Achievement[]
+  
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+}
+```
+
+**Key Features:**
+- Smart pod matching based on goals and preferences
+- Support for real and AI-powered pods
+- Collective streak tracking
+- Message rotation for fair visibility
+
+#### CrisisAlert Model
+Emergency support system for users in distress.
+
+```prisma
+model CrisisAlert {
+  id                     String      @id @default(uuid())
+  userId                 String
+  podId                  String
+  message                String?                      // Optional personal message
+  status                 AlertStatus @default(ACTIVE) // ACTIVE or RESOLVED
+  responseCount          Int         @default(0)
+  lastShownMessageUserId String?                      // Response rotation
+  aiResponses            Json?                        // AI-generated support messages
+  
+  // Relations
+  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pod                    Pod         @relation(fields: [podId], references: [id], onDelete: Cascade)
+  responses              PodMessage[]
+  
+  createdAt              DateTime    @default(now())
+  resolvedAt             DateTime?
+}
+```
+
+**Key Features:**
+- Instant notification to pod members
+- AI-generated supportive responses
+- Response tracking and resolution
+- Cascade deletion for data integrity
+
+#### PodMessage Model
+Real-time chat messages within pods.
+
+```prisma
+model PodMessage {
+  id               String       @id @default(uuid())
+  podId            String
+  userId           String
+  messageText      String
+  isCrisisResponse Boolean      @default(false)      // True if responding to crisis
+  alertId          String?                           // Link to CrisisAlert
+  
+  // Relations
+  pod              Pod          @relation(fields: [podId], references: [id], onDelete: Cascade)
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alert            CrisisAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
+  
+  createdAt        DateTime     @default(now())
+}
+```
+
+**Key Features:**
+- Real-time messaging via Socket.io
+- Crisis response flagging
+- Automatic cleanup on user/pod deletion
+
+#### CheckIn Model
+Daily progress tracking for accountability.
+
+```prisma
+model CheckIn {
+  id             String   @id @default(uuid())
+  userId         String
+  stayedOnTrack  Boolean                            // Yes/No daily check-in
+  date           DateTime @default(now())
+  
+  // Relations
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime @default(now())
+  
+  @@unique([userId, date])                          // One check-in per day per user
+}
+```
+
+**Key Features:**
+- Simple boolean tracking
+- Unique constraint prevents duplicate daily check-ins
+- Automatic streak calculation based on check-in history
+
+#### CrisisToolkitItem Model
+Personalized coping strategies and resources.
+
+```prisma
+model CrisisToolkitItem {
+  id            String   @id @default(uuid())
+  userId        String
+  title         String                              // e.g., "Call my sponsor"
+  description   String                              // e.g., "Phone: 555-1234"
+  orderPosition Int                                 // Custom ordering
+  
+  // Relations
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+```
+
+**Key Features:**
+- User-customizable support resources
+- Ordered list for priority access
+- Editable and deletable
+
+#### Achievement Model
+Badges and milestones for gamification.
+
+```prisma
+model Achievement {
+  id        String      @id @default(uuid())
+  podId     String?                                // Pod-level achievement
+  userId    String?                                // User-level achievement
+  badgeType BadgeType                             // Type of badge earned
+  
+  // Relations
+  pod       Pod?        @relation(fields: [podId], references: [id], onDelete: Cascade)
+  user      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  earnedAt  DateTime    @default(now())
+}
+```
+
+**Key Features:**
+- Support for both individual and pod achievements
+- Automatic timestamp for earning
+- Multiple badge types
+
+### Enums
+
+```prisma
+enum GoalType {
+  QUIT_HABIT    // Users trying to quit a habit (e.g., smoking, drinking)
+  BUILD_HABIT   // Users trying to build a habit (e.g., exercise, meditation)
+}
+
+enum AlertStatus {
+  ACTIVE        // Crisis alert is active and needs response
+  RESOLVED      // Crisis has been resolved
+}
+
+enum BadgeType {
+  SEVEN_DAY_STREAK      // Maintained 7-day check-in streak
+  THIRTY_DAY_STREAK     // Maintained 30-day check-in streak
+  INSTANT_RESPONDER     // Responded to crisis alert within 5 minutes
+  POD_CHAMPION          // Most active member in pod
+}
+
+enum PodType {
+  REAL          // Real users only
+  AI            // Includes AI-generated members for support
+}
+```
+
+### Database Indexes
+
+Prisma automatically creates indexes for:
+- All `@id` fields (primary keys)
+- All `@unique` fields and constraints
+- All foreign key relationships
+
+### Database Configuration
+
+```javascript
+// Optimized for Neon PostgreSQL
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")      // Pooled connection (ends with -pooler)
+  // Direct connection for migrations: env("DIRECT_URL")
+}
+```
+
+**Performance Optimizations:**
+- Connection pooling for Neon free tier
+- Efficient cascade deletions
+- Indexed foreign keys
+- JSON fields for flexible data
+
+### Sample Data Relationships
+
+```sql
+-- Example: User in Pod with Check-ins
+User (id: uuid-1)
+  ├── Pod (id: pod-1, name: "The Determined Dragons")
+  ├── CheckIns
+  │   ├── CheckIn (date: 2025-11-28, stayedOnTrack: true)
+  │   ├── CheckIn (date: 2025-11-29, stayedOnTrack: true)
+  │   └── CheckIn (date: 2025-11-30, stayedOnTrack: true)
+  ├── PodMessages
+  │   └── Message (text: "Great work everyone!", podId: pod-1)
+  ├── CrisisToolkitItems
+  │   ├── Item (title: "Call sponsor", orderPosition: 1)
+  │   └── Item (title: "Breathing exercise", orderPosition: 2)
+  └── Achievements
+      └── Achievement (badgeType: SEVEN_DAY_STREAK)
+```
+
+### Migration Commands
+
+```bash
+# Create new migration
+npx prisma migrate dev --name add_new_field
+
+# Apply migrations to production
+npx prisma migrate deploy
+
+# Reset database (DEV ONLY - deletes all data)
+npx prisma migrate reset
+
+# Generate Prisma Client after schema changes
+npx prisma generate
+
+# Open Prisma Studio (GUI for data)
+npx prisma studio
+```
+
+### Database Best Practices
+
+1. **Always use transactions for multi-step operations**
+   ```typescript
+   await prisma.$transaction([
+     prisma.checkIn.create({ data: checkInData }),
+     prisma.user.update({ data: { currentStreak: newStreak } })
+   ]);
+   ```
+
+2. **Use select to limit returned fields**
+   ```typescript
+   const user = await prisma.user.findUnique({
+     where: { id },
+     select: { id: true, displayName: true, avatarUrl: true }
+   });
+   ```
+
+3. **Leverage relations for efficient queries**
+   ```typescript
+   const pod = await prisma.pod.findUnique({
+     where: { id },
+     include: { members: true, messages: { take: 50 } }
+   });
+   ```
+
+4. **Handle connection errors gracefully**
+   ```typescript
+   try {
+     await prisma.$connect();
+   } catch (error) {
+     console.error("Database connection failed:", error);
+   }
+   ```
+
+
+## �📦 Installation
 
 ### Prerequisites
 - **Node.js**: 18.x or higher
