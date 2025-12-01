@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import prisma from '@/lib/prisma';
-import { generateAIChatResponse } from '@/lib/gemini';
+import { generateAIChatResponse } from '@/lib/openrouter';
 import { emitToPod } from '@/lib/socket-emit';
 
 async function retryDatabaseOperation<T>(
@@ -43,7 +43,10 @@ export async function GET(req: NextRequest) {
 
     const messages = await retryDatabaseOperation(() =>
       prisma.podMessage.findMany({
-        where: { podId },
+        where: { 
+          podId,
+          isDeleted: false, // Don't return deleted messages
+        },
         include: {
           user: {
             select: {
@@ -55,23 +58,49 @@ export async function GET(req: NextRequest) {
               isAI: true, // Include AI flag
             } as any,
           },
+          reactions: {
+            select: {
+              emoji: true,
+              userId: true,
+            },
+          },
         },
         orderBy: { createdAt: 'asc' },
         take: 50,
       })
     );
 
-    const formattedMessages = messages.map((msg: any) => ({
-      id: msg.id,
-      messageText: msg.messageText,
-      userId: msg.userId,
-      username: msg.user.username,
-      displayName: msg.user.displayName || msg.user.fullName, // Use displayName for anonymity
-      avatarUrl: msg.user.avatarUrl,
-      createdAt: msg.createdAt.toISOString(),
-      isCrisisResponse: msg.isCrisisResponse,
-      isAI: msg.user.isAI || false, // Include AI flag
-    }));
+    const formattedMessages = messages.map((msg: any) => {
+      // Group reactions by emoji
+      const reactionsMap = new Map<string, { emoji: string; count: number; userIds: string[] }>();
+      
+      msg.reactions?.forEach((reaction: any) => {
+        if (!reactionsMap.has(reaction.emoji)) {
+          reactionsMap.set(reaction.emoji, {
+            emoji: reaction.emoji,
+            count: 0,
+            userIds: [],
+          });
+        }
+        const reactionData = reactionsMap.get(reaction.emoji)!;
+        reactionData.count++;
+        reactionData.userIds.push(reaction.userId);
+      });
+
+      return {
+        id: msg.id,
+        messageText: msg.messageText,
+        imageUrl: msg.imageUrl,
+        userId: msg.userId,
+        username: msg.user.username,
+        displayName: msg.user.displayName || msg.user.fullName, // Use displayName for anonymity
+        avatarUrl: msg.user.avatarUrl,
+        createdAt: msg.createdAt.toISOString(),
+        isCrisisResponse: msg.isCrisisResponse,
+        isAI: msg.user.isAI || false, // Include AI flag
+        reactions: Array.from(reactionsMap.values()),
+      };
+    });
 
     return NextResponse.json({ messages: formattedMessages });
   } catch (error: any) {
@@ -101,11 +130,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { podId, userId, messageText, isCrisisResponse, alertId } = await req.json();
+    const { podId, userId, messageText, isCrisisResponse, alertId, imageUrl } = await req.json();
 
-    if (!podId || !userId || !messageText) {
+    if (!podId || !userId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    // Must have either messageText or imageUrl
+    if (!messageText && !imageUrl) {
+      return NextResponse.json(
+        { error: 'Message must contain text or image' },
         { status: 400 }
       );
     }
@@ -115,7 +152,8 @@ export async function POST(req: NextRequest) {
         data: {
           podId,
           userId,
-          messageText,
+          messageText: messageText || '',
+          imageUrl: imageUrl || null,
           isCrisisResponse: isCrisisResponse || false,
           alertId: alertId || null,
         },
@@ -184,28 +222,20 @@ export async function POST(req: NextRequest) {
     const sender = pod.members.find(m => m.id === userId);
     const isFromRealUser = sender && !sender.isAI;
 
-    if (isFromRealUser) {
+    // ONLY trigger AI for crisis responses or if it's an AI-only pod
+    // Normal chat messages should NOT trigger any automation
+    if (isFromRealUser && isCrisisResponse && alertId) {
       // Get all real members (excluding AI bots and the sender)
       const otherRealMembers = pod.members.filter(
         (m: any) => !m.isAI && m.id !== userId
       );
 
-      // Check if any other real member is active (checked in within last 6 hours)
-      const now = new Date();
-      const sixHoursAgo = new Date(now.getTime() - 6 * 60 * 60 * 1000);
-      const activeRealMembers = otherRealMembers.filter((m: any) => {
-        if (!m.lastCheckIn) return false;
-        return new Date(m.lastCheckIn) > sixHoursAgo;
-      });
-
       // Trigger AI response if:
-      // 1. No other active real members (they're offline/inactive)
+      // 1. No other real members at all (user is alone)
       // 2. OR it's an AI pod (podType === 'AI')
-      // 3. OR there's only 1 real member total (user is alone)
       const shouldTriggerAI = 
-        activeRealMembers.length === 0 || 
-        pod.podType === 'AI' || 
-        otherRealMembers.length === 0;
+        otherRealMembers.length === 0 || 
+        pod.podType === 'AI';
       if (shouldTriggerAI) {
         // Get or create an AI bot for this pod
         let aiBot = pod.members.find((m: any) => m.isAI);
@@ -289,16 +319,18 @@ export async function POST(req: NextRequest) {
               content: msg.messageText as string,
             }));
 
-          // Generate AI response using Gemini
+          // Generate AI response using OpenRouter
           try {
-            const aiResponse = await generateAIChatResponse({
-              userMessage: messageText,
-              goalCategory: user?.goalCategory || pod.goalCategory || undefined,
-              goalDescription: user?.goalDescription || undefined,
-              userName: user?.displayName || user?.fullName || 'friend',
-              userStreak: user?.currentStreak || 0,
-              conversationHistory,
-            });
+            const previousMessages = conversationHistory.slice(-3).map(msg => msg.content);
+            
+            const aiResponse = await generateAIChatResponse(
+              messageText,
+              {
+                username: user?.displayName || user?.fullName || 'friend',
+                isInCrisis: isCrisisResponse || false,
+                previousMessages,
+              }
+            );
 
             // Create AI message with a natural delay (1-3 seconds)
             const delay = 1000 + Math.random() * 2000;

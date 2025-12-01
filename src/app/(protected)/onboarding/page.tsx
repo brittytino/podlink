@@ -148,8 +148,8 @@ export default function OnboardingPage() {
             : 'We will assign you to a pod soon!',
         });
 
-        router.push('/dashboard');
-        router.refresh();
+        // Force a full page reload to ensure token is refreshed
+        window.location.href = '/dashboard';
       } else {
         const errorData = await response.json().catch(() => ({}));
         toast({
@@ -193,27 +193,37 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
+    <div className="fixed inset-0 top-[56px] sm:top-[64px] flex bg-gradient-to-br from-slate-50 via-white to-slate-50">
       {/* Desktop: Two-Column Layout | Mobile: Single Column */}
-      <div className="w-full min-h-screen lg:flex">
+      <div className="w-full h-full lg:flex">
         
         {/* Left Sidebar - Progress & Info (Desktop Only) */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="hidden lg:flex lg:w-[380px] xl:w-[420px] bg-white border-r border-slate-200 flex-col"
+          transition={{ duration: 0.4 }}
+          className="hidden lg:flex lg:w-[380px] xl:w-[420px] bg-white border-r border-slate-200 flex-col h-full"
         >
-          <div className="flex-1 p-8 xl:p-10 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-6 xl:p-8 flex flex-col">
             {/* Logo/Brand Area */}
-            <div className="mb-10">
+            <motion.div 
+              className="mb-8"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+            >
               <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome to PodLink</h2>
               <p className="text-sm text-slate-600 leading-relaxed">Let's set up your accountability journey</p>
-            </div>
+            </motion.div>
 
             {/* Progress Overview */}
             <div className="flex-1">
-              <div className="mb-8">
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.4 }}
+              >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Progress</span>
                   <span className="text-xl font-bold text-primary">{Math.round(progress)}%</span>
@@ -226,17 +236,17 @@ export default function OnboardingPage() {
                     className="h-full bg-primary rounded-full shadow-sm"
                   />
                 </div>
-              </div>
+              </motion.div>
 
               {/* Step List */}
-              <div className="space-y-2.5">
+              <div className="space-y-2">
                 {stepTitles.map((title, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className={`flex items-center gap-3 p-3.5 rounded-xl transition-all duration-200 ${
+                    transition={{ delay: 0.3 + index * 0.05, duration: 0.3 }}
+                    className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
                       index < step - 1
                         ? 'bg-slate-50'
                         : index === step - 1
@@ -245,7 +255,7 @@ export default function OnboardingPage() {
                     }`}
                   >
                     <div
-                      className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-200 ${
                         index < step - 1
                           ? 'bg-primary text-white shadow-sm'
                           : index === step - 1
@@ -254,7 +264,7 @@ export default function OnboardingPage() {
                       }`}
                     >
                       {index < step - 1 ? (
-                        <CheckCircle2 className="w-5 h-5" />
+                        <CheckCircle2 className="w-4 h-4" />
                       ) : (
                         index + 1
                       )}
@@ -272,7 +282,7 @@ export default function OnboardingPage() {
                         {title}
                       </p>
                       {index === step - 1 && (
-                        <p className="text-xs text-slate-500 mt-1 line-clamp-1">{stepDescriptions[index]}</p>
+                        <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{stepDescriptions[index]}</p>
                       )}
                     </div>
                   </motion.div>
@@ -281,7 +291,12 @@ export default function OnboardingPage() {
             </div>
 
             {/* Security Notice */}
-            <div className="mt-8 pt-6 border-t border-slate-200">
+            <motion.div 
+              className="mt-6 pt-6 border-t border-slate-200"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+            >
               <div className="flex items-start gap-3 text-xs text-slate-600">
                 <div className="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <div className="w-2 h-2 rounded-full bg-green-500"></div>
@@ -290,19 +305,19 @@ export default function OnboardingPage() {
                   Your data is encrypted and secure. We use this information to create the perfect accountability pod for you.
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </motion.div>
 
         {/* Right Content Area */}
-        <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
           
           {/* Mobile Header */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="lg:hidden bg-white border-b border-slate-200 px-4 py-4 sticky top-0 z-10 shadow-sm"
+            transition={{ duration: 0.3 }}
+            className="lg:hidden bg-white border-b border-slate-200 px-4 py-4 flex-shrink-0 shadow-sm"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex-1 min-w-0 pr-3">
@@ -342,14 +357,14 @@ export default function OnboardingPage() {
             </div>
           </motion.div>
 
-          {/* Desktop Header */}
+          {/* Desktop Header - Fixed */}
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="hidden lg:block bg-white border-b border-slate-200 px-8 xl:px-12 py-6"
+            transition={{ duration: 0.3 }}
+            className="hidden lg:block bg-white border-b border-slate-200 px-6 xl:px-10 py-5 flex-shrink-0"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between max-w-[1600px] mx-auto">
               <div>
                 <h1 className="text-2xl xl:text-3xl font-bold text-slate-900 mb-1">
                   {stepTitles[step - 1]}
@@ -373,109 +388,111 @@ export default function OnboardingPage() {
             </div>
           </motion.div>
 
-          {/* Main Content */}
+          {/* Main Content - Scrollable */}
           <div className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50/50 via-white to-slate-50/50">
-            <div className="h-full px-4 py-6 sm:px-6 lg:px-10 xl:px-12 lg:py-8">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={step}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="h-full w-full max-w-3xl mx-auto"
-                >
-                  {step === 1 && (
-                    <GoalSelection
-                      goalType={formData.goalType}
-                      goalDescription={formData.goalDescription}
-                      goalCategory={formData.goalCategory}
-                      onGoalTypeChange={(value) => {
-                        console.log('Parent received goal type:', value);
-                        setFormData({ ...formData, goalType: value });
-                      }}
-                      onGoalDescriptionChange={(value) =>
-                        setFormData({ ...formData, goalDescription: value })
-                      }
-                      onGoalCategoryChange={(value) =>
-                        setFormData({ ...formData, goalCategory: value })
-                      }
-                    />
-                  )}
+            <div className="h-full px-4 py-6 sm:px-6 lg:px-6 xl:px-10">
+              <div className="max-w-[1600px] mx-auto">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={step}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="w-full max-w-3xl mx-auto"
+                  >
+                    {step === 1 && (
+                      <GoalSelection
+                        goalType={formData.goalType}
+                        goalDescription={formData.goalDescription}
+                        goalCategory={formData.goalCategory}
+                        onGoalTypeChange={(value) => {
+                          console.log('Parent received goal type:', value);
+                          setFormData({ ...formData, goalType: value });
+                        }}
+                        onGoalDescriptionChange={(value) =>
+                          setFormData({ ...formData, goalDescription: value })
+                        }
+                        onGoalCategoryChange={(value) =>
+                          setFormData({ ...formData, goalCategory: value })
+                        }
+                      />
+                    )}
 
-                  {step === 2 && (
-                    <PodTypeSelection
-                      podType={formData.podType}
-                      onPodTypeChange={(value) =>
-                        setFormData({ ...formData, podType: value })
-                      }
-                    />
-                  )}
+                    {step === 2 && (
+                      <PodTypeSelection
+                        podType={formData.podType}
+                        onPodTypeChange={(value) =>
+                          setFormData({ ...formData, podType: value })
+                        }
+                      />
+                    )}
 
-                  {step === 3 && (
-                    <AvailabilityMessageInput
-                      message={formData.availabilityMessage}
-                      onMessageChange={(value) =>
-                        setFormData({ ...formData, availabilityMessage: value })
-                      }
-                    />
-                  )}
+                    {step === 3 && (
+                      <AvailabilityMessageInput
+                        message={formData.availabilityMessage}
+                        onMessageChange={(value) =>
+                          setFormData({ ...formData, availabilityMessage: value })
+                        }
+                      />
+                    )}
 
-                  {step === 4 && (
-                    <GenderSelector
-                      gender={formData.gender}
-                      onGenderChange={(value) =>
-                        setFormData({ ...formData, gender: value })
-                      }
-                    />
-                  )}
+                    {step === 4 && (
+                      <GenderSelector
+                        gender={formData.gender}
+                        onGenderChange={(value) =>
+                          setFormData({ ...formData, gender: value })
+                        }
+                      />
+                    )}
 
-                  {step === 5 && (
-                    <TimezoneSelector
-                      timezone={formData.timezone}
-                      onTimezoneChange={(value) =>
-                        setFormData({ ...formData, timezone: value })
-                      }
-                    />
-                  )}
+                    {step === 5 && (
+                      <TimezoneSelector
+                        timezone={formData.timezone}
+                        onTimezoneChange={(value) =>
+                          setFormData({ ...formData, timezone: value })
+                        }
+                      />
+                    )}
 
-                  {step === 6 && (
-                    <AvailabilityPicker
-                      startTime={formData.availabilityHours.start}
-                      endTime={formData.availabilityHours.end}
-                      onStartTimeChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          availabilityHours: {
-                            ...formData.availabilityHours,
-                            start: value,
-                          },
-                        })
-                      }
-                      onEndTimeChange={(value) =>
-                        setFormData({
-                          ...formData,
-                          availabilityHours: {
-                            ...formData.availabilityHours,
-                            end: value,
-                          },
-                        })
-                      }
-                    />
-                  )}
-                </motion.div>
-              </AnimatePresence>
+                    {step === 6 && (
+                      <AvailabilityPicker
+                        startTime={formData.availabilityHours.start}
+                        endTime={formData.availabilityHours.end}
+                        onStartTimeChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            availabilityHours: {
+                              ...formData.availabilityHours,
+                              start: value,
+                            },
+                          })
+                        }
+                        onEndTimeChange={(value) =>
+                          setFormData({
+                            ...formData,
+                            availabilityHours: {
+                              ...formData.availabilityHours,
+                              end: value,
+                            },
+                          })
+                        }
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
-          {/* Footer Navigation */}
+          {/* Footer Navigation - Fixed */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="bg-white border-t border-slate-200 px-4 py-4 sm:px-6 lg:px-10 xl:px-12 lg:py-5 shadow-sm"
+            transition={{ duration: 0.3, delay: 0.1 }}
+            className="bg-white border-t border-slate-200 px-4 py-4 sm:px-6 lg:px-6 xl:px-10 flex-shrink-0 shadow-sm"
           >
-            <div className="flex items-center justify-between gap-3 sm:gap-4 max-w-3xl mx-auto">
+            <div className="flex items-center justify-between gap-3 sm:gap-4 max-w-[1600px] mx-auto">
               {/* Back Button */}
               {step > 1 ? (
                 <Button

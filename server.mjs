@@ -89,7 +89,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on('crisis-alert', ({ podId, alert, username, userId }) => {
-    io.to(podId).emit('crisis-alert-received', {
+    // Broadcast to pod members EXCEPT the sender
+    socket.to(podId).emit('crisis-alert-received', {
       alertId: alert.id,
       userId,
       username,
@@ -108,6 +109,14 @@ io.on('connection', (socket) => {
 
   socket.on('alert-resolved', ({ podId, alertId }) => {
     io.to(podId).emit('alert-resolved', { alertId });
+  });
+
+  socket.on('message-reaction', ({ podId, messageId, reactions }) => {
+    io.to(podId).emit('message-reaction', { messageId, reactions });
+  });
+
+  socket.on('message-deleted', ({ podId, messageId }) => {
+    io.to(podId).emit('message-deleted', { messageId });
   });
 
   socket.on('disconnect', () => {

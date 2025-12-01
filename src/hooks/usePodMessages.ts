@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useSocket } from './useSocket';
-import { SocketMessage } from '@/types/socket';
+import { SocketMessage, MessageReaction } from '@/types/socket';
 
 export function usePodMessages(podId: string | null) {
   const [messages, setMessages] = useState<SocketMessage[]>([]);
@@ -12,16 +12,34 @@ export function usePodMessages(podId: string | null) {
   useEffect(() => {
     if (!podId) return;
 
-    // Fetch existing messages
-    const fetchMessages = () => {
-      fetch(`/api/pods/messages?podId=${podId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setMessages(data.messages || []);
-        })
-        .catch((error) => {
-          console.error('Error fetching messages:', error);
-        });
+    // Fetch existing messages with reactions
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(`/api/pods/messages?podId=${podId}`);
+        const data = await res.json();
+        
+        if (data.messages) {
+          // Fetch reactions for each message
+          const messagesWithReactions = await Promise.all(
+            data.messages.map(async (msg: SocketMessage) => {
+              try {
+                const reactionsRes = await fetch(`/api/pods/messages/reactions?messageId=${msg.id}`);
+                const reactionsData = await reactionsRes.json();
+                return {
+                  ...msg,
+                  reactions: reactionsData.reactions || [],
+                };
+              } catch {
+                return msg;
+              }
+            })
+          );
+          
+          setMessages(messagesWithReactions);
+        }
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
     };
 
     fetchMessages();
@@ -50,7 +68,14 @@ export function usePodMessages(podId: string | null) {
     };
   }, [socket, podId]);
 
-  const sendMessage = async (messageText: string, userId: string, username: string, avatarUrl: string | null, displayName?: string) => {
+  const sendMessage = async (
+    messageText: string, 
+    userId: string, 
+    username: string, 
+    avatarUrl: string | null, 
+    displayName?: string,
+    imageUrl?: string | null
+  ) => {
     if (!socket || !podId || sendingRef.current) return;
 
     try {
@@ -59,7 +84,7 @@ export function usePodMessages(podId: string | null) {
       const res = await fetch('/api/pods/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ podId, messageText, userId }),
+        body: JSON.stringify({ podId, messageText, userId, imageUrl }),
       });
       
       const data = await res.json();
@@ -86,5 +111,21 @@ export function usePodMessages(podId: string | null) {
     }
   };
 
-  return { messages, sendMessage, isAITyping };
+  const updateMessageReactions = useCallback((messageId: string, reactions: MessageReaction[]) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, reactions } : msg
+      )
+    );
+  }, []);
+
+  const deleteMessage = useCallback((messageId: string) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId ? { ...msg, isDeleted: true } : msg
+      )
+    );
+  }, []);
+
+  return { messages, sendMessage, isAITyping, updateMessageReactions, deleteMessage };
 }

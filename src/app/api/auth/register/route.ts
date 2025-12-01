@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
-import { generateAnonymousName } from '@/lib/gemini';
+import { generateAnonymousName } from '@/lib/openrouter';
 
 export async function POST(req: NextRequest) {
   try {

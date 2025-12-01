@@ -115,7 +115,7 @@ export const authConfig: NextAuthConfig = {
             .map((u) => u.username)
             .filter((n): n is string => n !== null);
           
-          const { generateAnonymousName } = await import('@/lib/gemini');
+          const { generateAnonymousName } = await import('@/lib/openrouter');
           const displayName = await generateAnonymousName(existingNames);
           const baseUsername = displayName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
           

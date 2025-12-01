@@ -9,9 +9,11 @@ interface ChatWindowProps {
   messages: SocketMessage[];
   currentUserId: string;
   isAITyping?: boolean;
+  onReactionAdd?: (messageId: string, emoji: string) => void;
+  onReport?: (messageId: string) => void;
 }
 
-export function ChatWindow({ messages, currentUserId, isAITyping }: ChatWindowProps) {
+export function ChatWindow({ messages, currentUserId, isAITyping, onReactionAdd, onReport }: ChatWindowProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,6 +74,9 @@ export function ChatWindow({ messages, currentUserId, isAITyping }: ChatWindowPr
                 key={message.id}
                 message={message}
                 isOwn={message.userId === currentUserId}
+                currentUserId={currentUserId}
+                onReactionAdd={onReactionAdd}
+                onReport={onReport}
               />
             ))}
           </div>

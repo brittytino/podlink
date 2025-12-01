@@ -1,1274 +1,638 @@
-# PodLink - Accountability Pod Platform
+# 🔗 PodLink - Accountability Pod Platform
 
-> 🚀 A Next.js accountability platform that connects users in small groups (pods) to help them achieve their goals through peer support and daily check-ins.
+> A modern web application connecting users in small accountability groups (pods) to achieve their goals through peer support, daily check-ins, and real-time communication.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-6.0-2D3748)](https://www.prisma.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.18-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=for-the-badge&logo=postgresql)](https://neon.tech/)
+[![Socket.io](https://img.shields.io/badge/Socket.io-4.8-010101?style=for-the-badge&logo=socket.io)](https://socket.io/)
 
-## � Table of Contents
+---
 
-- [Features](#-features)
-- [Tech Stack](#️-tech-stack)
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Technology Stack](#-technology-stack)
+- [System Architecture](#-system-architecture)
+- [Getting Started](#-getting-started)
 - [Installation](#-installation)
 - [Configuration](#-configuration)
+- [Database Setup](#-database-setup)
+- [Running the Application](#-running-the-application)
+- [Project Structure](#-project-structure)
+- [API Documentation](#-api-documentation)
+- [Testing](#-testing)
 - [Deployment](#-deployment)
-- [Troubleshooting](#-troubleshooting)
 - [Contributing](#-contributing)
 - [License](#-license)
 
-## �🚀 Features
+---
 
-### Core Features
-- **🔐 User Authentication**: Google OAuth via Firebase + traditional login/register with secure JWT sessions
-- **👥 Accountability Pods**: Smart matching algorithm that creates 4-6 member groups based on goals and preferences
-- **📊 Daily Check-ins**: Progress tracking with streak counters and weekly summaries
-- **💬 Real-time Chat**: Pod communication powered by Socket.io with typing indicators
-- **🆘 Crisis Support**: Emergency alert system and personalized crisis toolkit
-- **🏆 Leaderboard**: Pod rankings, individual achievements, and badge system
-- **📱 Responsive Design**: Mobile-first design that works seamlessly on all devices
-- **🤖 AI Integration**: Gemini AI for generating anonymous names and supportive messages
+## 🎯 Overview
 
-### User Experience
-- Guided onboarding for new users
-- Anonymous display names for privacy
-- Customizable availability schedules
-- Avatar uploads with Cloudinary
-- Real-time notifications
-- Week progress visualization
+**PodLink** is a comprehensive accountability platform designed to help users achieve their personal and professional goals through:
 
-## 🛠️ Tech Stack
+- **Smart Pod Matching**: AI-powered algorithm groups users (4-6 members) based on similar goals, timezones, and preferences
+- **Daily Accountability**: Track progress with daily check-ins and maintain streak counters
+- **Real-time Communication**: WebSocket-powered chat with emoji reactions, image sharing, and typing indicators
+- **Crisis Support System**: Emergency alert system with automated responses and personalized crisis toolkit
+- **Gamification**: Leaderboards, achievement badges, and streak restoration mechanics
+- **Privacy-First Design**: Anonymous display names and secure data handling
 
-### Frontend
-- **Framework**: Next.js 16 (App Router + Turbopack)
-- **Language**: TypeScript 5.0
-- **Styling**: Tailwind CSS 3.4
-- **UI Components**: shadcn/ui
-- **Icons**: Lucide React
-- **Real-time**: Socket.io Client
+### Target Users
+- Individuals seeking accountability for habit formation
+- People working on quitting addictions (smoking, alcohol, etc.)
+- Professionals building new skills or routines
+- Anyone needing peer support for personal growth
 
-### Backend
-- **API**: Next.js API Routes (Edge & Node Runtime)
-- **ORM**: Prisma 6.18
-- **Database**: Neon PostgreSQL (with connection pooling)
-- **Authentication**: NextAuth.js v4
-- **Real-time Server**: Socket.io Server
-- **File Upload**: Cloudinary
-- **AI**: Google Gemini API
+---
 
-### DevOps & Tools
-- **Package Manager**: npm
-- **Linting**: ESLint 9
-- **Type Checking**: TypeScript strict mode
-- **Deployment**: Vercel (recommended)
-- **Version Control**: Git
+## ✨ Key Features
 
+### 🔐 Authentication & Onboarding
+- **Multi-provider Authentication**
+  - Email/Password with bcrypt encryption
+  - Google OAuth integration
+  - JWT session management via NextAuth.js
+- **Guided Onboarding Flow**
+  - Goal type selection (Quit Habit / Build Habit)
+  - Goal category and description
+  - Availability schedule setup
+  - Anonymous display name generation (AI-powered)
+  - Avatar upload with Cloudinary
 
-## �️ Database Schema
+### 👥 Accountability Pods
+- **Smart Matching Algorithm**
+  - Groups users based on goal type and category
+  - Timezone consideration for optimal interaction
+  - 4-6 member pods for effective peer support
+  - AI bots fill incomplete pods for demo accounts
+- **Pod Features**
+  - Real-time member list with current streaks
+  - Pod-level achievement tracking
+  - Total pod streak calculation
 
-PodLink uses **PostgreSQL** (via Neon) with **Prisma ORM** for type-safe database access. The schema is designed for scalability and efficient querying.
+### 📊 Daily Check-ins
+- **Progress Tracking**
+  - Daily check-in system with timezone awareness
+  - Streak counter (consecutive days)
+  - Weekly progress visualization
+  - Check-in history API
+- **Streak Management**
+  - Automatic streak breaking for missed days
+  - Streak restoration system (1 per month)
+  - Last successful day tracking
+  - Timezone-aware date handling
 
-### Entity Relationship Diagram
+### 💬 Real-time Chat
+- **WhatsApp-Style Messaging**
+  - Real-time message delivery via Socket.io
+  - Emoji picker integration (keyboard + UI picker)
+  - Image attachment with Cloudinary upload
+  - Image preview before sending (max 5MB)
+  - Message reactions with emoji
+  - Typing indicators
+  - Read receipts (double checkmark)
+- **Message Features**
+  - Crisis response tagging
+  - Message reporting system
+  - Automatic message deletion after 3 reports
+  - Date separators in chat
+  - Automatic scroll to latest
+  - Click image to view full-size
+
+### 🆘 Crisis Support
+- **Emergency Alert System**
+  - One-click crisis alert to pod members
+  - Immediate notification broadcast
+  - Optional custom message
+  - Automated responses from offline members (>6 hours)
+  - Alert resolution tracking
+- **Crisis Toolkit**
+  - Personalized coping strategies
+  - Drag-and-drop reordering
+  - CRUD operations for toolkit items
+  - Quick access during emergencies
+
+### 🏆 Gamification
+- **Leaderboard System**
+  - Top pods by total streak
+  - Top individuals by current streak
+  - Real-time ranking updates
+  - Achievement badge display
+- **Badge System**
+  - 7-day streak badge
+  - 30-day streak badge
+  - Instant Responder (crisis support)
+  - Pod Champion (most active member)
+
+### 🤖 AI Integration
+- **Google Gemini AI**
+  - Anonymous display name generation
+  - Crisis response messages
+  - Supportive pod messages
+  - AI bot members in demo pods
+
+### 📱 User Interface
+- **Responsive Design**
+  - Mobile-first approach
+  - Tablet and desktop optimized
+  - Touch-friendly interactions
+  - Dark mode support
+- **Modern UI/UX**
+  - shadcn/ui component library
+  - Tailwind CSS styling
+  - Smooth animations with Framer Motion
+  - WhatsApp-inspired chat design
+  - Accessible components (ARIA compliant)
+
+---
+
+## 🛠️ Technology Stack
+
+### Frontend Technologies
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Next.js** | 16.0.5 | React framework with App Router & Turbopack |
+| **React** | 19.2.0 | UI library for component-based architecture |
+| **TypeScript** | 5.0+ | Type-safe JavaScript for better DX |
+| **Tailwind CSS** | 4.x | Utility-first CSS framework |
+| **shadcn/ui** | Latest | Accessible UI component library |
+| **Lucide React** | 0.552.0 | Icon library |
+| **Framer Motion** | 12.23.24 | Animation library |
+| **Socket.io Client** | 4.8.1 | WebSocket client for real-time features |
+| **Emoji Picker React** | 4.16.1 | Emoji selection component |
+| **React Hook Form** | 7.66.0 | Form state management |
+| **Zod** | 4.1.12 | Schema validation |
+| **Recharts** | 2.15.4 | Data visualization |
+
+### Backend Technologies
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Next.js API Routes** | 16.0.5 | Serverless API endpoints |
+| **Prisma ORM** | 6.18.0 | Type-safe database client |
+| **PostgreSQL** | Latest | Primary database (via Neon) |
+| **NextAuth.js** | 5.0-beta.30 | Authentication solution |
+| **Socket.io Server** | 4.8.1 | WebSocket server |
+| **Cloudinary** | 2.8.0 | Image upload and optimization |
+| **Google Gemini API** | Latest | AI-powered features |
+| **bcryptjs** | 3.0.2 | Password hashing |
+
+### Development Tools
+
+| Tool | Version | Purpose |
+|------|---------|---------|
+| **ESLint** | 9.x | Code linting |
+| **Concurrently** | 9.2.1 | Run multiple processes |
+| **tsx** | 4.20.6 | TypeScript execution |
+| **Prisma Studio** | Built-in | Database GUI |
+
+---
+
+## 🏗️ System Architecture
+
+### High-Level Architecture
 
 ```
-┌──────────────┐         ┌──────────────┐         ┌──────────────┐
-│     User     │────────>│     Pod      │<────────│ CrisisAlert  │
-│              │  podId  │              │  podId  │              │
-└──────┬───────┘         └──────┬───────┘         └──────┬───────┘
-       │                        │                        │
-       │                        │                        │
-       v                        v                        v
-┌──────────────┐         ┌──────────────┐         ┌──────────────┐
-│   CheckIn    │         │ PodMessage   │         │ Achievement  │
-└──────────────┘         └──────────────┘         └──────────────┘
-       │
-       v
-┌──────────────┐
-│CrisisToolkit │
-│    Item      │
-└──────────────┘
+┌───────────────────────────────────────────────────────────┐
+│                      Client Layer                         │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │  Browser │  │  Mobile  │  │  Tablet  │  │ Desktop  │   │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘   │
+│       └─────────────┼─────────────┼─────────────┘         │
+└─────────────────────┼─────────────┼───────────────────────┘
+                      │             │
+                      ▼             ▼
+┌────────────────────────────────────────────────────────────┐
+│               Next.js Application (Vercel)                 │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │           App Router (Server Components)             │  │
+│  │  ┌────────┐  ┌────────┐  ┌─────────┐  ┌────────┐     │  │
+│  │  │  Auth  │  │  Pod   │  │Dashboard│  │ Chat   │     │  │
+│  │  │  Pages │  │  Pages │  │  Pages  │  │ Pages  │     │  │
+│  │  └────────┘  └────────┘  └─────────┘  └────────┘     │  │
+│  └──────────────────────────────────────────────────────┘  │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │                API Routes (Serverless)               │  │
+│  │  ┌────────┐  ┌────────┐  ┌─────────┐  ┌────────┐     │  │
+│  │  │  /auth │  │ /pods  │  │/check-in│  │/alerts │     │  │
+│  │  └────────┘  └────────┘  └─────────┘  └────────┘     │  │
+│  └──────────────────────────────────────────────────────┘  │
+└─────────────────────┬───────────────┬──────────────────────┘
+                      │               │
+                      ▼               ▼
+┌─────────────────────────────┐  ┌──────────────────────────┐
+│   Socket.io Server (Node)   │  │    Prisma ORM Layer      │
+│  ┌────────────────────────┐ │  │  ┌────────────────────┐  │
+│  │  WebSocket Connections │ │  │  │  Type-safe Queries │  │
+│  │  - Chat Messages       │ │  │  │  - User CRUD       │  │
+│  │  - Crisis Alerts       │ │  │  │  - Pod CRUD        │  │
+│  │  - Typing Indicators   │ │  │  │  - Message CRUD    │  │
+│  │  - Reactions           │ │  │  │  - Check-in CRUD   │  │
+│  └────────────────────────┘ │  │  └────────────────────┘  │
+└─────────────────────────────┘  └────────────┬─────────────┘
+                                              │
+                      ┌───────────────────────┼───────────────┐
+                      ▼                       ▼               ▼
+        ┌──────────────────────┐  ┌──────────────┐  ┌─────────────┐
+        │  Neon PostgreSQL     │  │  Cloudinary  │  │ Gemini AI   │
+        │  - User Data         │  │  - Avatars   │  │ - AI Names  │
+        │  - Pod Data          │  │  - Images    │  │ - Messages  │
+        │  - Messages          │  └──────────────┘  └─────────────┘
+        │  - Check-ins         │
+        │  - Achievements      │
+        └──────────────────────┘
 ```
 
-### Core Models
+---
 
-#### User Model
-The central entity representing registered users and AI bots.
-
-```prisma
-model User {
-  id                  String    @id @default(uuid())
-  email               String    @unique
-  username            String    @unique
-  password            String?                    // Null for OAuth users
-  fullName            String
-  displayName         String?                    // Anonymous name for privacy
-  avatarUrl           String?                    // Cloudinary URL
-  timezone            String    @default("UTC")
-  availabilityHours   Json                       // { start: "09:00", end: "17:00" }
-  goalType            GoalType?                  // QUIT_HABIT or BUILD_HABIT
-  goalDescription     String?
-  goalCategory        String?                    // e.g., "Smoking", "Exercise"
-  gender              String?                    // For avatar generation
-  currentStreak       Int       @default(0)
-  lastCheckIn         DateTime?
-  isDemoAccount       Boolean   @default(false)
-  onboardingComplete  Boolean   @default(false)
-  podId               String?                    // Foreign key to Pod
-  availabilityMessage String?                    // Custom support message
-  isAI                Boolean   @default(false)  // True for AI pod members
-  
-  // Relations
-  pod                 Pod?               @relation(fields: [podId], references: [id])
-  crisisAlerts        CrisisAlert[]
-  messages            PodMessage[]
-  checkIns            CheckIn[]
-  toolkitItems        CrisisToolkitItem[]
-  achievements        Achievement[]
-  
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-}
-```
-
-**Key Features:**
-- UUID primary key for security
-- Unique email and username constraints
-- JSON field for flexible availability scheduling
-- Support for both real users and AI bots
-- Automatic timestamp tracking
-
-#### Pod Model
-Groups of 4-6 users working toward similar goals.
-
-```prisma
-model Pod {
-  id                     String    @id @default(uuid())
-  name                   String                       // e.g., "The Determined Dragons"
-  totalStreak            Int       @default(0)
-  podType                PodType   @default(REAL)    // REAL or AI
-  goalType               GoalType?                    // QUIT_HABIT or BUILD_HABIT
-  goalCategory           String?                      // For matching similar goals
-  lastShownMessageUserId String?                      // Round-robin message display
-  
-  // Relations
-  members                User[]
-  messages               PodMessage[]
-  crisisAlerts           CrisisAlert[]
-  achievements           Achievement[]
-  
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
-}
-```
-
-**Key Features:**
-- Smart pod matching based on goals and preferences
-- Support for real and AI-powered pods
-- Collective streak tracking
-- Message rotation for fair visibility
-
-#### CrisisAlert Model
-Emergency support system for users in distress.
-
-```prisma
-model CrisisAlert {
-  id                     String      @id @default(uuid())
-  userId                 String
-  podId                  String
-  message                String?                      // Optional personal message
-  status                 AlertStatus @default(ACTIVE) // ACTIVE or RESOLVED
-  responseCount          Int         @default(0)
-  lastShownMessageUserId String?                      // Response rotation
-  aiResponses            Json?                        // AI-generated support messages
-  
-  // Relations
-  user                   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  pod                    Pod         @relation(fields: [podId], references: [id], onDelete: Cascade)
-  responses              PodMessage[]
-  
-  createdAt              DateTime    @default(now())
-  resolvedAt             DateTime?
-}
-```
-
-**Key Features:**
-- Instant notification to pod members
-- AI-generated supportive responses
-- Response tracking and resolution
-- Cascade deletion for data integrity
-
-#### PodMessage Model
-Real-time chat messages within pods.
-
-```prisma
-model PodMessage {
-  id               String       @id @default(uuid())
-  podId            String
-  userId           String
-  messageText      String
-  isCrisisResponse Boolean      @default(false)      // True if responding to crisis
-  alertId          String?                           // Link to CrisisAlert
-  
-  // Relations
-  pod              Pod          @relation(fields: [podId], references: [id], onDelete: Cascade)
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  alert            CrisisAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
-  
-  createdAt        DateTime     @default(now())
-}
-```
-
-**Key Features:**
-- Real-time messaging via Socket.io
-- Crisis response flagging
-- Automatic cleanup on user/pod deletion
-
-#### CheckIn Model
-Daily progress tracking for accountability.
-
-```prisma
-model CheckIn {
-  id             String   @id @default(uuid())
-  userId         String
-  stayedOnTrack  Boolean                            // Yes/No daily check-in
-  date           DateTime @default(now())
-  
-  // Relations
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt      DateTime @default(now())
-  
-  @@unique([userId, date])                          // One check-in per day per user
-}
-```
-
-**Key Features:**
-- Simple boolean tracking
-- Unique constraint prevents duplicate daily check-ins
-- Automatic streak calculation based on check-in history
-
-#### CrisisToolkitItem Model
-Personalized coping strategies and resources.
-
-```prisma
-model CrisisToolkitItem {
-  id            String   @id @default(uuid())
-  userId        String
-  title         String                              // e.g., "Call my sponsor"
-  description   String                              // e.g., "Phone: 555-1234"
-  orderPosition Int                                 // Custom ordering
-  
-  // Relations
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-```
-
-**Key Features:**
-- User-customizable support resources
-- Ordered list for priority access
-- Editable and deletable
-
-#### Achievement Model
-Badges and milestones for gamification.
-
-```prisma
-model Achievement {
-  id        String      @id @default(uuid())
-  podId     String?                                // Pod-level achievement
-  userId    String?                                // User-level achievement
-  badgeType BadgeType                             // Type of badge earned
-  
-  // Relations
-  pod       Pod?        @relation(fields: [podId], references: [id], onDelete: Cascade)
-  user      User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  earnedAt  DateTime    @default(now())
-}
-```
-
-**Key Features:**
-- Support for both individual and pod achievements
-- Automatic timestamp for earning
-- Multiple badge types
-
-### Enums
-
-```prisma
-enum GoalType {
-  QUIT_HABIT    // Users trying to quit a habit (e.g., smoking, drinking)
-  BUILD_HABIT   // Users trying to build a habit (e.g., exercise, meditation)
-}
-
-enum AlertStatus {
-  ACTIVE        // Crisis alert is active and needs response
-  RESOLVED      // Crisis has been resolved
-}
-
-enum BadgeType {
-  SEVEN_DAY_STREAK      // Maintained 7-day check-in streak
-  THIRTY_DAY_STREAK     // Maintained 30-day check-in streak
-  INSTANT_RESPONDER     // Responded to crisis alert within 5 minutes
-  POD_CHAMPION          // Most active member in pod
-}
-
-enum PodType {
-  REAL          // Real users only
-  AI            // Includes AI-generated members for support
-}
-```
-
-### Database Indexes
-
-Prisma automatically creates indexes for:
-- All `@id` fields (primary keys)
-- All `@unique` fields and constraints
-- All foreign key relationships
-
-### Database Configuration
-
-```javascript
-// Optimized for Neon PostgreSQL
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")      // Pooled connection (ends with -pooler)
-  // Direct connection for migrations: env("DIRECT_URL")
-}
-```
-
-**Performance Optimizations:**
-- Connection pooling for Neon free tier
-- Efficient cascade deletions
-- Indexed foreign keys
-- JSON fields for flexible data
-
-### Sample Data Relationships
-
-```sql
--- Example: User in Pod with Check-ins
-User (id: uuid-1)
-  ├── Pod (id: pod-1, name: "The Determined Dragons")
-  ├── CheckIns
-  │   ├── CheckIn (date: 2025-11-28, stayedOnTrack: true)
-  │   ├── CheckIn (date: 2025-11-29, stayedOnTrack: true)
-  │   └── CheckIn (date: 2025-11-30, stayedOnTrack: true)
-  ├── PodMessages
-  │   └── Message (text: "Great work everyone!", podId: pod-1)
-  ├── CrisisToolkitItems
-  │   ├── Item (title: "Call sponsor", orderPosition: 1)
-  │   └── Item (title: "Breathing exercise", orderPosition: 2)
-  └── Achievements
-      └── Achievement (badgeType: SEVEN_DAY_STREAK)
-```
-
-### Migration Commands
-
-```bash
-# Create new migration
-npx prisma migrate dev --name add_new_field
-
-# Apply migrations to production
-npx prisma migrate deploy
-
-# Reset database (DEV ONLY - deletes all data)
-npx prisma migrate reset
-
-# Generate Prisma Client after schema changes
-npx prisma generate
-
-# Open Prisma Studio (GUI for data)
-npx prisma studio
-```
-
-### Database Best Practices
-
-1. **Always use transactions for multi-step operations**
-   ```typescript
-   await prisma.$transaction([
-     prisma.checkIn.create({ data: checkInData }),
-     prisma.user.update({ data: { currentStreak: newStreak } })
-   ]);
-   ```
-
-2. **Use select to limit returned fields**
-   ```typescript
-   const user = await prisma.user.findUnique({
-     where: { id },
-     select: { id: true, displayName: true, avatarUrl: true }
-   });
-   ```
-
-3. **Leverage relations for efficient queries**
-   ```typescript
-   const pod = await prisma.pod.findUnique({
-     where: { id },
-     include: { members: true, messages: { take: 50 } }
-   });
-   ```
-
-4. **Handle connection errors gracefully**
-   ```typescript
-   try {
-     await prisma.$connect();
-   } catch (error) {
-     console.error("Database connection failed:", error);
-   }
-   ```
-
-
-## �📦 Installation
+## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js**: 18.x or higher
-- **npm**: 9.x or higher
-- **PostgreSQL**: Neon account (free tier available)
-- **Firebase**: Google Cloud project for OAuth
-- **Cloudinary**: Account for image uploads (optional)
-- **Gemini API**: Google AI API key (optional, has fallback)
+
+Before installing PodLink, ensure you have:
+
+- **Node.js** (v20.x or higher) - [Download](https://nodejs.org/)
+- **npm** (v9.x or higher) - Comes with Node.js
+- **Git** - [Download](https://git-scm.com/)
+- **PostgreSQL** database (Neon recommended) - [Sign up](https://neon.tech/)
+- **Cloudinary** account - [Sign up](https://cloudinary.com/)
+- **Google Gemini API** key - [Get API key](https://ai.google.dev/)
 
 ### Quick Start
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/brittytino/podlink.git
-   cd podlink
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/brittytino/podlink.git
+cd podlink
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+# Install dependencies
+npm install
 
-3. **Set up environment variables**
-   
-   Create a `.env.local` file in the root directory:
-   
-   ```bash
-   # Database Configuration
-   DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
-   DIRECT_URL="postgresql://user:password@host/database?sslmode=require"
-   
-   # NextAuth Configuration
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key-generate-with-openssl-rand-base64-32"
-   
-   # Firebase Configuration (Google OAuth)
-   NEXT_PUBLIC_FIREBASE_API_KEY="your-firebase-api-key"
-   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="your-project.firebaseapp.com"
-   NEXT_PUBLIC_FIREBASE_PROJECT_ID="your-project-id"
-   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="your-project.appspot.com"
-   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="123456789"
-   NEXT_PUBLIC_FIREBASE_APP_ID="1:123456789:web:abcdef"
-   
-   # Cloudinary Configuration (Image Uploads)
-   CLOUDINARY_CLOUD_NAME="your-cloud-name"
-   CLOUDINARY_API_KEY="your-api-key"
-   CLOUDINARY_API_SECRET="your-api-secret"
-   NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
-   
-   # Socket.io Configuration
-   SOCKET_PORT=3001
-   NEXT_PUBLIC_SOCKET_URL="http://localhost:3001"
-   
-   # AI Features (Optional - has fallback)
-   GEMINI_API_KEY="your-gemini-api-key"
-   GEMINI_MODEL="gemini-2.0-flash-exp"
-   ```
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your configuration
 
-4. **Set up the database**
-   ```bash
-   # Reset database and apply all migrations
-   npx prisma migrate reset --force
-   
-   # Generate Prisma Client
-   npx prisma generate
-   
-   # Optional: Seed database with demo data
-   npx prisma db seed
-   ```
+# Initialize database
+npx prisma migrate dev
+npx prisma db seed
 
-5. **Start development servers**
-   ```bash
-   npm run dev
-   ```
-   
-   This will start:
-   - Next.js server on `http://localhost:3000`
-   - Socket.io server on `http://localhost:3001`
-   - Socket emit server on `http://localhost:3002`
+# Start development servers
+npm run dev
+```
 
-6. **Open your browser**
-   
-   Navigate to `http://localhost:3000` and start using PodLink!
+Access the application at `http://localhost:3000`
 
-### Build for Production
+---
+
+## 📦 Installation
+
+### Step 1: Clone Repository
+
+```bash
+git clone https://github.com/brittytino/podlink.git
+cd podlink
+```
+
+### Step 2: Install Dependencies
+
+```bash
+npm install
+```
+
+### Step 3: Verify Installation
+
+```bash
+# Check Node.js version
+node --version  # Should be v20.x or higher
+
+# Check npm version
+npm --version   # Should be v9.x or higher
+
+# Verify Prisma installation
+npx prisma --version
+```
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```bash
+# Database Configuration
+DATABASE_URL="postgresql://user:password@host-pooler:5432/database"
+DIRECT_URL="postgresql://user:password@host:5432/database"
+
+# NextAuth Configuration
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-32-character-secret-key"
+
+# Google OAuth (Optional)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
+CLOUDINARY_API_SECRET="your-api-secret"
+
+# Google Gemini AI
+GOOGLE_AI_API_KEY="your-gemini-api-key"
+
+# Application Settings
+NODE_ENV="development"
+PORT=3000
+SOCKET_PORT=3001
+```
+
+### Generating Secrets
+
+```bash
+# Generate NEXTAUTH_SECRET
+openssl rand -base64 32
+```
+
+---
+
+## 🗄️ Database Setup
+
+### Initialize Database
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Run migrations
+npx prisma migrate dev --name init
+
+# Seed database with demo data
+npx prisma db seed
+```
+
+### Database Management
+
+```bash
+# Open Prisma Studio (Database GUI)
+npx prisma studio
+
+# Test database connection
+npm run db:test
+
+# Push schema without migration
+npx prisma db push
+```
+
+---
+
+## 🏃 Running the Application
+
+### Development Mode
+
+```bash
+# Start both Next.js and Socket.io servers
+npm run dev
+
+# Or start them separately
+npm run dev:next    # Next.js on port 3000
+npm run dev:socket  # Socket.io on port 3001
+```
+
+### Production Build
 
 ```bash
 # Build the application
 npm run build
 
-# Start production server
+# Start production servers
 npm start
 ```
 
-## 🔧 Configuration
+---
 
-### Firebase Setup (Google OAuth)
-
-1. **Create Firebase Project**
-   - Go to [Firebase Console](https://console.firebase.google.com)
-   - Click "Add project" and follow the setup wizard
-   - Enable Google Analytics (optional)
-
-2. **Enable Google Authentication**
-   - In Firebase Console, go to "Authentication" → "Sign-in method"
-   - Enable "Google" provider
-   - Add your domain to authorized domains (e.g., `localhost`, `your-app.vercel.app`)
-
-3. **Get Configuration**
-   - Go to Project Settings → General
-   - Scroll to "Your apps" section
-   - Click the web icon (`</>`) to add a web app
-   - Copy the configuration values to your `.env.local`
-
-4. **Configure OAuth Consent Screen**
-   - Go to [Google Cloud Console](https://console.cloud.google.com)
-   - Select your Firebase project
-   - Navigate to "APIs & Services" → "OAuth consent screen"
-   - Configure app name, support email, and authorized domains
-
-### Neon Database Setup
-
-1. **Create Neon Account**
-   - Sign up at [Neon.tech](https://neon.tech)
-   - Create a new project (free tier includes 1 project)
-
-2. **Get Connection Strings**
-   - In Neon dashboard, click on your project
-   - Go to "Connection Details"
-   - Copy the **Pooled connection** string for `DATABASE_URL`
-   - Copy the **Direct connection** string for `DIRECT_URL`
-   - **Important**: Use pooled connection for better performance on free tier
-
-3. **Configure Database**
-   - The database will auto-pause after 5 minutes of inactivity (free tier)
-   - First query may take 2-5 seconds to wake up the database
-   - The app handles this automatically with retry logic
-
-### Cloudinary Setup (Image Uploads)
-
-1. **Create Cloudinary Account**
-   - Sign up at [Cloudinary](https://cloudinary.com)
-   - Free tier includes 25GB storage
-
-2. **Get API Credentials**
-   - Go to Dashboard
-   - Copy Cloud Name, API Key, and API Secret
-   - Add them to `.env.local`
-
-3. **Configure Upload Preset** (Optional)
-   - Go to Settings → Upload
-   - Create an unsigned upload preset
-   - Set folder name to `podlink-avatars`
-
-### Gemini AI Setup (Optional)
-
-1. **Get API Key**
-   - Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
-   - Create a new API key
-   - Add it to `.env.local` as `GEMINI_API_KEY`
-
-2. **Note on Fallbacks**
-   - If API key is not set or quota is exceeded, the app uses built-in fallback name generation
-   - AI features gracefully degrade to static responses
-   - The app remains fully functional without Gemini API
-
-## 🌐 Deployment
-
-### Deploy to Vercel (Recommended)
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Ready for deployment"
-   git push origin main
-   ```
-
-2. **Import to Vercel**
-   - Go to [Vercel Dashboard](https://vercel.com)
-   - Click "New Project"
-   - Import your GitHub repository
-   - Vercel will auto-detect Next.js
-
-3. **Configure Environment Variables**
-   - In Vercel project settings, go to "Environment Variables"
-   - Add all variables from your `.env.local`
-   - Make sure to add them for all environments (Production, Preview, Development)
-
-4. **Configure Build Settings**
-   - Build Command: `npm run build`
-   - Output Directory: `.next`
-   - Install Command: `npm install`
-   - Node Version: 18.x
-
-5. **Deploy**
-   - Click "Deploy"
-   - Vercel will build and deploy your app
-   - Every push to `main` branch will trigger automatic deployment
-
-### Deploy to Other Platforms
-
-#### Railway.app
-```bash
-# Install Railway CLI
-npm i -g @railway/cli
-
-# Login and deploy
-railway login
-railway init
-railway up
-```
-
-#### Render.com
-- Create new Web Service
-- Connect GitHub repository
-- Set build command: `npm run build`
-- Set start command: `npm start`
-- Add environment variables
-
-### Environment-Specific Configuration
-
-For production, update these environment variables:
-
-```bash
-NEXTAUTH_URL="https://your-domain.com"
-NEXT_PUBLIC_SOCKET_URL="https://your-domain.com"
-```
-
-## 🎯 Core Functionality
-
-### Authentication Flow
-
-1. **New User Registration**
-   - User clicks "Continue with Google" or uses email/password
-   - Firebase/NextAuth handles authentication
-   - User data stored in Neon PostgreSQL
-   - Anonymous display name generated via Gemini AI (or fallback)
-   - User redirected to onboarding
-
-2. **Onboarding Process**
-   - Goal selection (quit habit vs. build habit)
-   - Goal category and description
-   - Gender selection (for pod matching)
-   - Availability schedule setup
-   - Timezone configuration
-   - Pod assignment based on preferences
-
-3. **Existing User Login**
-   - Authentication via Google OAuth or credentials
-   - Session validation with NextAuth JWT
-   - Smart routing based on onboarding status
-   - Redirect to dashboard if onboarding complete
-
-4. **Session Management**
-   - JWT tokens with secure httpOnly cookies
-   - Middleware protects all authenticated routes
-   - Auto-refresh on token expiration
-   - Logout clears all session data
-
-### Pods System
-
-- **Smart Matching Algorithm**
-  - Groups users by goal type (quit/build habit)
-  - Matches similar goal categories
-  - Considers timezone and availability
-  - Balances pod sizes (4-6 members)
-
-- **Pod Features**
-  - Real-time chat with Socket.io
-  - Member presence indicators
-  - Shared streak tracking
-  - Crisis alert system
-  - Pod-wide achievements
-
-### Daily Check-ins
-
-- Simple yes/no tracking: "Did you stay on track today?"
-- Automatic streak calculation
-- Weekly progress summaries
-- Visual progress indicators
-- Achievement badges for milestones
-
-### Crisis Support
-
-- **Emergency Alerts**
-  - One-click SOS button
-  - Instant notification to pod members
-  - AI-generated supportive messages
-  - Response tracking
-
-- **Crisis Toolkit**
-  - Personalized coping strategies
-  - Quick access resources
-  - Breathing exercises
-  - Emergency contacts
-
-## 🏗️ Project Structure
+## 📁 Project Structure
 
 ```
 podlink/
 ├── prisma/
-│   ├── schema.prisma          # Database schema
-│   ├── seed.ts                # Database seed data
-│   └── migrations/            # Migration history
-├── public/                    # Static assets
-├── scripts/                   # Utility scripts
+│   ├── schema.prisma              # Database schema
+│   ├── seed.ts                    # Database seed script
+│   └── migrations/                # Migration files
+├── public/
+│   ├── file.svg
+│   ├── globe.svg
+│   └── badge-icons/               # Achievement badge images
 ├── src/
-│   ├── app/
-│   │   ├── (auth)/           # Authentication pages
+│   ├── app/                       # Next.js App Router
+│   │   ├── (auth)/               # Auth routes
 │   │   │   ├── login/
 │   │   │   └── register/
-│   │   ├── (protected)/      # Protected routes
+│   │   ├── (protected)/          # Protected routes
 │   │   │   ├── dashboard/
-│   │   │   ├── onboarding/
-│   │   │   ├── pod/
-│   │   │   ├── profile/
+│   │   │   ├── pod/              # Pod chat page
 │   │   │   ├── leaderboard/
-│   │   │   └── crisis-toolkit/
-│   │   ├── api/              # API routes
-│   │   │   ├── auth/         # NextAuth handlers
-│   │   │   ├── pods/         # Pod operations
-│   │   │   ├── check-ins/    # Check-in tracking
-│   │   │   ├── alerts/       # Crisis alerts
-│   │   │   └── profile/      # User profile
-│   │   ├── layout.tsx        # Root layout
-│   │   ├── page.tsx          # Landing page
-│   │   └── globals.css       # Global styles
+│   │   │   ├── profile/
+│   │   │   ├── crisis-toolkit/
+│   │   │   └── onboarding/
+│   │   ├── api/                  # API routes
+│   │   │   ├── auth/             # Authentication
+│   │   │   ├── pods/             # Pod management
+│   │   │   ├── check-ins/        # Daily check-ins
+│   │   │   ├── alerts/           # Crisis alerts
+│   │   │   └── leaderboard/
+│   │   └── page.tsx              # Landing page
 │   ├── components/
-│   │   ├── ui/               # shadcn/ui components
-│   │   ├── auth/             # Auth components
-│   │   ├── dashboard/        # Dashboard widgets
-│   │   ├── pod/              # Pod chat & features
-│   │   ├── profile/          # Profile management
-│   │   ├── leaderboard/      # Rankings display
-│   │   ├── toolkit/          # Crisis toolkit
-│   │   ├── layout/           # Navigation components
-│   │   └── onboarding/       # Onboarding steps
+│   │   ├── dashboard/            # Dashboard components
+│   │   ├── pod/                  # Pod/Chat components
+│   │   │   ├── ChatWindow.tsx
+│   │   │   ├── MessageBubble.tsx
+│   │   │   └── AlertNotification.tsx
+│   │   ├── leaderboard/
+│   │   ├── onboarding/
+│   │   ├── toolkit/
+│   │   └── ui/                   # shadcn/ui components
 │   ├── hooks/
-│   │   ├── useAuth.ts        # Authentication hook
-│   │   ├── useSocket.ts      # Socket.io hook
-│   │   ├── usePodMessages.ts # Pod chat hook
-│   │   └── use-toast.ts      # Toast notifications
+│   │   ├── useAuth.ts
+│   │   ├── useSocket.ts
+│   │   └── usePodMessages.ts
 │   ├── lib/
-│   │   ├── auth.ts           # NextAuth config
-│   │   ├── prisma.ts         # Prisma client
-│   │   ├── firebase.ts       # Firebase config
-│   │   ├── gemini.ts         # Gemini AI utils
-│   │   ├── socket.ts         # Socket.io server
-│   │   ├── socket-emit.ts    # Socket emit server
-│   │   ├── cloudinary.ts     # Image upload
-│   │   ├── pod-matching.ts   # Pod assignment logic
-│   │   └── utils.ts          # Helper functions
-│   ├── types/
-│   │   ├── index.ts          # Shared types
-│   │   ├── socket.ts         # Socket event types
-│   │   └── next-auth.d.ts    # NextAuth type extensions
-│   ├── middleware.ts         # Route protection
-│   └── styles/               # Additional styles
-├── server.mjs                # Socket.io server
-├── package.json
-├── tsconfig.json
-├── next.config.js
-├── tailwind.config.ts
-└── README.md
+│   │   ├── auth.ts
+│   │   ├── prisma.ts
+│   │   ├── socket.ts
+│   │   ├── cloudinary.ts
+│   │   ├── gemini.ts
+│   │   ├── pod-matching.ts
+│   │   └── streak-manager.ts
+│   └── types/
+│       ├── index.ts
+│       └── socket.ts
+├── server.mjs                     # Socket.io server
+├── package.json                   # Dependencies
+└── README.md                      # This file
 ```
 
-## 🔍 Troubleshooting
-
-### Database Connection Issues
-
-#### Problem: `password authentication failed for user 'neondb_owner'`
-
-**Solution:**
-
-1. **Get Fresh Connection String**
-   - Go to [Neon Console](https://console.neon.tech)
-   - Select your project
-   - Copy the **pooled** connection string (ends with `-pooler`)
-
-2. **Update `.env.local`**
-   ```bash
-   DATABASE_URL="postgresql://user:password@host-pooler.region.aws.neon.tech/database?sslmode=require"
-   ```
-
-3. **Restart Server**
-   ```bash
-   # Stop current server (Ctrl+C)
-   rm -rf .next  # Clear cache
-   npm run dev   # Restart
-   ```
-
-#### Problem: Database schema out of sync
-
-**Solution:**
-
-```bash
-# Reset database and reapply migrations
-npx prisma migrate reset --force
-
-# Generate Prisma Client
-npx prisma generate
-
-# Restart server
-npm run dev
-```
-
-### Build Errors
-
-#### Problem: TypeScript compilation errors
-
-**Solution:**
-
-```bash
-# Check for type errors
-npm run build
-
-# Common fixes:
-# 1. Delete node_modules and reinstall
-rm -rf node_modules package-lock.json
-npm install
-
-# 2. Clear Next.js cache
-rm -rf .next
-
-# 3. Regenerate Prisma Client
-npx prisma generate
-```
-
-#### Problem: Missing environment variables
-
-**Solution:**
-
-- Ensure `.env.local` exists in project root
-- Check all required variables are set
-- Use `.env.example` as reference
-- Restart dev server after changes
-
-### Authentication Issues
-
-#### Problem: Google Sign-In popup blocked
-
-**Solution:**
-- The app automatically falls back to redirect mode
-- Clear browser cache and cookies
-- Check Firebase authorized domains include your domain
-- Ensure popup blockers are disabled
-
-#### Problem: Session not persisting
-
-**Solution:**
-
-```bash
-# Check NEXTAUTH_SECRET is set
-echo $NEXTAUTH_SECRET
-
-# Generate new secret if needed
-openssl rand -base64 32
-
-# Add to .env.local
-NEXTAUTH_SECRET="your-new-secret"
-```
-
-### Socket.io Connection Issues
-
-#### Problem: Real-time chat not working
-
-**Solution:**
-
-1. **Check Socket Server is Running**
-   ```bash
-   # Should see: "🔌 Socket.io server running on port 3001"
-   npm run dev
-   ```
-
-2. **Update Socket URL**
-   ```bash
-   # In .env.local
-   NEXT_PUBLIC_SOCKET_URL="http://localhost:3001"
-   ```
-
-3. **Check Firewall/Network**
-   - Ensure port 3001 is not blocked
-   - Check browser console for connection errors
-
-### Gemini API Issues
-
-#### Problem: API quota exceeded (429 error)
-
-**Solution:**
-- This is normal for free tier
-- App automatically uses fallback name generation
-- No action needed - the app works perfectly without Gemini
-- Optional: Upgrade to paid Gemini API tier for higher limits
-
-### Performance Issues
-
-#### Problem: Slow database queries (Neon free tier)
-
-**Solution:**
-- Free tier databases auto-pause after 5 minutes
-- First query takes 2-5 seconds to wake up
-- This is normal and handled by auto-retry logic
-- Consider upgrading to Neon Pro for always-on database
-
-## 🧪 Testing
-
-### Run Tests
-```bash
-# Unit tests
-npm test
-
-# E2E tests
-npm run test:e2e
-
-# Coverage
-npm run test:coverage
-```
-
-### Manual Testing Checklist
-
-- [ ] User registration with email/password
-- [ ] Google OAuth login
-- [ ] Onboarding flow completion
-- [ ] Pod assignment
-- [ ] Daily check-in submission
-- [ ] Real-time chat messaging
-- [ ] Crisis alert creation
-- [ ] Profile updates
-- [ ] Avatar upload
-- [ ] Leaderboard display
+---
 
 ## 📚 API Documentation
 
 ### Authentication Endpoints
 
-```typescript
-POST /api/auth/register
-Body: { email: string, password: string }
-Response: { user: { id: string, email: string } }
+#### POST `/api/auth/register`
+Register a new user account.
 
-GET /api/auth/session
-Response: { user: User | null }
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "username": "johndoe",
+  "password": "SecurePass123!",
+  "fullName": "John Doe"
+}
 ```
 
 ### Pod Endpoints
 
-```typescript
-GET /api/pods/members
-Response: { members: User[] }
+#### GET `/api/pods/members?podId={podId}`
+Get all members of a pod.
 
-POST /api/pods/messages
-Body: { message: string, podId: string }
-Response: { message: PodMessage }
+#### POST `/api/pods/messages`
+Send a message to the pod.
 
-GET /api/pods/assign
-Response: { pod: Pod }
+**Request:**
+```json
+{
+  "podId": "uuid",
+  "userId": "uuid",
+  "messageText": "Hello team!",
+  "imageUrl": "https://cloudinary.com/...",
+  "isCrisisResponse": false
+}
+```
+
+#### POST `/api/pods/messages/upload-image`
+Upload image to Cloudinary (max 5MB).
+
+**Request:** `multipart/form-data` with `image` file
+
+**Response:**
+```json
+{
+  "success": true,
+  "imageUrl": "https://res.cloudinary.com/..."
+}
 ```
 
 ### Check-in Endpoints
 
-```typescript
-POST /api/check-ins/create
-Body: { stayedOnTrack: boolean }
-Response: { checkIn: CheckIn, streak: number }
+#### POST `/api/check-ins/create`
+Record daily check-in.
 
-GET /api/check-ins/history
-Query: { days?: number }
-Response: { checkIns: CheckIn[] }
+#### GET `/api/check-ins/history?userId={userId}&days={days}`
+Get check-in history.
+
+### Crisis Alert Endpoints
+
+#### POST `/api/alerts/create`
+Create crisis alert.
+
+#### POST `/api/alerts/resolve`
+Resolve a crisis alert.
+
+---
+
+## 🧪 Testing
+
+### Manual Testing Checklist
+
+- [x] User registration and login
+- [x] Google OAuth authentication
+- [x] Onboarding flow completion
+- [x] Daily check-in functionality
+- [x] Real-time chat messaging
+- [x] Emoji picker (keyboard + UI)
+- [x] Image upload and display
+- [x] Crisis alert system
+- [x] Auto-responses from offline members
+- [x] Leaderboard updates
+- [x] Streak restoration
+
+### Test Database Connection
+
+```bash
+npm run db:test
 ```
 
-### Profile Endpoints
+---
 
-```typescript
-GET /api/profile
-Response: { user: User }
+## 🚢 Deployment
 
-PUT /api/profile/update
-Body: Partial<User>
-Response: { user: User }
+### Deploy to Vercel (Recommended)
 
-POST /api/profile/upload-avatar
-Body: FormData (multipart/form-data)
-Response: { avatarUrl: string }
-```
+1. **Install Vercel CLI**
+   ```bash
+   npm i -g vercel
+   vercel login
+   vercel
+   ```
+
+2. **Configure Environment Variables** in Vercel Dashboard
+
+3. **Deploy Socket.io Server** separately (Render/Railway)
+
+4. **Update Socket Connection URL**
+   ```env
+   NEXT_PUBLIC_SOCKET_URL=https://your-socket-server.onrender.com
+   ```
+
+---
 
 ## 🤝 Contributing
 
-We welcome contributions from the community! Whether you're fixing bugs, adding features, or improving documentation, your help is appreciated.
+We welcome contributions! Please:
 
-### How to Contribute
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Submit a pull request
 
-1. **Fork the Repository**
-   - Click the "Fork" button at the top right of this repository
-   - Clone your fork locally:
-     ```bash
-     git clone https://github.com/YOUR_USERNAME/podlink.git
-     cd podlink
-     ```
-
-2. **Create a Branch**
-   ```bash
-   git checkout -b feature/your-amazing-feature
-   # or
-   git checkout -b fix/bug-description
-   ```
-
-3. **Make Your Changes**
-   - Follow the existing code style
-   - Write clear, commented code
-   - Add tests if applicable
-   - Update documentation as needed
-
-4. **Test Your Changes**
-   ```bash
-   # Run type checking
-   npm run build
-   
-   # Test locally
-   npm run dev
-   
-   # Run tests (if available)
-   npm test
-   ```
-
-5. **Commit Your Changes**
-   ```bash
-   git add .
-   git commit -m "feat: add amazing feature"
-   # or
-   git commit -m "fix: resolve bug description"
-   ```
-   
-   **Commit Message Guidelines:**
-   - `feat:` New feature
-   - `fix:` Bug fix
-   - `docs:` Documentation changes
-   - `style:` Code style changes (formatting, etc.)
-   - `refactor:` Code refactoring
-   - `test:` Adding tests
-   - `chore:` Maintenance tasks
-
-6. **Push to Your Fork**
-   ```bash
-   git push origin feature/your-amazing-feature
-   ```
-
-7. **Open a Pull Request**
-   - Go to the original repository
-   - Click "Pull Requests" → "New Pull Request"
-   - Select your fork and branch
-   - Fill out the PR template with:
-     - Clear description of changes
-     - Screenshots (if UI changes)
-     - Related issue numbers
-     - Testing steps
-
-### Contribution Ideas
-
-Here are some areas where we'd love your help:
-
-#### 🐛 Bug Fixes
-- Fix reported issues
-- Improve error handling
-- Enhance performance
-- Fix accessibility issues
-
-#### ✨ New Features
-- Video chat support for pods
-- Mobile app (React Native)
-- Advanced analytics dashboard
-- Gamification features
-- Integration with habit tracking apps
-- Multi-language support (i18n)
-- Dark mode improvements
-- Custom pod themes
-
-#### 📖 Documentation
-- Improve setup instructions
-- Add API documentation
-- Create video tutorials
-- Write blog posts
-- Translate documentation
-
-#### 🧪 Testing
-- Write unit tests
-- Add E2E tests
-- Improve test coverage
-- Test on different devices
-
-#### 🎨 Design
-- Improve UI/UX
-- Create new illustrations
-- Design marketing materials
-- Optimize for accessibility
-
-### Development Guidelines
-
-#### Code Style
-- Use TypeScript for type safety
-- Follow existing naming conventions
-- Use functional components in React
-- Prefer composition over inheritance
-- Write self-documenting code
-
-#### Best Practices
-- Keep components small and focused
-- Use custom hooks for shared logic
-- Handle loading and error states
-- Optimize for performance
-- Ensure mobile responsiveness
-- Write accessible HTML
-
-#### Database Changes
-- Create migrations for schema changes
-- Test migrations on fresh database
-- Don't modify existing migrations
-- Update seed data if needed
-
-#### Component Structure
-```typescript
-// Good component example
-interface Props {
-  userId: string;
-  onUpdate: () => void;
-}
-
-export function UserProfile({ userId, onUpdate }: Props) {
-  // hooks
-  const [isLoading, setIsLoading] = useState(false);
-  
-  // handlers
-  const handleUpdate = async () => {
-    // implementation
-  };
-  
-  // render
-  return (
-    <div>
-      {/* JSX */}
-    </div>
-  );
-}
-```
-
-### Getting Help
-
-- 💬 **Discussions**: Ask questions in [GitHub Discussions](https://github.com/brittytino/podlink/discussions)
-- 🐛 **Issues**: Report bugs in [GitHub Issues](https://github.com/brittytino/podlink/issues)
-- 📧 **Email**: Contact brittytino@example.com for private inquiries
-- 📖 **Docs**: Check this README and code comments
-
-### Code of Conduct
-
-We are committed to providing a welcoming and inclusive experience for everyone. We expect all contributors to:
-
-- Be respectful and considerate
-- Welcome newcomers and help them get started
-- Accept constructive criticism gracefully
-- Focus on what is best for the community
-- Show empathy towards other community members
-
-Unacceptable behavior includes:
-- Harassment or discrimination
-- Trolling or insulting comments
-- Public or private harassment
-- Publishing others' private information
-- Other unethical or unprofessional conduct
-
-### Recognition
-
-Contributors will be:
-- Listed in the Contributors section
-- Mentioned in release notes
-- Given credit in relevant documentation
-
-Thank you for helping make PodLink better! 🎉
+---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see below for details:
+MIT License - see LICENSE file for details.
 
-```
-MIT License
+---
 
-Copyright (c) 2025 PodLink
+## 📞 Support & Contact
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+- 📧 Email: support@podlink.example.com
+- 💬 Discord: [Join our community](https://discord.gg/podlink)
+- 🐦 Twitter: [@PodLinkApp](https://twitter.com/podlinkapp)
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+---
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+## 🙏 Acknowledgements
 
-## 🆘 Support & Community
-
-### Get Help
-
-- 📖 **Documentation**: Read this README thoroughly
-- 💬 **GitHub Discussions**: [Ask questions and share ideas](https://github.com/brittytino/podlink/discussions)
-- 🐛 **Bug Reports**: [Open an issue](https://github.com/brittytino/podlink/issues/new?template=bug_report.md)
-- ✨ **Feature Requests**: [Suggest new features](https://github.com/brittytino/podlink/issues/new?template=feature_request.md)
-- 📧 **Email**: brittytino@example.com
-
-### Stay Updated
-
-- ⭐ **Star this repo** to show support and stay notified
-- 👀 **Watch releases** for update notifications
-- 🐦 **Follow on Twitter**: [@brittytino](https://twitter.com/brittytino)
-- 💼 **LinkedIn**: [Connect with us](https://linkedin.com/in/brittytino)
-
-## 🙏 Acknowledgments
-
-Built with these amazing technologies:
-- [Next.js](https://nextjs.org/) - React framework
-- [Prisma](https://www.prisma.io/) - Database ORM
-- [NextAuth.js](https://next-auth.js.org/) - Authentication
-- [Socket.io](https://socket.io/) - Real-time communication
-- [Tailwind CSS](https://tailwindcss.com/) - Styling
-- [shadcn/ui](https://ui.shadcn.com/) - UI components
-- [Neon](https://neon.tech/) - Serverless PostgreSQL
-- [Vercel](https://vercel.com/) - Deployment platform
-- [Cloudinary](https://cloudinary.com/) - Image management
-- [Google Gemini](https://ai.google.dev/) - AI capabilities
-
-Special thanks to all contributors who help make PodLink better!
+- **Next.js** - React framework
+- **Prisma** - Database ORM
+- **Socket.io** - Real-time communication
+- **shadcn/ui** - UI components
+- **Neon** - Serverless PostgreSQL
+- **Cloudinary** - Image management
+- **Google Gemini** - AI capabilities
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for accountability and personal growth**
+**Made with ❤️ by the PodLink Team**
 
-[Website](https://podlink.vercel.app) • [Report Bug](https://github.com/brittytino/podlink/issues) • [Request Feature](https://github.com/brittytino/podlink/issues)
-
-Made by [brittytino](https://github.com/brittytino) and [contributors](https://github.com/brittytino/podlink/graphs/contributors)
-
-⭐ **Star this repo** if you find it helpful!
+⭐ Star us on GitHub!
 
 </div>

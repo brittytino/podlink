@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvatarUpload } from '@/components/profile/AvatarUpload';
 import { ProfileForm } from '@/components/profile/ProfileForm';
@@ -56,8 +57,16 @@ export default function ProfilePage() {
 
   if (loading || !profile) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="fixed inset-0 top-[56px] sm:top-[64px] flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50/30">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="text-center space-y-3"
+        >
+          <Loader2 className="h-10 w-10 animate-spin mx-auto text-purple-600" />
+          <p className="text-sm text-slate-600 font-medium">Loading profile...</p>
+        </motion.div>
       </div>
     );
   }
@@ -68,117 +77,181 @@ export default function ProfilePage() {
   });
 
   return (
-    // outer container: comfortable padding on all screen sizes, center and limit width
-    <div className="px-4 py-8 sm:py-10 lg:py-12 max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold flex items-center gap-3">
-          <User className="h-6 w-6 sm:h-8 sm:w-8" />
-          Profile Settings
-        </h1>
-        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-          Manage your account and preferences — update your avatar, personal details, and goal settings to
-          keep your habit journey in sync.
-        </p>
-      </div>
+    <div className="fixed inset-0 top-[56px] sm:top-[64px] flex bg-gradient-to-br from-slate-50 via-white to-purple-50/30 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Fixed Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex-shrink-0 px-6 lg:px-10 xl:px-12 py-6 lg:py-7 bg-white/80 backdrop-blur-sm border-b border-slate-200/80 shadow-sm"
+        >
+          <div className="max-w-[1600px] mx-auto">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold flex items-center gap-3 bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+              <User className="h-7 w-7 sm:h-9 sm:w-9 text-purple-600" />
+              Profile Settings
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
+              Manage your account and preferences — update your avatar, personal details, and goal settings
+            </p>
+          </div>
+        </motion.div>
 
-      {/* Stats Cards: responsive grid with consistent card styling */}
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-150">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Current Streak</p>
-                <p className="text-2xl sm:text-3xl font-bold">{profile.currentStreak}</p>
-              </div>
-              <Flame className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-6 lg:px-10 xl:px-12 py-6 lg:py-8">
+            <div className="max-w-[1600px] mx-auto space-y-6 lg:space-y-8">
+              {/* Stats Cards */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 }}
+                className="grid gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+              >
+                <Card className="rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 overflow-hidden group">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground font-medium mb-1">Current Streak</p>
+                        <p className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                          {profile.currentStreak}
+                        </p>
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="bg-gradient-to-br from-orange-500 to-red-500 p-4 rounded-2xl shadow-lg"
+                      >
+                        <Flame className="h-9 w-9 text-white" />
+                      </motion.div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-150">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Member Since</p>
-                <p className="text-lg sm:text-xl font-bold">{memberSince}</p>
-              </div>
-              <Calendar className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
+                <Card className="rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 overflow-hidden group">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground font-medium mb-1">Member Since</p>
+                        <p className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                          {memberSince}
+                        </p>
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: -5 }}
+                        className="bg-gradient-to-br from-blue-500 to-indigo-500 p-4 rounded-2xl shadow-lg"
+                      >
+                        <Calendar className="h-9 w-9 text-white" />
+                      </motion.div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-        <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-150">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Goal Type</p>
-                <Badge variant="secondary" className="mt-1">
-                  {profile.goalType === 'BUILD_HABIT' ? 'Build' : 'Quit'}
-                </Badge>
-              </div>
-              <Target className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                <Card className="rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 overflow-hidden group sm:col-span-2 lg:col-span-1">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground font-medium mb-2">Goal Type</p>
+                        <Badge variant="secondary" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold px-4 py-1.5 text-sm">
+                          {profile.goalType === 'BUILD_HABIT' ? 'Build Habit' : 'Quit Habit'}
+                        </Badge>
+                      </div>
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="bg-gradient-to-br from-green-500 to-emerald-500 p-4 rounded-2xl shadow-lg"
+                      >
+                        <Target className="h-9 w-9 text-white" />
+                      </motion.div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
 
-      {/* Main content: use a responsive two-column layout on large screens */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left column: Avatar (spans full width on small screens) */}
-        <div className="lg:col-span-1">
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader>
-              <CardTitle>Profile Picture</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col items-center gap-4">
-                <AvatarUpload
-                  currentAvatar={profile.avatarUrl}
-                  userName={profile.fullName}
-                  onUploadSuccess={async (url) => {
-                    setProfile({ ...profile, avatarUrl: url });
-                    await update({ avatarUrl: url });
-                    // Refresh profile to get updated data
-                    fetchProfile();
-                  }}
-                />
-                <p className="text-sm text-muted-foreground text-center max-w-xs">
-                  Upload a square image (recommended 400×400). Your avatar will be visible to other members.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right column: Form (spans two columns on large screens for comfortable width) */}
-        <div className="lg:col-span-2">
-          <Card className="rounded-2xl shadow-sm">
-            <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <ProfileForm
-                  user={profile}
-                  onUpdateSuccess={() => {
-                    fetchProfile();
-                  }}
-                />
-
-                {/* Small helper / meta info row at the bottom for smaller screens */}
-                <div className="mt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-sm text-muted-foreground">
-                  <span>Timezone: <span className="font-medium text-foreground">{profile.timezone}</span></span>
-                  <span>Availability: <span className="font-medium text-foreground">{profile.availabilityHours.start} - {profile.availabilityHours.end}</span></span>
+              {/* Main Content Grid */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2 }}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8"
+              >
+                {/* Avatar Card */}
+                <div className="lg:col-span-4 xl:col-span-3">
+                  <Card className="rounded-2xl shadow-lg border-0 bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 h-full">
+                    <CardHeader className="border-b pb-4">
+                      <CardTitle className="text-lg font-bold">Profile Picture</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col items-center gap-5">
+                        <AvatarUpload
+                          currentAvatar={profile.avatarUrl}
+                          userName={profile.fullName}
+                          onUploadSuccess={async (url) => {
+                            setProfile({ ...profile, avatarUrl: url });
+                            await update({ avatarUrl: url });
+                            fetchProfile();
+                          }}
+                        />
+                        <p className="text-xs text-muted-foreground text-center max-w-xs leading-relaxed">
+                          Upload a square image (recommended 400×400). Your avatar will be visible to other members.
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+
+                {/* Form Card */}
+                <div className="lg:col-span-8 xl:col-span-9">
+                  <Card className="rounded-2xl shadow-lg border-0 bg-white/90 backdrop-blur-sm hover:shadow-xl transition-all duration-300 h-full">
+                    <CardHeader className="border-b pb-4">
+                      <CardTitle className="text-lg font-bold">Personal Information</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <ProfileForm
+                        user={profile}
+                        onUpdateSuccess={() => {
+                          fetchProfile();
+                        }}
+                      />
+
+                      {/* Metadata */}
+                      <div className="mt-8 pt-6 border-t grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-lg">🌍</span>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground font-medium">Timezone</p>
+                            <p className="font-semibold text-sm bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                              {profile.timezone}
+                            </p>
+                          </div>
+                        </motion.div>
+
+                        <motion.div
+                          whileHover={{ scale: 1.02 }}
+                          className="flex items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-100"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-lg">⏰</span>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground font-medium">Availability</p>
+                            <p className="font-semibold text-sm bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                              {profile.availabilityHours.start} - {profile.availabilityHours.end}
+                            </p>
+                          </div>
+                        </motion.div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </div>
-
-      {/* Spacing at the bottom for comfortable scrolling on small devices */}
-      <div className="h-6 lg:h-10" />
     </div>
   );
 }

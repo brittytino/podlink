@@ -45,12 +45,38 @@ async function getDashboardData(userId: string) {
     orderBy: { date: 'desc' },
   });
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get user's local today based on their timezone
+  const getUserLocalDate = (utcDate: Date = new Date(), timezone?: string): Date => {
+    if (!timezone) {
+      const d = new Date(utcDate);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    try {
+      const userLocalTime = new Date(utcDate.toLocaleString('en-US', { timeZone: timezone }));
+      return new Date(userLocalTime.getFullYear(), userLocalTime.getMonth(), userLocalTime.getDate());
+    } catch (error) {
+      console.error('Invalid timezone:', timezone, error);
+      const d = new Date(utcDate);
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+  };
+
+  const isSameDay = (date1: Date, date2: Date): boolean => {
+    return (
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate()
+    );
+  };
+
+  const now = new Date();
+  const userToday = getUserLocalDate(now, user.timezone || undefined);
+  
+  // Check if user has checked in today (in their timezone)
   const todayCheckIn = checkIns.find((c: { date: Date }) => {
-    const checkInDate = new Date(c.date);
-    checkInDate.setHours(0, 0, 0, 0);
-    return checkInDate.getTime() === today.getTime();
+    const checkInDate = getUserLocalDate(new Date(c.date), user.timezone || undefined);
+    return isSameDay(checkInDate, userToday);
   });
 
   const toolkitItems = await prisma.crisisToolkitItem.findMany({
@@ -88,19 +114,21 @@ export default async function DashboardPage() {
 
   const { user, checkIns, hasCheckedInToday, toolkitItems } = data;
   
-  // Type assertion for pod (Prisma includes it but TypeScript needs help)
   const userWithPod = user as any;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 relative overflow-hidden">
+    <div className="fixed inset-0 top-[56px] sm:top-[64px] flex bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 overflow-hidden">
       {/* Decorative Background Elements */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 space-y-6 sm:space-y-8">
-        {/* Header Section with Enhanced Design */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="px-6 lg:px-10 xl:px-12 py-6 lg:py-8">
+            <div className="max-w-[1600px] mx-auto space-y-6 lg:space-y-8">{/* Header Section with Enhanced Design */}
         <div className="relative">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl blur-2xl -z-10 animate-pulse" />
           <div className="bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-primary/10 shadow-2xl">
@@ -192,21 +220,19 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Access Toolkit - Enhanced Card */}
-        {toolkitItems.length > 0 && (
-          <div className="relative overflow-hidden rounded-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5" />
-            <div className="relative">
-              <QuickAccessList items={toolkitItems} />
+              {/* Quick Access Toolkit - Enhanced Card */}
+              {toolkitItems.length > 0 && (
+                <div className="relative overflow-hidden rounded-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5" />
+                  <div className="relative">
+                    <QuickAccessList items={toolkitItems} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        )}
-
-        {/* Footer Spacer for Mobile */}
-        <div className="h-6 sm:h-8" />
+        </div>
       </div>
-
-      
     </div>
   );
 }

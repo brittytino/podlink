@@ -1,30 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
+import { processCheckIn, getStreakStatus } from '@/lib/streak-manager';
 import prisma from '@/lib/prisma';
-
-async function retryDatabaseOperation<T>(
-  operation: () => Promise<T>,
-  maxRetries = 3,
-  delay = 1000
-): Promise<T> {
-  let lastError: any;
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await operation();
-    } catch (error: any) {
-      lastError = error;
-      // If it's a connection error, retry
-      if (error?.code === 'P1001' || error?.message?.includes('connect')) {
-        if (i < maxRetries - 1) {
-          await new Promise((resolve) => setTimeout(resolve, delay * (i + 1)));
-          continue;
-        }
-      }
-      throw error;
-    }
-  }
-  throw lastError;
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,133 +19,58 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if already checked in today with retry
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Verify user is checking in for themselves
+    if (userId !== session.user.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-    const existingCheckIn = await retryDatabaseOperation(() =>
-      prisma.checkIn.findFirst({
-        where: {
-          userId,
-          date: {
-            gte: today,
-          },
-        },
-      })
-    );
+    // Process the check-in using the streak manager
+    const result = await processCheckIn(userId, stayedOnTrack);
 
-    if (existingCheckIn) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: 'Already checked in today' },
+        { error: result.message },
         { status: 400 }
       );
     }
 
-    // Create check-in with retry
-    const checkIn = await retryDatabaseOperation(() =>
-      prisma.checkIn.create({
-        data: {
-          userId,
-          stayedOnTrack,
-          date: new Date(),
-        },
-      })
-    );
+    // Get updated streak status
+    const streakStatus = await getStreakStatus(userId);
 
-    // Update user streak with retry
-    const user = await retryDatabaseOperation(() =>
-      prisma.user.findUnique({
-        where: { id: userId },
-        select: { currentStreak: true, podId: true, lastCheckIn: true },
-      })
-    );
+    // Update pod total streak (sum of all members' streaks)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { podId: true },
+    });
 
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    if (user?.podId) {
+      // Calculate total streak for the pod
+      const podMembers = await prisma.user.findMany({
+        where: { podId: user.podId },
+        select: { currentStreak: true },
+      });
+
+      const totalStreak = podMembers.reduce((sum, member) => sum + member.currentStreak, 0);
+
+      // Update pod's total streak
+      await prisma.pod.update({
+        where: { id: user.podId },
+        data: { totalStreak },
+      });
     }
 
-    // Calculate new streak based on last check-in
-    let newStreak = 0;
-    if (stayedOnTrack) {
-      if (user.lastCheckIn) {
-        const lastCheckInDate = new Date(user.lastCheckIn);
-        lastCheckInDate.setHours(0, 0, 0, 0);
-        
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        yesterday.setHours(0, 0, 0, 0);
-        
-        // If last check-in was yesterday, increment streak
-        // If last check-in was today (shouldn't happen due to duplicate check), keep current
-        // If last check-in was before yesterday, reset to 1
-        if (lastCheckInDate.getTime() === yesterday.getTime()) {
-          newStreak = (user.currentStreak || 0) + 1;
-        } else if (lastCheckInDate.getTime() === today.getTime()) {
-          // Already checked in today (shouldn't reach here, but handle edge case)
-          newStreak = user.currentStreak || 0;
-        } else {
-          // Missed days, start fresh at 1
-          newStreak = 1;
-        }
-      } else {
-        // First check-in ever
-        newStreak = 1;
-      }
-    } else {
-      // User slipped, reset streak to 0
-      newStreak = 0;
-    }
-
-    await retryDatabaseOperation(() =>
-      prisma.user.update({
-        where: { id: userId },
-        data: {
-          currentStreak: newStreak,
-          lastCheckIn: new Date(),
-        },
-      })
-    );
-
-    // Update pod total streak with retry
-    if (user.podId) {
-      const podId = user.podId; // Type narrowing
-      const podMembers = await retryDatabaseOperation(() =>
-        prisma.user.findMany({
-          where: { podId },
-          select: { currentStreak: true },
-        })
-      );
-
-      const totalStreak = podMembers.reduce(
-        (sum: number, member: { currentStreak: number }) => sum + member.currentStreak,
-        0
-      );
-
-      await retryDatabaseOperation(() =>
-        prisma.pod.update({
-          where: { id: podId },
-          data: { totalStreak },
-        })
-      );
-    }
-
-    return NextResponse.json({ checkIn, newStreak });
-  } catch (error: any) {
-    console.error('Check-in error:', error);
-    
-    // Provide more specific error messages
-    if (error?.code === 'P1001') {
-      return NextResponse.json(
-        { error: 'Database connection failed. Please try again.' },
-        { status: 503 }
-      );
-    }
-    
+    return NextResponse.json({
+      success: true,
+      message: result.message,
+      newStreak: result.newStreak,
+      streakBroken: result.streakBroken,
+      restoresRemaining: streakStatus.restoresRemaining,
+      canUseRestore: streakStatus.canUseRestore && result.streakBroken,
+    });
+  } catch (error) {
+    console.error('Error creating check-in:', error);
     return NextResponse.json(
-      { 
-        error: 'Internal server error',
-        message: process.env.NODE_ENV === 'development' ? error?.message : undefined,
-      },
+      { error: 'Failed to create check-in' },
       { status: 500 }
     );
   }

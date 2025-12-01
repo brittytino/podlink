@@ -26,6 +26,9 @@ model User {
   gender            String?   // Added gender field
   currentStreak     Int       @default(0) @map("current_streak")
   lastCheckIn       DateTime? @map("last_check_in")
+  lastSuccessfulDay DateTime? @map("last_successful_day") // Last day user completed successfully
+  restoresUsedThisMonth Int   @default(0) @map("restores_used_this_month")
+  restoresResetAt   DateTime  @default(now()) @map("restores_reset_at") // Track when restores were last reset
   isDemoAccount     Boolean   @default(false) @map("is_demo_account")
   onboardingComplete Boolean  @default(false) @map("onboarding_complete")
   podId             String?   @map("pod_id")
@@ -36,6 +39,7 @@ model User {
   crisisAlerts      CrisisAlert[]
   messages          PodMessage[]
   checkIns          CheckIn[]
+  streakRestores    StreakRestore[]
   toolkitItems      CrisisToolkitItem[]
   achievements      Achievement[]
   
@@ -90,16 +94,50 @@ model PodMessage {
   podId            String       @map("pod_id")
   userId           String       @map("user_id")
   messageText      String       @map("message_text")
+  imageUrl         String?      @map("image_url")
   isCrisisResponse Boolean      @default(false) @map("is_crisis_response")
   alertId          String?      @map("alert_id")
+  isDeleted        Boolean      @default(false) @map("is_deleted")
+  deletedReason    String?      @map("deleted_reason")
   
   pod              Pod          @relation(fields: [podId], references: [id], onDelete: Cascade)
   user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   alert            CrisisAlert? @relation(fields: [alertId], references: [id], onDelete: SetNull)
+  reactions        MessageReaction[]
+  reports          MessageReport[]
   
   createdAt        DateTime     @default(now()) @map("created_at")
 
   @@map("pod_messages")
+}
+
+model MessageReaction {
+  id         String     @id @default(uuid())
+  messageId  String     @map("message_id")
+  userId     String     @map("user_id")
+  emoji      String
+  
+  message    PodMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@unique([messageId, userId, emoji])
+  @@map("message_reactions")
+}
+
+model MessageReport {
+  id         String     @id @default(uuid())
+  messageId  String     @map("message_id")
+  reportedBy String     @map("reported_by")
+  reason     String?
+  status     ReportStatus @default(PENDING)
+  
+  message    PodMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@unique([messageId, reportedBy])
+  @@map("message_reports")
 }
 
 model CheckIn {
@@ -114,6 +152,21 @@ model CheckIn {
 
   @@unique([userId, date])
   @@map("check_ins")
+}
+
+model StreakRestore {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  restoredDate  DateTime @map("restored_date") // The date that was restored
+  streakAtRestore Int    @map("streak_at_restore") // Streak value when restore was used
+  month         Int      // Month when restore was used (1-12)
+  year          Int      // Year when restore was used
+  
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("streak_restores")
 }
 
 model CrisisToolkitItem {
@@ -165,4 +218,11 @@ enum BadgeType {
 enum PodType {
   REAL
   AI
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  ACTION_TAKEN
+  DISMISSED
 }

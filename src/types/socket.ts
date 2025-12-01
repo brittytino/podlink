@@ -1,6 +1,7 @@
 export interface SocketMessage {
   id: string;
   messageText: string;
+  imageUrl?: string | null;
   userId: string;
   username: string;
   displayName?: string; // Anonymous name for privacy
@@ -8,6 +9,14 @@ export interface SocketMessage {
   createdAt: string;
   isCrisisResponse: boolean;
   isAI?: boolean; // Whether this message is from an AI bot
+  isDeleted?: boolean;
+  reactions?: Array<{ emoji: string; count: number; userIds: string[] }>;
+}
+
+export interface MessageReaction {
+  emoji: string;
+  count: number;
+  userIds: string[];
 }
 
 export interface CrisisAlertEvent {
