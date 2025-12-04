@@ -76,9 +76,18 @@ io.on('connection', (socket) => {
     socket.join(podId);
     onlineUsers.set(userId, { socketId: socket.id, podId, username });
     
-    // Notify pod members
-    io.to(podId).emit('user-online', { userId, username });
-    console.log(`${username} joined pod ${podId}`);
+    // Get all online users in this pod
+    const podOnlineUsers = Array.from(onlineUsers.entries())
+      .filter(([, data]) => data.podId === podId)
+      .map(([id]) => id);
+    
+    // Send current online users to the joining user
+    socket.emit('online-users', { userIds: podOnlineUsers });
+    
+    // Notify other pod members that this user came online
+    socket.to(podId).emit('user-online', { userId, username });
+    
+    console.log(`${username} joined pod ${podId}. Online users: ${podOnlineUsers.length}`);
   });
 
   socket.on('send-message', ({ podId, message, userId, username, displayName, avatarUrl }) => {

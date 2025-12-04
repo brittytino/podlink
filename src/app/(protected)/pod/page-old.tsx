@@ -282,7 +282,7 @@ export default function PodPage() {
                     <div className="min-w-0">
                       <h1 className="font-extrabold text-lg sm:text-xl truncate text-slate-900">{podName}</h1>
                       <p className="text-xs text-slate-500 truncate">
-                        {members.length} member{members.length !== 1 ? 's' : ''} • {isConnected ? 'Online' : 'Connecting...'}
+                        {members.length} member{members.length !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>

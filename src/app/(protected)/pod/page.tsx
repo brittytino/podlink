@@ -23,6 +23,7 @@ interface PodMember {
   displayName?: string;
   avatarUrl: string | null;
   currentStreak: number;
+  isOnline?: boolean; // Track online status
 }
 
 interface CrisisAlert {
@@ -46,6 +47,7 @@ export default function PodPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set()); // Track online user IDs
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -101,6 +103,28 @@ export default function PodPage() {
       username: session.user.username,
     });
 
+    // Receive initial list of online users when joining
+    socket.on('online-users', ({ userIds }: { userIds: string[] }) => {
+      setOnlineUsers(new Set(userIds));
+      console.log('Initial online users:', userIds.length);
+    });
+
+    // Handle user online status
+    socket.on('user-online', ({ userId }: { userId: string }) => {
+      setOnlineUsers((prev) => new Set(prev).add(userId));
+      console.log('User came online:', userId);
+    });
+
+    // Handle user offline status
+    socket.on('user-offline', ({ userId }: { userId: string }) => {
+      setOnlineUsers((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+      console.log('User went offline:', userId);
+    });
+
     socket.on('crisis-alert-received', (alert: CrisisAlert) => {
       // Don't show alert to the sender
       if (alert.userId !== session?.user?.id) {
@@ -128,6 +152,9 @@ export default function PodPage() {
     });
 
     return () => {
+      socket.off('online-users');
+      socket.off('user-online');
+      socket.off('user-offline');
       socket.off('crisis-alert-received');
       socket.off('alert-resolved');
       socket.off('message-reaction');
@@ -392,15 +419,7 @@ export default function PodPage() {
                 {members.length} member{members.length !== 1 ? 's' : ''}
               </p>
             </div>
-            <Badge 
-              variant={isConnected ? 'default' : 'secondary'} 
-              className={cn(
-                "text-xs font-semibold px-3 py-1",
-                isConnected ? "bg-emerald-500 text-white border-emerald-600" : "bg-slate-100 text-slate-600"
-              )}
-            >
-              {isConnected ? '● Online' : '○ Offline'}
-            </Badge>
+            
           </div>
         </div>
 
@@ -409,6 +428,8 @@ export default function PodPage() {
             {members.map((member) => {
               const displayName = member.displayName || member.fullName;
               const isCurrentUser = member.id === session?.user?.id;
+              const isUserOnline = onlineUsers.has(member.id) || isCurrentUser; // Current user is always "online" to themselves
+              
               return (
                 <div
                   key={member.id}
@@ -424,12 +445,22 @@ export default function PodPage() {
                         {displayName.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white rounded-full shadow-sm" />
+                    {/* Real-time Online/Offline Status Indicator */}
+                    <div 
+                      className={cn(
+                        "absolute -bottom-1 -right-1 w-4 h-4 border-2 border-white rounded-full shadow-sm transition-all",
+                        isUserOnline ? "bg-emerald-500" : "bg-slate-400"
+                      )}
+                      title={isUserOnline ? "Online" : "Offline"}
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="font-bold text-base truncate text-slate-900">{displayName}</p>
                       {isCurrentUser && <span className="text-xs text-indigo-600 font-semibold px-2 py-0.5 bg-indigo-100 rounded-full">(You)</span>}
+                      {isUserOnline && !isCurrentUser && (
+                        <span className="text-xs text-emerald-600 font-semibold">● Online</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-slate-500 font-semibold">{member.currentStreak} day streak</span>
@@ -467,7 +498,7 @@ export default function PodPage() {
               <div className="min-w-0 flex-1">
                 <h1 className="font-bold text-lg lg:text-xl text-slate-900 truncate">{podName}</h1>
                 <p className="text-xs lg:text-sm text-slate-600 truncate font-medium">
-                  {members.length} members • {isConnected ? '✓ Online' : 'Connecting...'}
+                  {onlineUsers.size > 0 ? `${onlineUsers.size} online` : 'No one online'} • {members.length} total • {isConnected ? '✓ Connected' : 'Connecting...'}
                 </p>
               </div>
             </div>
