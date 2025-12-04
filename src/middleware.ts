@@ -15,9 +15,12 @@ export default async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  // Redirect to onboarding if not completed
+  // Get the latest onboarding status from token
+  const isOnboardingComplete = (token as any).onboardingComplete;
+
+  // Redirect to onboarding if not completed (excluding API routes and onboarding itself)
   if (
-    !(token as any).onboardingComplete &&
+    !isOnboardingComplete &&
     path !== '/onboarding' &&
     !path.startsWith('/api')
   ) {
@@ -25,7 +28,7 @@ export default async function middleware(req: NextRequest) {
   }
 
   // Redirect to dashboard if trying to access onboarding when already completed
-  if ((token as any).onboardingComplete && path === '/onboarding') {
+  if (isOnboardingComplete && path === '/onboarding') {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 

@@ -180,7 +180,7 @@ export default function PodPage() {
 
     // Validate message text if present
     if (messageText.trim()) {
-      const validation = validateMessage(messageText);
+      const validation = await validateMessage(messageText);
       if (!validation.isValid) {
         toast({
           title: 'Message Blocked',

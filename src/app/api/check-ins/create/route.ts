@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import { processCheckIn, getStreakStatus } from '@/lib/streak-manager';
+import { emitToUser } from '@/lib/socket-emit';
 import prisma from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
@@ -36,6 +37,19 @@ export async function POST(req: NextRequest) {
 
     // Get updated streak status
     const streakStatus = await getStreakStatus(userId);
+
+    // Emit streak update event via socket
+    if (result.newStreak !== undefined) {
+      await emitToUser(userId, 'streak-updated', {
+        userId,
+        newStreak: result.newStreak,
+      });
+      
+      await emitToUser(userId, 'check-in-complete', {
+        userId,
+        streak: result.newStreak,
+      });
+    }
 
     // Update pod total streak (sum of all members' streaks)
     const user = await prisma.user.findUnique({

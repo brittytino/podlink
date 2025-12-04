@@ -66,6 +66,12 @@ const onlineUsers = new Map();
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
+  socket.on('join-user-room', (userId) => {
+    const userRoom = `user-${userId}`;
+    socket.join(userRoom);
+    console.log(`User ${userId} joined personal room: ${userRoom}`);
+  });
+
   socket.on('join-pod', ({ userId, podId, username }) => {
     socket.join(podId);
     onlineUsers.set(userId, { socketId: socket.id, podId, username });

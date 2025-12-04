@@ -36,6 +36,22 @@ async function wakeUpDatabase(): Promise<boolean> {
 // Helper function to execute Prisma operations with automatic reconnection
 // Optimized for Neon free tier (databases wake up in 2-5 seconds)
 let isReconnecting = false;
+let isConnected = false;
+
+// Ensure Prisma is connected before operations
+async function ensureConnection(): Promise<void> {
+  if (!isConnected && !isReconnecting) {
+    try {
+      isReconnecting = true;
+      await prismaBase.$connect();
+      isConnected = true;
+      isReconnecting = false;
+    } catch (error) {
+      isReconnecting = false;
+      throw error;
+    }
+  }
+}
 
 async function executeWithRetry<T>(
   operation: () => Promise<T>,
@@ -46,6 +62,8 @@ async function executeWithRetry<T>(
 
   while (retries < maxRetries) {
     try {
+      // Ensure connection before operation
+      await ensureConnection();
       return await operation();
     } catch (error: any) {
       // Check if it's a connection error (Neon pause/resume)
@@ -54,6 +72,8 @@ async function executeWithRetry<T>(
         error?.message?.includes('Connection') ||
         error?.message?.includes('ECONNREFUSED') ||
         error?.message?.includes('ETIMEDOUT') ||
+        error?.message?.includes('Engine is not yet connected') ||
+        error?.message?.includes('not yet connected') ||
         error?.code === 'P1001' ||
         error?.code === 'P1000' ||
         error?.code === 'P1017' ||
@@ -74,6 +94,7 @@ async function executeWithRetry<T>(
         }
         
         isReconnecting = true;
+        isConnected = false; // Mark as disconnected
         try {
           // Disconnect first to clear any stale connections
           await prismaBase.$disconnect().catch(() => {});

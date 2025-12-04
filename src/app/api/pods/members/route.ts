@@ -17,7 +17,10 @@ export async function GET(req: NextRequest) {
     }
 
     const members = await prisma.user.findMany({
-      where: { podId },
+      where: { 
+        podId,
+        isAI: false, // Exclude AI bots from member list
+      },
       select: {
         id: true,
         username: true,

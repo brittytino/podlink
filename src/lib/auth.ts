@@ -159,10 +159,29 @@ export const authConfig: NextAuthConfig = {
         }
       }
 
-      if (trigger === 'update' && session) {
-        token.onboardingComplete = session.onboardingComplete;
-        token.podId = session.podId;
-        if (session.avatarUrl !== undefined) {
+      // When session is updated (e.g., after profile update), fetch latest user data
+      if (trigger === 'update') {
+        if (session?.user?.email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+          });
+          
+          if (dbUser) {
+            token.onboardingComplete = dbUser.onboardingComplete;
+            token.podId = dbUser.podId;
+            token.avatarUrl = dbUser.avatarUrl;
+            token.username = dbUser.username;
+          }
+        }
+        
+        // Also accept direct session updates
+        if (session?.onboardingComplete !== undefined) {
+          token.onboardingComplete = session.onboardingComplete;
+        }
+        if (session?.podId !== undefined) {
+          token.podId = session.podId;
+        }
+        if (session?.avatarUrl !== undefined) {
           token.avatarUrl = session.avatarUrl;
         }
       }

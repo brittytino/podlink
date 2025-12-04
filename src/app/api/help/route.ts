@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from '@/lib/auth-helper';
 import prisma from '@/lib/prisma';
-import { generateAIEncouragement } from '@/lib/gemini';
+import { generateAIResponse, AVAILABLE_MODELS } from '@/lib/openrouter';
 
 /**
  * Handles "I Need Help" requests
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
         goalCategory: true,
         currentStreak: true,
         fullName: true,
+        displayName: true,
       },
     });
 
@@ -62,14 +63,17 @@ export async function POST(req: NextRequest) {
 
     // Check if it's an AI pod
     if (pod.podType === 'AI') {
-      // Return AI chatbot response immediately using Gemini
+      // Return AI chatbot response immediately using OpenRouter
       if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
       
-      const aiResponse = await generateAIEncouragement(
-        user.goalDescription || user.goalCategory || 'personal growth',
-        `User needs immediate support. They have a ${user.currentStreak || 0} day streak.`
+      const systemPrompt = `You are a supportive mental health companion helping someone in crisis. The user ${user.displayName || user.fullName} is struggling with ${user.goalDescription || user.goalCategory || 'personal growth'}. They have maintained a ${user.currentStreak || 0} day streak and need immediate emotional support. Provide empathetic, actionable advice in 2-3 sentences.`;
+      
+      const aiResponse = await generateAIResponse(
+        'I need help right now. I\'m struggling and need support.',
+        systemPrompt,
+        AVAILABLE_MODELS[0] // Use Gemini free model
       );
 
       return NextResponse.json({
@@ -128,14 +132,17 @@ export async function POST(req: NextRequest) {
     );
 
     if (membersWithMessages.length === 0) {
-      // No availability messages - return AI response using Gemini
+      // No availability messages - return AI response using OpenRouter
       if (!user) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 });
       }
       
-      const aiResponse = await generateAIEncouragement(
-        user.goalDescription || user.goalCategory || 'personal growth',
-        `User needs immediate support. They have a ${user.currentStreak || 0} day streak.`
+      const systemPrompt = `You are a supportive mental health companion. The user ${user.displayName || user.fullName} needs immediate support for ${user.goalDescription || user.goalCategory || 'personal growth'}. They have a ${user.currentStreak || 0} day streak. Provide empathetic, actionable encouragement in 2-3 sentences.`;
+      
+      const aiResponse = await generateAIResponse(
+        'I need help and support right now.',
+        systemPrompt,
+        AVAILABLE_MODELS[0] // Use Gemini free model
       );
 
       return NextResponse.json({

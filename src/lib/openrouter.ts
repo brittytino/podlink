@@ -8,8 +8,10 @@ const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 // Available models (free tier)
 const AVAILABLE_MODELS = [
-  'x-ai/grok-2-1212', // Fast and powerful
   'google/gemini-2.0-flash-exp:free', // Free Gemini
+  'meta-llama/llama-3.2-3b-instruct:free', // Free Llama
+  'microsoft/phi-3-mini-128k-instruct:free', // Free Phi-3
+  'qwen/qwen-2-7b-instruct:free', // Free Qwen
 ] as const;
 
 interface OpenRouterMessage {
@@ -35,11 +37,14 @@ interface OpenRouterResponse {
 export async function generateAIResponse(
   prompt: string,
   systemPrompt?: string,
-  model: string = 'x-ai/grok-2-1212'
+  model?: string
 ): Promise<string> {
   if (!OPENROUTER_API_KEY) {
     throw new Error('OpenRouter API key not configured');
   }
+
+  // Use a random free model if not specified
+  const selectedModel = model || AVAILABLE_MODELS[Math.floor(Math.random() * AVAILABLE_MODELS.length)];
 
   try {
     const messages: OpenRouterMessage[] = [];
@@ -65,7 +70,7 @@ export async function generateAIResponse(
         'X-Title': 'PodLink Accountability App',
       },
       body: JSON.stringify({
-        model,
+        model: selectedModel,
         messages,
         temperature: 0.7,
         max_tokens: 500,
@@ -123,7 +128,7 @@ Return ONLY the username, nothing else.`;
     const response = await generateAIResponse(
       prompt,
       'You are a creative username generator. Return only the username with no additional text or explanation.',
-      'google/gemini-2.0-flash-exp:free'
+      'google/gemini-2.0-flash-exp:free' // Use free Gemini for this
     );
 
     const cleanedName = response.replace(/^["']|["']$/g, '').trim();
@@ -176,10 +181,13 @@ export async function generateAIChatResponse(
       ? `Previous conversation context: ${context.previousMessages.join(' | ')}\n\nUser (${context.username}): ${userMessage}`
       : `User (${context.username}): ${userMessage}`;
 
+    // Use a random free model
+    const model = AVAILABLE_MODELS[Math.floor(Math.random() * AVAILABLE_MODELS.length)];
+
     const response = await generateAIResponse(
       userContext,
       systemPrompt,
-      'x-ai/grok-2-1212' // Fast model for chat
+      model
     );
 
     return response;

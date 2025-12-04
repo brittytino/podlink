@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import { clearUserSession } from '@/lib/cleanup';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -53,8 +53,8 @@ export function Navbar() {
   const [notificationCount, setNotificationCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Fetch streak
-  useEffect(() => {
+  // Fetch streak function
+  const fetchStreak = useCallback(() => {
     if (!user?.id) return;
 
     fetch('/api/user/streak')
@@ -65,6 +65,43 @@ export function Navbar() {
       })
       .catch(() => setLoading(false));
   }, [user?.id]);
+
+  // Initial fetch and polling for streak
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Fetch immediately
+    fetchStreak();
+
+    // Poll every 10 seconds for real-time updates
+    const interval = setInterval(fetchStreak, 10000);
+
+    return () => clearInterval(interval);
+  }, [user?.id, fetchStreak]);
+
+  // Listen for streak updates via socket
+  useEffect(() => {
+    if (!socket || !user?.id) return;
+
+    const handleStreakUpdate = (data: { userId: string; newStreak: number }) => {
+      if (data.userId === user.id) {
+        setStreak(data.newStreak);
+      }
+    };
+
+    const handleCheckInComplete = () => {
+      // Refetch streak when check-in is completed
+      fetchStreak();
+    };
+
+    socket.on('streak-updated', handleStreakUpdate);
+    socket.on('check-in-complete', handleCheckInComplete);
+
+    return () => {
+      socket.off('streak-updated', handleStreakUpdate);
+      socket.off('check-in-complete', handleCheckInComplete);
+    };
+  }, [socket, user?.id, fetchStreak]);
 
   // Fetch notifications
   useEffect(() => {
@@ -310,7 +347,7 @@ export function Navbar() {
                     className="cursor-pointer text-red-600"
                     onClick={() => {
                       clearUserSession();
-                      signOut({ callbackUrl: '/login' });
+                      signOut({ callbackUrl: '/' });
                     }}
                   >
                     <LogOut className="mr-2 h-4 w-4" />

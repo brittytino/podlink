@@ -29,3 +29,28 @@ export async function emitToPod(podId: string, event: string, data: any) {
   }
 }
 
+export async function emitToUser(userId: string, event: string, data: any) {
+  try {
+    const emitPort = process.env.SOCKET_EMIT_PORT || 3002;
+    const socketHost = process.env.SOCKET_HOST || 'localhost';
+    
+    // Use the emit server endpoint
+    const emitUrl = process.env.SOCKET_EMIT_URL || `http://${socketHost}:${emitPort}/emit`;
+    
+    const response = await fetch(emitUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        room: `user-${userId}`,
+        event,
+        data,
+      }),
+    });
+    
+    if (!response.ok) {
+      console.warn('Socket emit to user failed, data will update on next poll');
+    }
+  } catch (error) {
+    console.log('Socket emit not available, client will poll for updates');
+  }
+}

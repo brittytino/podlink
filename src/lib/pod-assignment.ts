@@ -275,15 +275,16 @@ async function createNewAIPod(userId: string, currentUser: UserWithGoal): Promis
       const botName = generateAIBotName(existingBotNames);
       existingBotNames.push(botName);
       
-      const botEmail = `ai-${botName.toLowerCase()}-${pod.id.slice(0, 8)}@podlink.ai`;
-      const botUsername = `ai_${botName.toLowerCase()}_${pod.id.slice(0, 8)}`;
-      const hashedPassword = await bcrypt.hash('ai-bot-password', 10);
+      // Sanitize bot name for email and username (remove spaces, special chars)
+      const sanitizedName = botName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const botEmail = `ai-${sanitizedName}-${pod.id.slice(0, 8)}@podlink.ai`;
+      const botUsername = `ai_${sanitizedName.replace(/-/g, '_')}_${pod.id.slice(0, 8)}`;
       
       await prisma.user.create({
         data: {
           username: botUsername,
           email: botEmail,
-          password: hashedPassword,
+          password: null, // AI bots don't need passwords
           fullName: botName,
           displayName: botName,
           timezone: 'UTC',

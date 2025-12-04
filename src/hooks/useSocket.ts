@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useSession } from 'next-auth/react';
 
 let socket: Socket | null = null;
 
 export function useSocket() {
+  const { data: session } = useSession();
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState<string | null>(null);
 
@@ -39,6 +41,12 @@ export function useSocket() {
         setIsConnected(true);
         setConnectionError(null);
         console.log('✅ Socket connected:', socket?.id);
+        
+        // Join user's personal room for receiving updates
+        if (session?.user?.id && socket) {
+          socket.emit('join-user-room', session.user.id);
+          console.log('👤 Joined user room:', session.user.id);
+        }
       });
 
       socket.on('disconnect', (reason) => {
@@ -83,7 +91,7 @@ export function useSocket() {
       // Don't disconnect on unmount, keep connection alive
       // Only disconnect on component unmount if socket is truly unused
     };
-  }, []);
+  }, [session?.user?.id]);
 
   return { socket, isConnected, connectionError };
 }
