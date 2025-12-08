@@ -6,7 +6,12 @@ export default async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
 
   // Allow auth routes and API routes
-  if (path.startsWith('/login') || path.startsWith('/register') || path.startsWith('/api/auth')) {
+  if (
+    path.startsWith('/login') || 
+    path.startsWith('/register') || 
+    path.startsWith('/verify-email') ||
+    path.startsWith('/api/auth')
+  ) {
     return NextResponse.next();
   }
 

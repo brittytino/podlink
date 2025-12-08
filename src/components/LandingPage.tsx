@@ -19,15 +19,15 @@ export default function LandingPage() {
   const [activePill, setActivePill] = useState(0);
 
   const pillMessages = [
-    '🎯 Join 447 members achieving their goals',
-    '🔥 147 active streaks today',
-    '⭐ 4.9/5 rating from 2,341 reviews',
-    '💪 92% success rate with PodLink'
+    '🎯 Join active members achieving their goals',
+    '🔥 Daily accountability with AI-powered matching',
+    '⭐ Real-time chat & crisis support',
+    '💪 Built for mental health and personal growth'
   ];
 
-  // Animated stats counter
+  // Animated stats counter - realistic numbers
   useEffect(() => {
-    const targetStats = { pods: 80, members: 500, goals: 217, streak: 147 };
+    const targetStats = { pods: 45, members: 180, goals: 95, streak: 67 };
     const duration = 2000;
     const steps = 60;
     const increment = {

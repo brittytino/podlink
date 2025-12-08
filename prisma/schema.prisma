@@ -35,6 +35,11 @@ model User {
   availabilityMessage String? @map("availability_message")
   isAI              Boolean   @default(false) @map("is_ai")
   
+  // Email verification fields
+  emailVerified     Boolean   @default(false) @map("email_verified")
+  verificationToken String?   @unique @map("verification_token")
+  verificationTokenExpiry DateTime? @map("verification_token_expiry")
+  
   pod               Pod?               @relation(fields: [podId], references: [id])
   crisisAlerts      CrisisAlert[]
   messages          PodMessage[]

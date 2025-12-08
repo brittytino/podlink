@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, Heart, ArrowRight, Send } from 'lucide-react';
 
@@ -23,7 +23,7 @@ const footerLinks = {
     { label: 'Help Center', href: '/help' },
     { label: 'Community', href: '/community' },
     { label: 'Crisis Support', href: '/crisis' },
-    { label: 'API Docs', href: '/docs' }
+    { label: 'Documentation', href: '/docs' }
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },
@@ -38,7 +38,7 @@ const socialLinks = [
   {
     name: 'GitHub',
     icon: Github,
-    href: 'https://github.com/podlink',
+    href: 'https://github.com/brittytino/podlink',
     color: 'hover:text-slate-900',
     gradient: 'from-slate-600 to-slate-800'
   },
@@ -59,7 +59,7 @@ const socialLinks = [
   {
     name: 'Email',
     icon: Mail,
-    href: 'mailto:hello@podlink.io',
+    href: 'mailto:hello@podlink.app',
     color: 'hover:text-purple-600',
     gradient: 'from-purple-600 to-pink-600'
   }
@@ -68,6 +68,12 @@ const socialLinks = [
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [currentYear, setCurrentYear] = useState(2025);
+
+  useEffect(() => {
+    // Auto-update year
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -278,9 +284,9 @@ export default function Footer() {
               viewport={{ once: true }}
               className="text-slate-400 text-sm flex items-center gap-2"
             >
-              <span>© 2024 PodLink. Made with</span>
+              <span>© {currentYear} PodLink. Made with</span>
               <Heart size={14} className="text-pink-500 fill-pink-500" />
-              <span>for goal achievers worldwide.</span>
+              <span>for mental health and accountability.</span>
             </motion.div>
 
             <motion.div

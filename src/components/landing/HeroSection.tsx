@@ -126,8 +126,8 @@ export default function HeroSection({ statsCount, activePill, pillMessages }: He
                 className="text-slate-600 text-lg sm:text-xl lg:text-2xl max-w-3xl mx-auto font-light leading-relaxed"
               >
                 Join accountability pods of 4-6 people matched by AI. 
-                <span className="font-semibold text-slate-900"> 92% success rate </span>
-                vs 27% going solo.
+                <span className="font-semibold text-slate-900"> Real-time chat, daily check-ins, </span>
+                and crisis support for mental health goals.
               </motion.p>
             </div>
 
@@ -139,9 +139,9 @@ export default function HeroSection({ statsCount, activePill, pillMessages }: He
               className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-600"
             >
               {[
-                { icon: CheckCircle2, text: 'Free Forever', color: 'text-green-500' },
-                { icon: Shield, text: 'Anonymous Mode', color: 'text-blue-500' },
-                { icon: Users, text: '1,247+ Members', color: 'text-purple-500' }
+                { icon: CheckCircle2, text: 'Free & Open Source', color: 'text-green-500' },
+                { icon: Shield, text: 'Anonymous Display Names', color: 'text-blue-500' },
+                { icon: Users, text: 'AI-Powered Pod Matching', color: 'text-purple-500' }
               ].map((item, idx) => {
                 const Icon = item.icon;
                 return (

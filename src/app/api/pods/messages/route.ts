@@ -258,7 +258,7 @@ export async function POST(req: NextRequest) {
           .filter((m: any) => m.isAI)
           .map((m: any) => m.displayName || m.fullName);
         
-        const botName = generateAIBotName(existingBotNames);
+        const botName = await generateAIBotName(existingBotNames);
         const botEmail = `ai-${botName.toLowerCase().replace(/\s+/g, '-')}-${podId.slice(0, 8)}@podlink.ai`;
         const botUsername = `ai_${botName.toLowerCase().replace(/\s+/g, '_')}_${podId.slice(0, 8)}`;
 
@@ -330,24 +330,41 @@ export async function POST(req: NextRequest) {
             content: msg.messageText as string,
           }));
 
-        // Generate AI response - randomly choose between OpenRouter and Gemini
+        // Generate AI response - Try OpenRouter first, fallback to Gemini
         try {
           const previousMessages = conversationHistory.slice(-3).map(msg => msg.content);
-          const useOpenRouter = Math.random() < 0.5; // 50% chance for each
+          
+          console.log('🤖 Preparing AI response for message:', {
+            messageText: messageText.substring(0, 50),
+            userGoal: user?.goalCategory,
+            userStreak: user?.currentStreak,
+            hasPreviousMessages: previousMessages.length > 0
+          });
           
           let aiResponse: string;
-          if (useOpenRouter) {
-            // Use OpenRouter with free models
+          
+          // Try OpenRouter first (preferred for dynamic responses)
+          try {
+            console.log('🚀 Attempting OpenRouter API call...');
             aiResponse = await generateOpenRouterResponse(
               messageText,
               {
                 username: user?.displayName || user?.fullName || 'friend',
                 isInCrisis: isCrisisResponse || false,
                 previousMessages,
+                goalCategory: user?.goalCategory || undefined,
+                goalDescription: user?.goalDescription || undefined,
+                streak: user?.currentStreak || 0,
               }
             );
-          } else {
-            // Use Gemini
+            console.log('✅ OpenRouter response received:', aiResponse.substring(0, 50));
+          } catch (openRouterError: any) {
+            console.error('❌ OpenRouter failed, trying Gemini fallback...', {
+              error: openRouterError?.message,
+              type: openRouterError?.name
+            });
+            
+            // Fallback to Gemini
             aiResponse = await generateGeminiResponse({
               userMessage: messageText,
               goalCategory: user?.goalCategory || undefined,
@@ -356,6 +373,7 @@ export async function POST(req: NextRequest) {
               userStreak: user?.currentStreak || 0,
               conversationHistory,
             });
+            console.log('✅ Gemini fallback response received:', aiResponse.substring(0, 50));
           }
 
           // Create AI message with a natural delay (1-3 seconds)

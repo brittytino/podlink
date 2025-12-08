@@ -6,13 +6,99 @@
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API;
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-// Available models (free tier)
+// Available models (free tier) - ordered by preference
 const AVAILABLE_MODELS = [
-  'google/gemini-2.0-flash-exp:free', // Free Gemini
-  'meta-llama/llama-3.2-3b-instruct:free', // Free Llama
-  'microsoft/phi-3-mini-128k-instruct:free', // Free Phi-3
-  'qwen/qwen-2-7b-instruct:free', // Free Qwen
+  'tngtech/deepseek-r1t2-chimera:free', // DeepSeek R1T2 Chimera
+  'kwaipilot/kat-coder-pro:free', // KAT Coder Pro
+  'nvidia/nemotron-nano-12b-v2-vl:free', // NVIDIA Nemotron
+  'tngtech/deepseek-r1t-chimera:free', // DeepSeek R1T Chimera
+  'z-ai/glm-4.5-air:free', // GLM 4.5 Air
+  'amazon/nova-2-lite-v1:free', // Amazon Nova 2 Lite
+  'google/gemma-3-27b-it:free', // Google Gemma 3
+  'openai/gpt-oss-20b:free', // GPT OSS 20B
+  'meta-llama/llama-3.3-70b-instruct:free', // Llama 3.3 70B
 ] as const;
+
+/**
+ * Try multiple models in sequence if one is rate-limited
+ */
+async function tryMultipleModels(
+  messages: OpenRouterMessage[],
+  requestBody: any
+): Promise<string> {
+  let lastError: any;
+  
+  // Try each model in sequence
+  for (const model of AVAILABLE_MODELS) {
+    try {
+      console.log(`🔄 Trying model: ${model}`);
+      
+      const response = await fetch(OPENROUTER_API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+          'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://localhost:3000',
+          'X-Title': 'PodLink Accountability App',
+        },
+        body: JSON.stringify({
+          ...requestBody,
+          model,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText };
+        }
+        
+        console.error(`❌ Model ${model} error:`, errorData);
+        
+        // If rate-limited (429) or not found (404) or bad request (400), try next model
+        if (response.status === 429 || response.status === 404 || response.status === 400) {
+          console.log(`⏭️  Model ${model} is rate-limited, trying next...`);
+          lastError = new Error(`API error: ${response.status} - ${errorData.error?.message || errorText}`);
+          continue;
+        }
+        
+        // For other errors, also try next model instead of failing immediately
+        console.log(`⚠️  Model ${model} failed: ${errorData.error?.message || errorText}`);
+        lastError = new Error(`API error: ${response.status} - ${errorData.error?.message || errorText}`);
+        continue;
+      }
+
+      const data: OpenRouterResponse = await response.json();
+
+      if (data.error) {
+        console.error(`❌ Model ${model} returned error:`, data.error);
+        lastError = new Error(data.error.message);
+        continue;
+      }
+
+      const generatedText = data.choices?.[0]?.message?.content?.trim() || '';
+
+      if (!generatedText) {
+        console.error(`❌ Model ${model} returned empty response`);
+        lastError = new Error('Empty response');
+        continue;
+      }
+
+      console.log(`✅ Success with model: ${model}`);
+      return generatedText;
+    } catch (error: any) {
+      console.log(`⚠️  Model ${model} failed:`, error.message);
+      lastError = error;
+      continue;
+    }
+  }
+  
+  // If all models failed, throw the last error
+  throw lastError || new Error('All models failed');
+}
 
 interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant';
@@ -40,11 +126,11 @@ export async function generateAIResponse(
   model?: string
 ): Promise<string> {
   if (!OPENROUTER_API_KEY) {
+    console.error('❌ OpenRouter API key not configured');
     throw new Error('OpenRouter API key not configured');
   }
 
-  // Use a random free model if not specified
-  const selectedModel = model || AVAILABLE_MODELS[Math.floor(Math.random() * AVAILABLE_MODELS.length)];
+  console.log('🤖 OpenRouter Request:', { promptLength: prompt.length });
 
   try {
     const messages: OpenRouterMessage[] = [];
@@ -61,44 +147,53 @@ export async function generateAIResponse(
       content: prompt,
     });
 
-    const response = await fetch(OPENROUTER_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://localhost:3000',
-        'X-Title': 'PodLink Accountability App',
-      },
-      body: JSON.stringify({
-        model: selectedModel,
-        messages,
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
+    const requestBody = {
+      messages,
+      temperature: 0.7,
+      max_tokens: 500,
+    };
+
+    // If specific model requested, try it first
+    if (model) {
+      try {
+        console.log(`🎯 Using requested model: ${model}`);
+        const response = await fetch(OPENROUTER_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'HTTP-Referer': process.env.NEXTAUTH_URL || 'http://localhost:3000',
+            'X-Title': 'PodLink Accountability App',
+          },
+          body: JSON.stringify({
+            ...requestBody,
+            model,
+          }),
+        });
+
+        if (response.ok) {
+          const data: OpenRouterResponse = await response.json();
+          const generatedText = data.choices?.[0]?.message?.content?.trim();
+          if (generatedText) {
+            console.log('✅ OpenRouter Success with requested model');
+            return generatedText;
+          }
+        }
+        console.log('⚠️  Requested model failed, trying fallback models...');
+      } catch (error) {
+        console.log('⚠️  Requested model error, trying fallback models...');
+      }
+    }
+
+    // Try multiple models in sequence
+    const result = await tryMultipleModels(messages, requestBody);
+    console.log('✅ OpenRouter Success:', { responseLength: result.length });
+    return result;
+  } catch (error: any) {
+    console.error('❌ OpenRouter Error:', {
+      message: error?.message,
+      name: error?.name
     });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error('OpenRouter API error:', response.status, errorData);
-      throw new Error(`OpenRouter API request failed: ${response.status}`);
-    }
-
-    const data: OpenRouterResponse = await response.json();
-
-    if (data.error) {
-      console.error('OpenRouter error:', data.error);
-      throw new Error(data.error.message);
-    }
-
-    const generatedText = data.choices?.[0]?.message?.content?.trim() || '';
-
-    if (!generatedText) {
-      throw new Error('No response generated');
-    }
-
-    return generatedText;
-  } catch (error) {
-    console.error('Error generating AI response:', error);
     throw error;
   }
 }
@@ -145,7 +240,7 @@ Return ONLY the username, nothing else.`;
 }
 
 /**
- * Generate AI chat response for crisis support
+ * Generate AI chat response for crisis support and pod conversations
  */
 export async function generateAIChatResponse(
   userMessage: string,
@@ -153,46 +248,69 @@ export async function generateAIChatResponse(
     username: string;
     isInCrisis: boolean;
     previousMessages?: string[];
+    goalCategory?: string;
+    goalDescription?: string;
+    streak?: number;
   }
 ): Promise<string> {
   if (!OPENROUTER_API_KEY) {
+    console.warn('⚠️  OpenRouter API key missing, using fallback response');
     return getFallbackCrisisResponse(context.isInCrisis);
   }
+
+  console.log('💬 Generating AI chat response:', {
+    userMessage: userMessage.substring(0, 50),
+    isInCrisis: context.isInCrisis,
+    goalCategory: context.goalCategory,
+    streak: context.streak
+  });
 
   try {
     const systemPrompt = context.isInCrisis
       ? `You are a compassionate AI support companion in a mental health accountability app. A user is experiencing a crisis. Your role is to:
-- Provide immediate emotional support
-- Validate their feelings
+- Provide immediate emotional support and validation
 - Encourage them to use coping strategies
 - Remind them they're not alone
 - Keep responses brief (2-3 sentences max)
 - Be warm, supportive, and non-judgmental
 - Never give medical advice
-- Encourage professional help if needed`
-      : `You are a supportive AI companion in an accountability app. Your role is to:
-- Encourage users on their journey
-- Celebrate their progress
-- Offer gentle motivation
-- Keep responses brief and friendly (2-3 sentences max)
-- Be positive and uplifting`;
+- Encourage professional help if needed
+
+Important: Respond naturally like a caring friend would. Don't be robotic.`
+      : `You are a supportive AI companion in an accountability pod chat. Your role is to:
+- Give specific, actionable advice when asked
+- Suggest immediate coping strategies for urges/cravings
+- Acknowledge feelings and offer practical help
+- Celebrate progress with genuine excitement
+- Answer questions helpfully
+- Keep responses conversational and brief (1-2 sentences max)
+- Sound human, not like a motivational poster
+- Respond directly to what they said - be specific, not generic
+
+${context.goalCategory ? `Context: The user is working on ${context.goalCategory}.` : ''}
+${context.goalDescription ? `Their goal: ${context.goalDescription}` : ''}
+${context.streak ? `They have a ${context.streak} day streak.` : 'They are just starting their journey.'}
+
+Be specific and helpful. If they ask for advice, give it. If they're struggling, help immediately.`;
 
     const userContext = context.previousMessages?.length
       ? `Previous conversation context: ${context.previousMessages.join(' | ')}\n\nUser (${context.username}): ${userMessage}`
       : `User (${context.username}): ${userMessage}`;
 
-    // Use a random free model
-    const model = AVAILABLE_MODELS[Math.floor(Math.random() * AVAILABLE_MODELS.length)];
+    console.log('🚀 Calling OpenRouter with automatic model selection...');
 
     const response = await generateAIResponse(
       userContext,
-      systemPrompt,
-      model
+      systemPrompt
     );
 
+    console.log('✅ AI response generated successfully:', response.substring(0, 50));
     return response;
-  } catch (error) {
-    console.error('Error generating AI chat response:', error);
+  } catch (error: any) {
+    console.error('❌ Error generating AI chat response:', {
+      error: error?.message,
+      fallback: 'Using fallback response'
+    });
     return getFallbackCrisisResponse(context.isInCrisis);
   }
 }

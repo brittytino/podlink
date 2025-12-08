@@ -60,6 +60,12 @@ export const authConfig: NextAuthConfig = {
             return null;
           }
 
+          // Check if email is verified
+          if (!user.emailVerified) {
+            console.log(`Email not verified for user: ${identifier}`);
+            throw new Error('EMAIL_NOT_VERIFIED');
+          }
+
           const isPasswordValid = await bcrypt.compare(
             password,
             String(user.password)
@@ -69,6 +75,8 @@ export const authConfig: NextAuthConfig = {
             console.log(`Invalid password for user: ${identifier}`);
             return null;
           }
+
+          console.log(`\u2705 User authenticated successfully: ${identifier}`);
 
           return {
             id: user.id,
@@ -91,55 +99,69 @@ export const authConfig: NextAuthConfig = {
       },
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+          scope: "openid email profile"
+        }
+      }
     }),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      // Handle Google OAuth sign-in
       if (account?.provider === 'google') {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+          });
 
-        if (!existingUser) {
-          // Generate anonymous display name for Google OAuth users
-          const existingUsers = await prisma.user.findMany({
-            select: { displayName: true, username: true },
-            where: { displayName: { not: null } },
-          });
-          const existingNames = existingUsers
-            .map((u) => u.displayName)
-            .filter((n): n is string => n !== null);
-          const existingUsernames = existingUsers
-            .map((u) => u.username)
-            .filter((n): n is string => n !== null);
-          
-          const { generateAnonymousName } = await import('@/lib/openrouter');
-          const displayName = await generateAnonymousName(existingNames);
-          const baseUsername = displayName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
-          
-          // Ensure username is unique
-          let username = baseUsername;
-          let counter = 1;
-          while (existingUsernames.includes(username)) {
-            username = `${baseUsername}_${counter}`;
-            counter++;
+          if (!existingUser) {
+            // Generate anonymous display name for Google OAuth users
+            const existingUsers = await prisma.user.findMany({
+              select: { displayName: true, username: true },
+              where: { displayName: { not: null } },
+            });
+            const existingNames = existingUsers
+              .map((u) => u.displayName)
+              .filter((n): n is string => n !== null);
+            const existingUsernames = existingUsers
+              .map((u) => u.username)
+              .filter((n): n is string => n !== null);
+            
+            const { generateAnonymousName } = await import('@/lib/openrouter');
+            const displayName = await generateAnonymousName(existingNames);
+            const baseUsername = displayName.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            
+            // Ensure username is unique
+            let username = baseUsername;
+            let counter = 1;
+            while (existingUsernames.includes(username)) {
+              username = `${baseUsername}_${counter}`;
+              counter++;
+            }
+            
+            await prisma.user.create({
+              data: {
+                email: user.email!,
+                username,
+                fullName: user.name || displayName,
+                displayName,
+                avatarUrl: user.image,
+                timezone: 'UTC',
+                availabilityHours: { start: '09:00', end: '22:00' },
+                onboardingComplete: false,
+                emailVerified: true, // Auto-verify Google OAuth users
+              } as any,
+            });
           }
-          
-          await prisma.user.create({
-            data: {
-              email: user.email!,
-              username,
-              fullName: displayName,
-              displayName,
-              avatarUrl: user.image,
-              timezone: 'UTC',
-              availabilityHours: { start: '09:00', end: '22:00' },
-              // Don't set goal values - let onboarding handle this
-              onboardingComplete: false,
-            } as any,
-          });
+        } catch (error) {
+          console.error('Error creating Google OAuth user:', error);
+          return false;
         }
       }
       return true;
@@ -206,6 +228,8 @@ export const authConfig: NextAuthConfig = {
     strategy: 'jwt',
   },
   secret: process.env.NEXTAUTH_SECRET,
+  trustHost: true,
+  debug: process.env.NODE_ENV === 'development',
 } satisfies NextAuthConfig;
 
 // Create auth instance that can be used in middleware and route handlers

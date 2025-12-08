@@ -92,6 +92,7 @@ async function getDashboardData(userId: string) {
       stayedOnTrack: c.stayedOnTrack,
     })),
     hasCheckedInToday: !!todayCheckIn,
+    userTimezone: user.timezone || 'UTC',
     toolkitItems: toolkitItems.map((item: { id: string; title: string }) => ({
       id: item.id,
       title: item.title,
@@ -112,7 +113,7 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const { user, checkIns, hasCheckedInToday, toolkitItems } = data;
+  const { user, checkIns, hasCheckedInToday, userTimezone, toolkitItems } = data;
   
   const userWithPod = user as any;
 
@@ -215,7 +216,7 @@ export default async function DashboardPage() {
           <div className="group relative overflow-hidden rounded-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             <div className="relative h-full">
-              <WeeklyProgress checkIns={checkIns} />
+              <WeeklyProgress checkIns={checkIns} userTimezone={userTimezone} />
             </div>
           </div>
         </div>

@@ -1,4 +1,7 @@
-// Friendly AI bot names for AI pods
+import { generateAnonymousName as generateOpenRouterName } from '@/lib/openrouter';
+import { generateAnonymousName as generateGeminiName } from '@/lib/gemini';
+
+// Fallback AI bot names for when API calls fail
 export const AI_BOT_NAMES = [
   // Girls
   'Anika', 'Nila', 'Diya', 'Yaazhini', 'Ishita',
@@ -13,11 +16,31 @@ export const AI_BOT_NAMES = [
   'Vinu', 'Sena', 'Riyaan', 'Laya', 'Tanu'
 ];
 
-
 /**
- * Generates a random AI bot name
+ * Generate AI bot name dynamically using OpenRouter, with Gemini and static fallbacks
  */
-export function generateAIBotName(existingNames: string[] = []): string {
+export async function generateAIBotName(existingNames: string[] = []): Promise<string> {
+  // Try OpenRouter first
+  try {
+    const name = await generateOpenRouterName(existingNames);
+    if (name && !existingNames.includes(name)) {
+      return name;
+    }
+  } catch (error) {
+    console.log('OpenRouter name generation failed, trying Gemini...');
+  }
+
+  // Fallback to Gemini
+  try {
+    const name = await generateGeminiName(existingNames);
+    if (name && !existingNames.includes(name)) {
+      return name;
+    }
+  } catch (error) {
+    console.log('Gemini name generation failed, using static fallback...');
+  }
+
+  // Final fallback to static list
   const availableNames = AI_BOT_NAMES.filter(name => !existingNames.includes(name));
   
   if (availableNames.length === 0) {

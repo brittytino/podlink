@@ -1,592 +1,1181 @@
-# 🔗 PodLink - Mental Health & Accountability Platform
+# 🔗 PodLink - Mental Health & Accountability Platform# 🔗 PodLink - Mental Health & Accountability Platform
 
-> A modern web application that connects individuals in small accountability groups (pods) to achieve personal growth goals through peer support, daily check-ins, crisis intervention, and real-time communication.
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.0.5-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-6.18-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=for-the-badge&logo=postgresql)](https://neon.tech/)
-[![Socket.io](https://img.shields.io/badge/Socket.io-4.8-010101?style=for-the-badge&logo=socket.io)](https://socket.io/)
-[![OpenRouter](https://img.shields.io/badge/OpenRouter-AI-purple?style=for-the-badge)](https://openrouter.ai/)
+
+> **Connect. Support. Grow Together.** A modern web application that connects individuals in small accountability groups (pods) to achieve personal growth goals through peer support, AI guidance, and real-time communication.> A modern web application that connects individuals in small accountability groups (pods) to achieve personal growth goals through peer support, daily check-ins, crisis intervention, and real-time communication.
+
+
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.0.7-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)[![Next.js](https://img.shields.io/badge/Next.js-16.0.5-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+
+[![Prisma](https://img.shields.io/badge/Prisma-6.18-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io/)[![Prisma](https://img.shields.io/badge/Prisma-6.18-2D3748?style=for-the-badge&logo=prisma)](https://www.prisma.io/)
+
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://neon.tech/)[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=for-the-badge&logo=postgresql)](https://neon.tech/)
+
+[![Socket.io](https://img.shields.io/badge/Socket.io-4.8-010101?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io/)[![Socket.io](https://img.shields.io/badge/Socket.io-4.8-010101?style=for-the-badge&logo=socket.io)](https://socket.io/)
+
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)[![OpenRouter](https://img.shields.io/badge/OpenRouter-AI-purple?style=for-the-badge)](https://openrouter.ai/)
+
+[![License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
+
+---
 
 ---
 
 ## 📋 Table of Contents
 
+## 📖 Table of Contents
+
 - [Overview](#-overview)
-- [Core Features](#-core-features)
-- [Technology Stack](#-technology-stack)
-- [Prerequisites](#-prerequisites)
-- [Installation](#-installation)
-- [Environment Setup](#-environment-setup)
-- [Database Setup](#-database-setup)
-- [Running the Application](#-running-the-application)
-- [Project Structure](#-project-structure)
-- [API Documentation](#-api-documentation)
-- [AI Integration](#-ai-integration)
-- [Deployment](#-deployment)
-- [Troubleshooting](#-troubleshooting)
+
+- [About](#-about)- [Core Features](#-core-features)
+
+- [Features](#-features)- [Technology Stack](#-technology-stack)
+
+- [Technology Stack](#-technology-stack)- [Prerequisites](#-prerequisites)
+
+- [Prerequisites](#-prerequisites)- [Installation](#-installation)
+
+- [Installation](#-installation)- [Environment Setup](#-environment-setup)
+
+- [Environment Variables](#-environment-variables)- [Database Setup](#-database-setup)
+
+- [Database Setup](#-database-setup)- [Running the Application](#-running-the-application)
+
+- [Running the Application](#-running-the-application)- [Project Structure](#-project-structure)
+
+- [Project Structure](#-project-structure)- [API Documentation](#-api-documentation)
+
+- [API Documentation](#-api-documentation)- [AI Integration](#-ai-integration)
+
+- [Deployment](#-deployment)- [Deployment](#-deployment)
+
+- [Contributing](#-contributing)- [Troubleshooting](#-troubleshooting)
+
+- [License](#-license)
+
+- [Support](#-support)---
+
+
+
+---## 🎯 Overview
+
+
+
+## 🎯 About**PodLink** is a mental health and accountability platform that helps individuals achieve their personal goals through structured peer support and AI-assisted guidance.
+
+
+
+**PodLink** is a mental health and accountability platform designed to help individuals achieve their personal goals through structured peer support and AI-assisted guidance. Whether you're quitting a bad habit or building a new one, PodLink connects you with like-minded individuals in small, supportive groups called "pods."### What Makes PodLink Unique?
+
+
+
+### 🌟 What Makes PodLink Special?- **AI-Powered Pod Matching**: Smart algorithm groups users (4-6 members) based on goal similarity, timezone, and compatibility
+
+- **Real-Time Presence**: Live online/offline status tracking for all pod members
+
+- **🤖 AI-Powered Matching**: Smart algorithm creates compatible 4-6 member pods based on goals, timezones, and availability- **Crisis Support System**: Immediate help system with AI companion and peer notifications
+
+- **💬 Real-Time Communication**: WhatsApp-style chat with Socket.IO for instant messaging, typing indicators, and read receipts- **Dynamic AI Generation**: All names, responses, and content generated via OpenRouter API (no static content)
+
+- **🔴 Live Presence Tracking**: See who's online in your pod in real-time- **Privacy-First**: Anonymous display names protect user identity
+
+- **🚨 Crisis Support System**: Immediate help with AI companion and instant peer notifications- **Streak Gamification**: Daily check-ins with streak counters and restoration system
+
+- **🎭 Privacy-First**: Anonymous display names generated by AI protect your identity
+
+- **🔥 Streak Gamification**: Daily check-ins with streak counters, leaderboards, and restoration system### Target Audience
+
+- **🛡️ Content Moderation**: AI-powered filtering prevents harmful content before it's sent
+
+- **📧 Email Verification**: Secure authentication with verified email addresses- Individuals overcoming addictions (smoking, alcohol, social media, etc.)
+
+- **🎨 Modern UI**: Beautiful, responsive design with dark mode support- People building healthy habits (exercise, meditation, healthy eating)
+
+- Professionals seeking accountability for personal development
+
+### 👥 Who Is It For?- Anyone needing structured peer support for mental health goals
+
+
+
+- Individuals overcoming addictions (smoking, alcohol, gaming, social media)## ✨ Core Features
+
+- People building healthy habits (exercise, meditation, reading, healthy eating)
+
+- Professionals seeking accountability for personal development### 🔐 Authentication & Security
+
+- Anyone needing structured peer support for mental health goals- **Multi-Provider Authentication**
+
+  - Email/Password with bcrypt hashing
+
+---  - Google OAuth 2.0 integration
+
+  - NextAuth.js JWT session management
+
+## ✨ Features  - Protected route middleware
+
+- **Onboarding Workflow**
+
+### 🔐 Authentication & Onboarding  - Goal type selection (Quit Habit / Build Habit)
+
+  - Goal category with AI-generated suggestions
+
+- **Multi-Provider Authentication**  - Availability schedule configuration
+
+  - ✅ Email/Password with bcrypt hashing (256-bit)  - **AI-Generated Display Names** (OpenRouter API - dynamic, no static fallbacks)
+
+  - ✅ Google OAuth 2.0 integration  - Avatar upload via Cloudinary (2MB limit)
+
+  - ✅ Email verification with token-based system
+
+  - ✅ NextAuth.js JWT session management### 👥 Smart Pod System
+
+  - ✅ Protected routes with middleware- **AI-Powered Matching Algorithm**
+
+  - ✅ Rate limiting (5 signups/hour, 10 logins/15min)  - Groups 4-6 users based on:
+
+  - ✅ reCAPTCHA v2 protection on registration    - Goal type and category similarity
+
+    - Timezone compatibility (±3 hours)
+
+- **Smart Onboarding Flow**    - Availability schedule overlap
+
+  - Goal type selection (Quit Habit / Build Habit)  - **Dynamic Pod Names** (OpenRouter API - category-specific generation)
+
+  - AI-generated goal category suggestions  - AI bots auto-fill demo/incomplete pods
+
+  - Availability schedule configuration (timezone-aware)- **Pod Features**
+
+  - AI-generated anonymous display names for privacy  - **Real-Time Online/Offline Status** (Socket.IO presence tracking)
+
+  - Avatar upload via Cloudinary (max 2MB, auto-optimization)  - Live member count and online indicators (green/gray dots)
+
+  - Personalized welcome experience  - Current streak display for each member
+
+  - Total pod streak calculation
+
+### 👥 Pod System  - Connection status badge (Connecting/Connected/Disconnected)
+
+
+
+- **AI-Powered Pod Matching**### 💬 Real-Time Chat System
+
+  - Groups 4-6 users based on:- **WhatsApp-Style Messaging**
+
+    - Goal type and category similarity  - Socket.IO bidirectional communication (ports 3001, 3002)
+
+    - Timezone compatibility (±3 hours)  - Live message delivery with instant updates
+
+    - Availability schedule overlap  - Emoji picker (emoji-picker-react)
+
+  - Dynamic pod names generated by OpenRouter API  - Image sharing (Cloudinary upload, max 5MB)
+
+  - AI bots fill incomplete pods for demos  - Full-size image preview modal
+
+  - Automatic pod rebalancing  - Message reactions with emoji
+
+  - Typing indicators (3-user limit display)
+
+- **Pod Features**  - Read receipts (✓✓ checkmarks)
+
+  - Real-Time Online Status with green/gray indicators- **Content Moderation**
+
+  - Live member count with connection status  - **AI-Powered Moderation** (OpenRouter API + fallback patterns)
+
+  - Current streak display for each member  - Blocks offensive content pre-send (400 error response)
+
+  - Total pod streak calculation and rankings  - Detects: racial slurs, profanity, hate speech, harassment
+
+  - Pod statistics and analytics  - 20+ keyword patterns with critical/high severity flags
+
+  - Auto-deletes messages after 3 user reports
+
+### 💬 Real-Time Chat  - Temperature 0.1 for strict AI moderation
+
+- **Chat Features**
+
+- **WhatsApp-Style Messaging**  - Date separators for organization
+
+  - Socket.IO bidirectional communication  - Auto-scroll to latest message
+
+  - Instant message delivery with live updates  - Crisis response tagging
+
+  - Full emoji picker with 1000+ emojis  - Message reporting system
+
+  - Image sharing (Cloudinary, max 5MB)  - Image preview before upload
+
+  - Message reactions with emoji support
+
+  - Typing indicators (max 3 users shown)### 📊 Streak & Check-In System
+
+  - Read receipts (✓✓ blue checkmarks)- **Daily Accountability Tracking**
+
+  - Date separators and auto-scroll  - Timezone-aware check-in system
+
+  - Consecutive day streak counter
+
+- **AI-Powered Content Moderation**  - Weekly progress visualization
+
+  - OpenRouter API + pattern matching  - Check-in history API
+
+  - Blocks offensive content before sending- **Streak Management**
+
+  - Auto-deletes messages after 3 reports  - Auto-breaks streaks for missed days (midnight reset)
+
+  - Real-time moderation feedback  - **Streak Restoration** (1 per month, restores to previous streak)
+
+  - Last successful day tracking
+
+### 🔥 Engagement & Gamification  - Grace period handling
+
+
+
+- **Daily Check-Ins**### 🆘 Crisis Support Toolkit
+
+  - Modal prompt every 24 hours- **Emergency Alert System**
+
+  - Mood selector and progress notes  - One-click crisis alert broadcasts to pod
+
+  - Automatic streak increment  - Real-time notification to all online members
+
+  - AI-generated motivational responses  - Optional custom help message
+
+  - **AI-Generated Automated Responses** (OpenRouter API for offline members >6 hours)
+
+- **Streak System**  - Alert resolution tracking
+
+  - Daily streak counter with fire emoji 🔥  - Crisis state management
+
+  - Longest streak tracking- **Personal Crisis Toolkit**
+
+  - Streak restoration (1 per 30 days)  - Customizable coping strategies
+
+  - Automated midnight UTC reset  - Drag-and-drop reordering (react-beautiful-dnd)
+
+  - Visual streak calendar  - CRUD operations for toolkit items
+
+  - Quick access during emergencies
+
+- **Leaderboard**  - Shareable with pod members
+
+  - Real-time rankings by current streak
+
+  - Top 100 users displayed### 🏆 Gamification & Leaderboards
+
+  - Pod-based leaderboards- **Ranking System**
+
+  - Weekly/monthly/all-time views  - Top pods by total combined streak
+
+  - Top individuals by current streak
+
+### 🚨 Crisis Support Toolkit  - Real-time ranking updates
+
+  - Weekly/monthly/all-time filters
+
+- Breathing exercises with visual guides- **Achievement Badges**
+
+- AI-powered crisis companion chatbot  - 7-Day Streak badge
+
+- Emergency contact quick-dial  - 30-Day Streak badge
+
+- Grounding techniques (5-4-3-2-1 method)  - Instant Responder (crisis support <5 min)
+
+- Positive affirmations generator  - Pod Champion (most active member)
+
+- Crisis hotline directory
+
+- Peer notification system### 🤖 AI Integration (OpenRouter API)
+
+- **Fully Dynamic AI Generation**
+
+---  - **Primary**: OpenRouter API (4 free models)
+
+    - `google/gemini-2.0-flash-exp:free`
+
+## 🛠️ Technology Stack    - `meta-llama/llama-3.2-3b-instruct:free`
+
+    - `microsoft/phi-3-mini-128k-instruct:free`
+
+### Frontend    - `qwen/qwen-2-7b-instruct:free`
+
+- **Framework**: Next.js 16.0.7 (App Router, React Server Components)  - **Fallback**: Google Gemini 2.0 Flash (50/50 hybrid for chat)
+
+- **Language**: TypeScript 5.0  - **Use Cases**:
+
+- **Styling**: Tailwind CSS 3.4 + shadcn/ui    - Anonymous display name generation (temperature 0.9)
+
+- **UI Components**: Radix UI primitives    - Pod name generation (category-specific context)
+
+- **Forms**: React Hook Form + Zod validation    - Crisis response messages (user context: streak, goal, crisis state)
+
+    - Content moderation (temperature 0.1, strict prompts)
+
+### Backend    - Supportive pod messages (AI bot members)
+
+- **Runtime**: Node.js 20+- **No Static Content**: All names, responses, and suggestions dynamically generated
+
+- **API**: Next.js API Routes (REST)
+
+- **Authentication**: NextAuth.js 5.0-beta### 📱 Modern UI/UX
+
+- **Database ORM**: Prisma 6.18- **Responsive Design**
+
+- **Database**: Neon PostgreSQL (serverless)  - Mobile-first approach (375px+)
+
+- **Real-Time**: Socket.IO 4.8 (WebSocket)  - Tablet optimized (768px+)
+
+- **Email**: Nodemailer (SMTP)  - Desktop support (1024px+)
+
+- **File Upload**: Cloudinary  - Touch-friendly interactions
+
+- **Component Library**
+
+### AI & Services  - shadcn/ui for accessible components
+
+- **AI API**: OpenRouter (multiple model support)  - Tailwind CSS utility-first styling
+
+- **OAuth**: Google OAuth 2.0  - Framer Motion animations
+
+- **Security**: reCAPTCHA v2, bcrypt, rate limiting  - Lucide React icons
+
+- **Cron Jobs**: Vercel Cron (daily streak reset)  - Custom theme system
 
 ---
 
-## 🎯 Overview
-
-**PodLink** is a mental health and accountability platform that helps individuals achieve their personal goals through structured peer support and AI-assisted guidance.
-
-### What Makes PodLink Unique?
-
-- **AI-Powered Pod Matching**: Smart algorithm groups users (4-6 members) based on goal similarity, timezone, and compatibility
-- **Real-Time Presence**: Live online/offline status tracking for all pod members
-- **Crisis Support System**: Immediate help system with AI companion and peer notifications
-- **Dynamic AI Generation**: All names, responses, and content generated via OpenRouter API (no static content)
-- **Privacy-First**: Anonymous display names protect user identity
-- **Streak Gamification**: Daily check-ins with streak counters and restoration system
-
-### Target Audience
-
-- Individuals overcoming addictions (smoking, alcohol, social media, etc.)
-- People building healthy habits (exercise, meditation, healthy eating)
-- Professionals seeking accountability for personal development
-- Anyone needing structured peer support for mental health goals
-
-## ✨ Core Features
-
-### 🔐 Authentication & Security
-- **Multi-Provider Authentication**
-  - Email/Password with bcrypt hashing
-  - Google OAuth 2.0 integration
-  - NextAuth.js JWT session management
-  - Protected route middleware
-- **Onboarding Workflow**
-  - Goal type selection (Quit Habit / Build Habit)
-  - Goal category with AI-generated suggestions
-  - Availability schedule configuration
-  - **AI-Generated Display Names** (OpenRouter API - dynamic, no static fallbacks)
-  - Avatar upload via Cloudinary (2MB limit)
-
-### 👥 Smart Pod System
-- **AI-Powered Matching Algorithm**
-  - Groups 4-6 users based on:
-    - Goal type and category similarity
-    - Timezone compatibility (±3 hours)
-    - Availability schedule overlap
-  - **Dynamic Pod Names** (OpenRouter API - category-specific generation)
-  - AI bots auto-fill demo/incomplete pods
-- **Pod Features**
-  - **Real-Time Online/Offline Status** (Socket.IO presence tracking)
-  - Live member count and online indicators (green/gray dots)
-  - Current streak display for each member
-  - Total pod streak calculation
-  - Connection status badge (Connecting/Connected/Disconnected)
-
-### 💬 Real-Time Chat System
-- **WhatsApp-Style Messaging**
-  - Socket.IO bidirectional communication (ports 3001, 3002)
-  - Live message delivery with instant updates
-  - Emoji picker (emoji-picker-react)
-  - Image sharing (Cloudinary upload, max 5MB)
-  - Full-size image preview modal
-  - Message reactions with emoji
-  - Typing indicators (3-user limit display)
-  - Read receipts (✓✓ checkmarks)
-- **Content Moderation**
-  - **AI-Powered Moderation** (OpenRouter API + fallback patterns)
-  - Blocks offensive content pre-send (400 error response)
-  - Detects: racial slurs, profanity, hate speech, harassment
-  - 20+ keyword patterns with critical/high severity flags
-  - Auto-deletes messages after 3 user reports
-  - Temperature 0.1 for strict AI moderation
-- **Chat Features**
-  - Date separators for organization
-  - Auto-scroll to latest message
-  - Crisis response tagging
-  - Message reporting system
-  - Image preview before upload
-
-### 📊 Streak & Check-In System
-- **Daily Accountability Tracking**
-  - Timezone-aware check-in system
-  - Consecutive day streak counter
-  - Weekly progress visualization
-  - Check-in history API
-- **Streak Management**
-  - Auto-breaks streaks for missed days (midnight reset)
-  - **Streak Restoration** (1 per month, restores to previous streak)
-  - Last successful day tracking
-  - Grace period handling
-
-### 🆘 Crisis Support Toolkit
-- **Emergency Alert System**
-  - One-click crisis alert broadcasts to pod
-  - Real-time notification to all online members
-  - Optional custom help message
-  - **AI-Generated Automated Responses** (OpenRouter API for offline members >6 hours)
-  - Alert resolution tracking
-  - Crisis state management
-- **Personal Crisis Toolkit**
-  - Customizable coping strategies
-  - Drag-and-drop reordering (react-beautiful-dnd)
-  - CRUD operations for toolkit items
-  - Quick access during emergencies
-  - Shareable with pod members
-
-### 🏆 Gamification & Leaderboards
-- **Ranking System**
-  - Top pods by total combined streak
-  - Top individuals by current streak
-  - Real-time ranking updates
-  - Weekly/monthly/all-time filters
-- **Achievement Badges**
-  - 7-Day Streak badge
-  - 30-Day Streak badge
-  - Instant Responder (crisis support <5 min)
-  - Pod Champion (most active member)
-
-### 🤖 AI Integration (OpenRouter API)
-- **Fully Dynamic AI Generation**
-  - **Primary**: OpenRouter API (4 free models)
-    - `google/gemini-2.0-flash-exp:free`
-    - `meta-llama/llama-3.2-3b-instruct:free`
-    - `microsoft/phi-3-mini-128k-instruct:free`
-    - `qwen/qwen-2-7b-instruct:free`
-  - **Fallback**: Google Gemini 2.0 Flash (50/50 hybrid for chat)
-  - **Use Cases**:
-    - Anonymous display name generation (temperature 0.9)
-    - Pod name generation (category-specific context)
-    - Crisis response messages (user context: streak, goal, crisis state)
-    - Content moderation (temperature 0.1, strict prompts)
-    - Supportive pod messages (AI bot members)
-- **No Static Content**: All names, responses, and suggestions dynamically generated
-
-### 📱 Modern UI/UX
-- **Responsive Design**
-  - Mobile-first approach (375px+)
-  - Tablet optimized (768px+)
-  - Desktop support (1024px+)
-  - Touch-friendly interactions
-- **Component Library**
-  - shadcn/ui for accessible components
-  - Tailwind CSS utility-first styling
-  - Framer Motion animations
-  - Lucide React icons
-  - Custom theme system
 ---
 
 ## 🛠️ Technology Stack
 
+## 📋 Prerequisites
+
 ### Frontend
 
+Before you begin, ensure you have:
+
 | Technology | Version | Purpose |
-|------------|---------|---------|
-| **Next.js** | 16.0.5 | React framework with App Router, Server Components, Turbopack |
-| **React** | 19.2.0 | UI library for component-based architecture |
-| **TypeScript** | 5.0+ | Type-safe JavaScript for reliability |
+
+- **Node.js**: v20.0.0 or higher|------------|---------|---------|
+
+- **npm**: v10.0.0 or higher| **Next.js** | 16.0.5 | React framework with App Router, Server Components, Turbopack |
+
+- **PostgreSQL**: Database (or use Neon free tier)| **React** | 19.2.0 | UI library for component-based architecture |
+
+- **Git**: For version control| **TypeScript** | 5.0+ | Type-safe JavaScript for reliability |
+
 | **Tailwind CSS** | 4.x | Utility-first CSS framework |
-| **shadcn/ui** | Latest | Accessible component library (Radix UI primitives) |
+
+### Required API Keys| **shadcn/ui** | Latest | Accessible component library (Radix UI primitives) |
+
 | **Lucide React** | 0.552.0 | Icon library |
-| **Framer Motion** | 12.23.24 | Smooth animations |
+
+Sign up for these free services:| **Framer Motion** | 12.23.24 | Smooth animations |
+
 | **Socket.io Client** | 4.8.1 | Real-time WebSocket client |
-| **Emoji Picker React** | 4.16.1 | Emoji selection interface |
-| **React Hook Form** | 7.66.0 | Form state management |
-| **Zod** | 4.1.12 | Schema validation library |
-| **Recharts** | 2.15.4 | Data visualization charts |
-| **React Beautiful DnD** | Latest | Drag-and-drop toolkit items |
+
+1. **Neon Database**: https://neon.tech (Free PostgreSQL)| **Emoji Picker React** | 4.16.1 | Emoji selection interface |
+
+2. **Cloudinary**: https://cloudinary.com (Free image hosting)| **React Hook Form** | 7.66.0 | Form state management |
+
+3. **OpenRouter**: https://openrouter.ai (AI API, $5 free credit)| **Zod** | 4.1.12 | Schema validation library |
+
+4. **Google Cloud Console**: https://console.cloud.google.com (OAuth)| **Recharts** | 2.15.4 | Data visualization charts |
+
+5. **reCAPTCHA**: https://www.google.com/recaptcha/admin (v2 Checkbox)| **React Beautiful DnD** | Latest | Drag-and-drop toolkit items |
+
+6. **Gmail Account**: For SMTP email sending
 
 ### Backend
 
+---
+
 | Technology | Version | Purpose |
-|------------|---------|---------|
+
+## 🚀 Installation|------------|---------|---------|
+
 | **Next.js API Routes** | 16.0.5 | Serverless API endpoints |
-| **Prisma ORM** | 6.18.0 | Type-safe database client with auto-reconnect |
+
+### Step 1: Clone the Repository| **Prisma ORM** | 6.18.0 | Type-safe database client with auto-reconnect |
+
 | **PostgreSQL** | Latest | Primary database (Neon serverless) |
-| **NextAuth.js** | 5.0-beta.30 | Authentication with JWT sessions |
-| **Socket.io Server** | 4.8.1 | WebSocket server (ports 3001, 3002) |
-| **Node.js** | 20+ | Server runtime environment |
-| **Cloudinary** | 2.8.0 | Image CDN and optimization |
+
+```bash| **NextAuth.js** | 5.0-beta.30 | Authentication with JWT sessions |
+
+git clone https://github.com/brittytino/podlink.git| **Socket.io Server** | 4.8.1 | WebSocket server (ports 3001, 3002) |
+
+cd podlink| **Node.js** | 20+ | Server runtime environment |
+
+```| **Cloudinary** | 2.8.0 | Image CDN and optimization |
+
 | **Google Gemini API** | 2.0 Flash | Fallback AI (50/50 with OpenRouter) |
-| **OpenRouter API** | Latest | Primary AI generation (4 free models) |
+
+### Step 2: Install Dependencies| **OpenRouter API** | Latest | Primary AI generation (4 free models) |
+
 | **bcryptjs** | 3.0.2 | Password hashing and verification |
 
-### Development Tools
+```bash
+
+npm install### Development Tools
+
+```
 
 | Tool | Version | Purpose |
-|------|---------|---------|
+
+### Step 3: Set Up Environment Variables|------|---------|---------|
+
 | **ESLint** | 9.x | Code linting and quality |
-| **Concurrently** | 9.2.1 | Run multiple dev processes |
-| **tsx** | 4.20.6 | TypeScript execution for scripts |
-| **Prisma Studio** | Built-in | Visual database editor |
 
----
+```bash| **Concurrently** | 9.2.1 | Run multiple dev processes |
 
-## 📋 Prerequisites
+cp .env.example .env.local| **tsx** | 4.20.6 | TypeScript execution for scripts |
 
-Before installation, ensure you have:
+```| **Prisma Studio** | Built-in | Visual database editor |
 
-### Required Software
+
+
+Edit `.env.local` and fill in your credentials (see [Environment Variables](#-environment-variables)).---
+
+
+
+### Step 4: Set Up Database## 📋 Prerequisites
+
+
+
+```bashBefore installation, ensure you have:
+
+# Push database schema
+
+npx prisma db push### Required Software
+
 - **Node.js** v20.x or higher ([Download](https://nodejs.org/))
-- **npm** v9.x or higher (included with Node.js)
-- **Git** ([Download](https://git-scm.com/))
+
+# (Optional) Seed with demo data- **npm** v9.x or higher (included with Node.js)
+
+npm run db:seed- **Git** ([Download](https://git-scm.com/))
+
+```
 
 ### Required Accounts & API Keys
-1. **Neon PostgreSQL** - Serverless PostgreSQL database
+
+### Step 5: Run the Application1. **Neon PostgreSQL** - Serverless PostgreSQL database
+
    - Sign up: [https://neon.tech/](https://neon.tech/)
-   - Create a new project and get connection string
 
-2. **Cloudinary** - Image hosting and CDN
+```bash   - Create a new project and get connection string
+
+npm run dev
+
+```2. **Cloudinary** - Image hosting and CDN
+
    - Sign up: [https://cloudinary.com/](https://cloudinary.com/)
-   - Get: Cloud Name, API Key, API Secret
 
-3. **Google Gemini API** - AI fallback (optional but recommended)
+Open:   - Get: Cloud Name, API Key, API Secret
+
+- **Frontend**: http://localhost:3000
+
+- **Socket.IO**: http://localhost:30013. **Google Gemini API** - AI fallback (optional but recommended)
+
    - Get API key: [https://ai.google.dev/](https://ai.google.dev/)
-
-4. **OpenRouter API** - Primary AI generation
-   - Sign up: [https://openrouter.ai/](https://openrouter.ai/)
-   - Get API key (free tier available with 4 models)
-
-5. **Google OAuth** (optional for social login)
-   - Console: [https://console.cloud.google.com/](https://console.cloud.google.com/)
-   - Create OAuth 2.0 credentials
-
-### System Requirements
-- **RAM**: 4GB minimum, 8GB recommended
-- **Storage**: 500MB free space
-- **Network**: Stable internet for real-time features
-- **Ports**: 3000 (Next.js), 3001 (Socket.IO), 3002 (Socket.IO Emit Server)
 
 ---
 
-## 🔧 Installation
+4. **OpenRouter API** - Primary AI generation
+
+## 🔐 Environment Variables   - Sign up: [https://openrouter.ai/](https://openrouter.ai/)
+
+   - Get API key (free tier available with 4 models)
+
+Create `.env.local` file:
+
+5. **Google OAuth** (optional for social login)
+
+### Database   - Console: [https://console.cloud.google.com/](https://console.cloud.google.com/)
+
+   - Create OAuth 2.0 credentials
+
+```env
+
+DATABASE_URL="postgresql://user:password@host.neon.tech/dbname?sslmode=require"### System Requirements
+
+DIRECT_URL="postgresql://user:password@host.neon.tech/dbname?sslmode=require"- **RAM**: 4GB minimum, 8GB recommended
+
+```- **Storage**: 500MB free space
+
+- **Network**: Stable internet for real-time features
+
+### NextAuth- **Ports**: 3000 (Next.js), 3001 (Socket.IO), 3002 (Socket.IO Emit Server)
+
+
+
+```env---
+
+NEXTAUTH_URL="http://localhost:3000"
+
+NEXTAUTH_SECRET="your-secret-here"  # Generate: openssl rand -base64 32## 🔧 Installation
+
+```
 
 ### 1. Clone Repository
 
+### Google OAuth
+
 ```bash
-git clone https://github.com/brittytino/podlink.git
-cd podlink
+
+```envgit clone https://github.com/brittytino/podlink.git
+
+GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"cd podlink
+
+GOOGLE_CLIENT_SECRET="your-client-secret"```
+
 ```
 
 ### 2. Install Dependencies
 
-```bash
-npm install
+**Setup**:
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)```bash
+
+2. Create OAuth Client IDnpm install
+
+3. Add redirect URIs:```
+
+   - `http://localhost:3000/api/auth/callback/google`
+
+   - `https://yourdomain.com/api/auth/callback/google`This installs all required packages from `package.json` (frontend + backend dependencies).
+
+
+
+### Cloudinary---
+
+
+
+```env## 🌐 Environment Setup
+
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+
+CLOUDINARY_API_KEY="your-api-key"### 1. Create Environment File
+
+CLOUDINARY_API_SECRET="your-api-secret"
+
+CLOUDINARY_URL="cloudinary://api_key:api_secret@cloud_name"```bash
+
+```cp .env.example .env
+
 ```
 
-This installs all required packages from `package.json` (frontend + backend dependencies).
-
----
-
-## 🌐 Environment Setup
-
-### 1. Create Environment File
-
-```bash
-cp .env.example .env
-```
+### OpenRouter AI
 
 ### 2. Configure Environment Variables
 
-Edit `.env` with your credentials:
+```env
+
+OPENROUTER_API="sk-or-v1-your-api-key-here"Edit `.env` with your credentials:
+
+```
 
 ```env
-# Database (Neon PostgreSQL)
+
+Get from: https://openrouter.ai# Database (Neon PostgreSQL)
+
 DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
-DIRECT_URL="postgresql://user:password@host/database?sslmode=require"
 
-# NextAuth Configuration
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="your-secure-random-string-here"
-# Generate with: openssl rand -base64 32
+### reCAPTCHADIRECT_URL="postgresql://user:password@host/database?sslmode=require"
 
-# Google OAuth (Optional)
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+
+```env# NextAuth Configuration
+
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY="your-site-key"NEXTAUTH_URL="http://localhost:3000"
+
+RECAPTCHA_SECRET_KEY="your-secret-key"NEXTAUTH_SECRET="your-secure-random-string-here"
+
+```# Generate with: openssl rand -base64 32
+
+
+
+**Setup**:# Google OAuth (Optional)
+
+1. Go to [reCAPTCHA Admin](https://www.google.com/recaptcha/admin)GOOGLE_CLIENT_ID="your-google-client-id"
+
+2. Choose v2 "I'm not a robot" CheckboxGOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+3. Add domains: `localhost`, `yourdomain.com`
 
 # Cloudinary (Required for image uploads)
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+
+### Email (SMTP)NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+
 NEXT_PUBLIC_CLOUDINARY_API_KEY="your-api-key"
-CLOUDINARY_API_SECRET="your-api-secret"
 
-# AI APIs
-GEMINI_API_KEY="your-gemini-api-key"
-OPENROUTER_API_KEY="your-openrouter-api-key"
+```envCLOUDINARY_API_SECRET="your-api-secret"
 
-# Application URLs
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
+SMTP_HOST="smtp.gmail.com"
+
+SMTP_PORT="587"# AI APIs
+
+SMTP_SECURE="false"GEMINI_API_KEY="your-gemini-api-key"
+
+SMTP_USER="your-email@gmail.com"OPENROUTER_API_KEY="your-openrouter-api-key"
+
+SMTP_PASSWORD="your-app-password"  # Generate in Gmail settings
+
+SMTP_FROM="your-email@gmail.com"# Application URLs
+
+```NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
 NEXT_PUBLIC_SOCKET_URL="http://localhost:3001"
 
+### Socket.IO
+
 # Socket.IO Ports (default: 3001, 3002)
-SOCKET_PORT=3001
-EMIT_SERVER_PORT=3002
+
+```envSOCKET_PORT=3001
+
+SOCKET_PORT="3001"EMIT_SERVER_PORT=3002
+
+NEXT_PUBLIC_SOCKET_URL="http://localhost:3001"```
+
 ```
 
 ### 3. Generate NextAuth Secret
 
+### Cron Security
+
 ```bash
-openssl rand -base64 32
+
+```envopenssl rand -base64 32
+
+CRON_SECRET="any-random-secret-string"  # Generate: openssl rand -hex 32```
+
 ```
 
 Copy output to `NEXTAUTH_SECRET` in `.env`
 
 ---
 
+---
+
 ## 🗄️ Database Setup
+
+## 🗄️ Database Setup
+
+### Commands
 
 ### 1. Verify Database Connection
 
-Ensure your Neon PostgreSQL database is active and `DATABASE_URL` is correct in `.env`.
+```bash
+
+# Generate Prisma ClientEnsure your Neon PostgreSQL database is active and `DATABASE_URL` is correct in `.env`.
+
+npx prisma generate
 
 ### 2. Push Prisma Schema
 
-```bash
+# Push schema to database
+
+npx prisma db push```bash
+
 npx prisma db push
-```
+
+# Open Prisma Studio (GUI)```
+
+npm run db:studio
 
 This creates all tables, relations, and indexes in your database.
 
-### 3. Verify Schema
+# Seed database
 
-```bash
-npx prisma studio
+npm run db:seed### 3. Verify Schema
+
 ```
 
-Opens Prisma Studio at `http://localhost:5555` to view database tables.
+```bash
+
+### Prisma Studionpx prisma studio
+
+```
+
+```bash
+
+npm run db:studioOpens Prisma Studio at `http://localhost:5555` to view database tables.
+
+```
 
 ### 4. Seed Database (Optional)
 
+Opens at `http://localhost:5555` with visual database browser.
+
 ```bash
-npx prisma db seed
+
+---npx prisma db seed
+
 ```
 
+## 🏃 Running the Application
+
 Populates database with:
-- Demo user accounts
+
+### Development- Demo user accounts
+
 - Sample pods
-- AI bot members
-- Initial check-ins
+
+```bash- AI bot members
+
+npm run dev- Initial check-ins
+
+```
 
 ---
+
+### Production
 
 ## ▶️ Running the Application
 
-### Development Mode
-
 ```bash
-npm run dev
-```
 
-This starts **3 concurrent processes**:
-1. **Next.js Dev Server** - `http://localhost:3000` (Turbopack enabled)
-2. **Socket.IO Main Server** - Port `3001` (real-time chat, presence)
-3. **Socket.IO Emit Server** - Port `3002` (event broadcasting)
+npm run build### Development Mode
 
-### Production Build
-
-```bash
-# Build optimized production bundle
-npm run build
-
-# Start production server
 npm start
-```
 
-### Individual Process Commands
+``````bash
 
-```bash
-# Next.js only
-npm run next-dev
+npm run dev
 
-# Socket.IO servers only
-node server.mjs
-```
+### Useful Scripts```
 
-### Prisma Commands
 
-```bash
-# Generate Prisma Client (after schema changes)
-npx prisma generate
 
-# Database migrations
-npx prisma migrate dev
+```bashThis starts **3 concurrent processes**:
 
-# Reset database (WARNING: deletes all data)
-npx prisma migrate reset
+npm run lint        # Lint code1. **Next.js Dev Server** - `http://localhost:3000` (Turbopack enabled)
 
-# Open Prisma Studio
-npx prisma studio
-```
+npm run db:push     # Push schema2. **Socket.IO Main Server** - Port `3001` (real-time chat, presence)
 
-## 📁 Project Structure
+npm run db:studio   # Open Prisma Studio3. **Socket.IO Emit Server** - Port `3002` (event broadcasting)
 
-```
-podlink/
+npm run db:seed     # Seed database
+
+```### Production Build
+
+
+
+---```bash
+
+# Build optimized production bundle
+
+## 📁 Project Structurenpm run build
+
+
+
+```# Start production server
+
+podlink/npm start
+
+├── prisma/```
+
+│   ├── schema.prisma           # Database schema
+
+│   ├── seed.ts                 # Seeding script### Individual Process Commands
+
+│   └── migrations/             # Migrations
+
+├── src/```bash
+
+│   ├── app/# Next.js only
+
+│   │   ├── (auth)/             # Auth pages (login, register)npm run next-dev
+
+│   │   ├── (protected)/        # Protected pages (dashboard, pod, profile)
+
+│   │   ├── (public)/           # Public pages (about, privacy, terms)# Socket.IO servers only
+
+│   │   ├── api/                # API routesnode server.mjs
+
+│   │   └── page.tsx            # Landing page```
+
+│   ├── components/             # React components
+
+│   │   ├── auth/### Prisma Commands
+
+│   │   ├── dashboard/
+
+│   │   ├── pod/```bash
+
+│   │   ├── ui/                 # shadcn/ui components# Generate Prisma Client (after schema changes)
+
+│   │   └── ...npx prisma generate
+
+│   ├── hooks/                  # Custom React hooks
+
+│   ├── lib/                    # Utilities and configs# Database migrations
+
+│   │   ├── auth.ts             # NextAuth confignpx prisma migrate dev
+
+│   │   ├── prisma.ts           # Prisma client
+
+│   │   ├── socket.ts           # Socket.IO server# Reset database (WARNING: deletes all data)
+
+│   │   ├── openrouter.ts       # AI clientnpx prisma migrate reset
+
+│   │   └── ...
+
+│   └── types/                  # TypeScript types# Open Prisma Studio
+
+├── public/                     # Static assetsnpx prisma studio
+
+├── scripts/                    # Utility scripts```
+
+├── .env.local                  # Environment variables
+
+├── package.json## 📁 Project Structure
+
+├── server.mjs                  # Socket.IO server
+
+└── README.md```
+
+```podlink/
+
 ├── prisma/                          # Database schema and migrations
-│   ├── schema.prisma               # Prisma data models (User, Pod, Message, etc.)
+
+---│   ├── schema.prisma               # Prisma data models (User, Pod, Message, etc.)
+
 │   ├── seed.ts                     # Database seeding script
-│   └── migrations/                 # Migration history
+
+## 📡 API Documentation│   └── migrations/                 # Migration history
+
 │
-├── public/                          # Static assets
+
+### Authentication├── public/                          # Static assets
+
 │   ├── badge-icons/                # Achievement badge images
-│   └── *.svg                       # Public icons
-│
-├── scripts/                         # Utility scripts
-│   ├── check-streak-data.ts        # Streak data validation
-│   ├── fix-streak-data.ts          # Streak repair utility
+
+| Endpoint | Method | Description |│   └── *.svg                       # Public icons
+
+|----------|--------|-------------|│
+
+| `/api/auth/register` | POST | Create account |├── scripts/                         # Utility scripts
+
+| `/api/auth/[...nextauth]` | * | NextAuth endpoints |│   ├── check-streak-data.ts        # Streak data validation
+
+| `/api/auth/verify-email` | GET | Verify email token |│   ├── fix-streak-data.ts          # Streak repair utility
+
 │   ├── reset-ai-streaks.ts         # Reset AI bot streaks
-│   └── test-streak-system.ts       # Streak system testing
+
+### Pod System│   └── test-streak-system.ts       # Streak system testing
+
 │
-├── server.mjs                       # Socket.IO server (ports 3001, 3002)
-│
-├── src/
-│   ├── middleware.ts               # NextAuth + protected route middleware
-│   │
+
+| Endpoint | Method | Description |├── server.mjs                       # Socket.IO server (ports 3001, 3002)
+
+|----------|--------|-------------|│
+
+| `/api/pods/my-pod` | GET | Get current pod |├── src/
+
+| `/api/pods/messages` | GET | Get chat messages |│   ├── middleware.ts               # NextAuth + protected route middleware
+
+| `/api/pods/messages` | POST | Send message |│   │
+
 │   ├── app/                         # Next.js App Router
-│   │   ├── layout.tsx              # Root layout with SessionProvider
+
+### Gamification│   │   ├── layout.tsx              # Root layout with SessionProvider
+
 │   │   ├── page.tsx                # Landing page
-│   │   │
-│   │   ├── (auth)/                 # Authentication routes (guest only)
-│   │   │   ├── login/              # Login page
-│   │   │   └── register/           # Registration page
-│   │   │
+
+| Endpoint | Method | Description |│   │   │
+
+|----------|--------|-------------|│   │   ├── (auth)/                 # Authentication routes (guest only)
+
+| `/api/check-ins/submit` | POST | Submit check-in |│   │   │   ├── login/              # Login page
+
+| `/api/streak/current` | GET | Get streak |│   │   │   └── register/           # Registration page
+
+| `/api/leaderboard` | GET | Get rankings |│   │   │
+
 │   │   ├── (protected)/            # Protected routes (auth required)
-│   │   │   ├── dashboard/          # User dashboard with stats
+
+### Crisis Tools│   │   │   ├── dashboard/          # User dashboard with stats
+
 │   │   │   ├── pod/                # Pod chat interface
-│   │   │   ├── profile/            # User profile management
-│   │   │   ├── leaderboard/        # Global rankings
-│   │   │   ├── onboarding/         # Multi-step onboarding
-│   │   │   └── crisis-toolkit/     # Personal crisis toolkit
+
+| Endpoint | Method | Description |│   │   │   ├── profile/            # User profile management
+
+|----------|--------|-------------|│   │   │   ├── leaderboard/        # Global rankings
+
+| `/api/toolkit/ai-chat` | POST | AI companion |│   │   │   ├── onboarding/         # Multi-step onboarding
+
+| `/api/toolkit/notify-pod` | POST | Alert pod |│   │   │   └── crisis-toolkit/     # Personal crisis toolkit
+
 │   │   │
-│   │   ├── (public)/               # Public marketing pages
+
+---│   │   ├── (public)/               # Public marketing pages
+
 │   │   │   ├── about/              # About page
-│   │   │   ├── features/           # Features showcase
+
+## 🚀 Deployment│   │   │   ├── features/           # Features showcase
+
 │   │   │   ├── privacy/            # Privacy policy
-│   │   │   ├── terms/              # Terms of service
+
+### Vercel (Recommended)│   │   │   ├── terms/              # Terms of service
+
 │   │   │   └── ...                 # Other public pages
-│   │   │
-│   │   └── api/                     # API Routes (serverless functions)
-│   │       ├── auth/               # NextAuth endpoints
-│   │       ├── pods/               # Pod CRUD operations
+
+1. **Push to GitHub**│   │   │
+
+2. **Import to Vercel**: https://vercel.com│   │   └── api/                     # API Routes (serverless functions)
+
+3. **Add Environment Variables**│   │       ├── auth/               # NextAuth endpoints
+
+4. **Deploy!**│   │       ├── pods/               # Pod CRUD operations
+
 │   │       ├── check-ins/          # Check-in system
-│   │       ├── streak/             # Streak management
+
+### Post-Deployment│   │       ├── streak/             # Streak management
+
 │   │       ├── notifications/      # Crisis alerts
-│   │       ├── leaderboard/        # Rankings API
-│   │       ├── profile/            # User profile updates
-│   │       ├── help/               # Crisis response (OpenRouter AI)
-│   │       ├── toolkit/            # Crisis toolkit CRUD
+
+- Update `NEXTAUTH_URL` to production domain│   │       ├── leaderboard/        # Rankings API
+
+- Add production URL to Google OAuth redirect URIs│   │       ├── profile/            # User profile updates
+
+- Update reCAPTCHA domains│   │       ├── help/               # Crisis response (OpenRouter AI)
+
+- Set up Vercel Cron for streak reset│   │       ├── toolkit/            # Crisis toolkit CRUD
+
 │   │       ├── socket/             # Socket.IO connection
-│   │       └── cron/               # Scheduled jobs
+
+### Vercel Cron│   │       └── cron/               # Scheduled jobs
+
 │   │
-│   ├── components/                  # React components
+
+Add to `vercel.json`:│   ├── components/                  # React components
+
 │   │   ├── LandingPage.tsx         # Marketing landing page
-│   │   ├── SessionProvider.tsx     # NextAuth context provider
-│   │   ├── auth/                   # Login/Register forms
-│   │   ├── dashboard/              # Dashboard widgets
-│   │   ├── pod/                    # Chat components
-│   │   ├── profile/                # Profile components
-│   │   ├── leaderboard/            # Ranking tables
-│   │   ├── onboarding/             # Onboarding steps
-│   │   ├── toolkit/                # Crisis toolkit components
+
+```json│   │   ├── SessionProvider.tsx     # NextAuth context provider
+
+{│   │   ├── auth/                   # Login/Register forms
+
+  "crons": [{│   │   ├── dashboard/              # Dashboard widgets
+
+    "path": "/api/cron/reset-streaks",│   │   ├── pod/                    # Chat components
+
+    "schedule": "0 0 * * *"│   │   ├── profile/                # Profile components
+
+  }]│   │   ├── leaderboard/            # Ranking tables
+
+}│   │   ├── onboarding/             # Onboarding steps
+
+```│   │   ├── toolkit/                # Crisis toolkit components
+
 │   │   ├── landing/                # Landing page sections
-│   │   └── ui/                     # shadcn/ui primitives
+
+---│   │   └── ui/                     # shadcn/ui primitives
+
 │   │
-│   ├── hooks/                       # Custom React hooks
+
+## 🤝 Contributing│   ├── hooks/                       # Custom React hooks
+
 │   │   ├── useAuth.ts              # Authentication hook
-│   │   ├── useSocket.ts            # Socket.IO hook
+
+Contributions are welcome! Please:│   │   ├── useSocket.ts            # Socket.IO hook
+
 │   │   ├── usePodMessages.ts       # Chat messages hook
-│   │   ├── use-toast.ts            # Toast notifications
-│   │   └── use-mobile.ts           # Mobile detection
-│   │
-│   ├── lib/                         # Core libraries and utilities
+
+1. Fork the repository│   │   ├── use-toast.ts            # Toast notifications
+
+2. Create a feature branch│   │   └── use-mobile.ts           # Mobile detection
+
+3. Make your changes│   │
+
+4. Submit a pull request│   ├── lib/                         # Core libraries and utilities
+
 │   │   ├── prisma.ts               # Prisma client with auto-reconnect
-│   │   ├── auth.ts                 # NextAuth configuration
+
+### Reporting Bugs│   │   ├── auth.ts                 # NextAuth configuration
+
 │   │   ├── socket.ts               # Socket.IO client setup
-│   │   ├── socket-emit.ts          # Socket.IO emit server
-│   │   ├── openrouter.ts           # OpenRouter API integration
-│   │   ├── gemini.ts               # Google Gemini API (fallback)
-│   │   ├── cloudinary.ts           # Image upload handler
-│   │   ├── content-moderation.ts   # AI + keyword moderation
+
+Create an issue with:│   │   ├── socket-emit.ts          # Socket.IO emit server
+
+- Clear description│   │   ├── openrouter.ts           # OpenRouter API integration
+
+- Steps to reproduce│   │   ├── gemini.ts               # Google Gemini API (fallback)
+
+- Expected vs actual behavior│   │   ├── cloudinary.ts           # Image upload handler
+
+- Screenshots (if applicable)│   │   ├── content-moderation.ts   # AI + keyword moderation
+
 │   │   ├── streak-manager.ts       # Streak calculation logic
-│   │   ├── streak-reset.ts         # Streak reset handler
+
+---│   │   ├── streak-reset.ts         # Streak reset handler
+
 │   │   ├── pod-matching.ts         # Pod assignment algorithm
-│   │   ├── pod-assignment.ts       # User-to-pod matching
+
+## 📄 License│   │   ├── pod-assignment.ts       # User-to-pod matching
+
 │   │   ├── pod-names.ts            # Dynamic pod name generation (OpenRouter)
-│   │   ├── ai-bot-names.ts         # AI bot name list
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.│   │   ├── ai-bot-names.ts         # AI bot name list
+
 │   │   ├── ai-responses.ts         # AI response templates
-│   │   ├── goal-categories.ts      # Goal category definitions
-│   │   └── utils.ts                # Shared utility functions
-│   │
-│   ├── types/                       # TypeScript type definitions
-│   │   ├── index.ts                # Shared types (User, Pod, Message, etc.)
+
+**MIT License Summary:**│   │   ├── goal-categories.ts      # Goal category definitions
+
+- ✅ Commercial use│   │   └── utils.ts                # Shared utility functions
+
+- ✅ Modification│   │
+
+- ✅ Distribution│   ├── types/                       # TypeScript type definitions
+
+- ✅ Private use│   │   ├── index.ts                # Shared types (User, Pod, Message, etc.)
+
 │   │   ├── next-auth.d.ts          # NextAuth type extensions
-│   │   └── socket.ts               # Socket.IO event types
+
+---│   │   └── socket.ts               # Socket.IO event types
+
 │   │
-│   └── styles/                      # Global styles
+
+## 💬 Support│   └── styles/                      # Global styles
+
 │
-├── .env                             # Environment variables (git-ignored)
-├── package.json                     # Dependencies and scripts
-├── tsconfig.json                    # TypeScript configuration
+
+- 📧 Email: brittytino08@gmail.com├── .env                             # Environment variables (git-ignored)
+
+- 🐛 Issues: [GitHub Issues](https://github.com/brittytino/podlink/issues)├── package.json                     # Dependencies and scripts
+
+- 📖 Documentation: This README├── tsconfig.json                    # TypeScript configuration
+
 ├── next.config.js                   # Next.js configuration
-├── tailwind.config.ts               # Tailwind CSS configuration
+
+### FAQ├── tailwind.config.ts               # Tailwind CSS configuration
+
 ├── components.json                  # shadcn/ui configuration
-├── prisma/schema.prisma             # Database schema
-└── README.md                        # This file
+
+**Q: OAuth 401 error?**  ├── prisma/schema.prisma             # Database schema
+
+A: Add redirect URI to Google Console, wait 5 min, clear cache└── README.md                        # This file
+
 ```
 
-### Key Files Explained
+**Q: Database connection error?**  
 
-| File | Purpose |
-|------|---------|
+A: Check `DATABASE_URL`, run `npx prisma db push`### Key Files Explained
+
+
+
+**Q: Socket.IO not connecting?**  | File | Purpose |
+
+A: Check ports 3001/3002, verify `NEXT_PUBLIC_SOCKET_URL`|------|---------|
+
 | `server.mjs` | Standalone Socket.IO server for real-time features (chat, presence, alerts) |
-| `src/middleware.ts` | Protects routes, redirects unauthenticated users |
-| `src/lib/prisma.ts` | Prisma client with `ensureConnection()` auto-reconnect logic |
+
+**Q: Images not uploading?**  | `src/middleware.ts` | Protects routes, redirects unauthenticated users |
+
+A: Verify Cloudinary credentials, check file size limits| `src/lib/prisma.ts` | Prisma client with `ensureConnection()` auto-reconnect logic |
+
 | `src/lib/openrouter.ts` | OpenRouter API wrapper for AI generation (primary) |
-| `src/lib/gemini.ts` | Google Gemini API wrapper (fallback, 50/50 for chat) |
+
+---| `src/lib/gemini.ts` | Google Gemini API wrapper (fallback, 50/50 for chat) |
+
 | `src/lib/content-moderation.ts` | AI + keyword-based content filtering |
-| `src/lib/pod-names.ts` | Dynamic pod name generation via OpenRouter |
+
+## 🙏 Acknowledgments| `src/lib/pod-names.ts` | Dynamic pod name generation via OpenRouter |
+
 | `src/app/api/help/route.ts` | Crisis response API with AI-generated messages |
-| `src/app/(protected)/pod/page.tsx` | Main pod chat interface with online/offline status |
-| `prisma/schema.prisma` | Complete database schema (22 models) |
 
----
-npm run build
+- [Next.js](https://nextjs.org/) - React framework| `src/app/(protected)/pod/page.tsx` | Main pod chat interface with online/offline status |
 
-# Start production servers
-## 🔌 API Documentation
+- [Prisma](https://www.prisma.io/) - Database ORM| `prisma/schema.prisma` | Complete database schema (22 models) |
 
-### Core API Endpoints
+- [Neon](https://neon.tech/) - Serverless Postgres
 
-#### Authentication (`/api/auth/*`)
+- [Socket.IO](https://socket.io/) - Real-time engine---
 
-```typescript
-// Register new user
-POST /api/auth/register
-Body: { email, username, password, fullName }
+- [OpenRouter](https://openrouter.ai/) - AI APInpm run build
+
+- [Cloudinary](https://cloudinary.com/) - Media management
+
+- [shadcn/ui](https://ui.shadcn.com/) - UI components# Start production servers
+
+- [Tailwind CSS](https://tailwindcss.com/) - CSS framework## 🔌 API Documentation
+
+
+
+---### Core API Endpoints
+
+
+
+## 📊 Project Status#### Authentication (`/api/auth/*`)
+
+
+
+- **Version**: 0.1.0 (Beta)```typescript
+
+- **Status**: Active Development// Register new user
+
+- **Last Updated**: December 2025POST /api/auth/register
+
+- **Maintainer**: [Brittytino](https://github.com/brittytino)Body: { email, username, password, fullName }
+
 Response: { success: true, message: "User created" }
 
-// NextAuth endpoints (handled by NextAuth.js)
-POST /api/auth/callback/credentials  // Login
-GET  /api/auth/callback/google       // Google OAuth
-GET  /api/auth/session               // Get current session
-POST /api/auth/signout               // Logout
-```
+---
 
-#### Pods (`/api/pods/*`)
+// NextAuth endpoints (handled by NextAuth.js)
+
+## 🗺️ RoadmapPOST /api/auth/callback/credentials  // Login
+
+GET  /api/auth/callback/google       // Google OAuth
+
+### v0.2.0 (Q1 2025)GET  /api/auth/session               // Get current session
+
+- [ ] Mobile app (React Native)POST /api/auth/signout               // Logout
+
+- [ ] Push notifications```
+
+- [ ] Stripe integration
+
+- [ ] Advanced analytics#### Pods (`/api/pods/*`)
+
+- [ ] Voice/video calls
 
 ```typescript
-// Get pod members with online status
-GET /api/pods/members?podId={uuid}
-Response: { members: User[], onlineUsers: string[] }
 
-// Send message to pod (with content moderation)
+### v0.3.0 (Q2 2025)// Get pod members with online status
+
+- [ ] Multi-language supportGET /api/pods/members?podId={uuid}
+
+- [ ] Achievement badgesResponse: { members: User[], onlineUsers: string[] }
+
+- [ ] Mentor matching
+
+- [ ] Admin dashboard// Send message to pod (with content moderation)
+
 POST /api/pods/messages
-Body: {
-  podId: string
-  userId: string
-  messageText: string
-  imageUrl?: string
-  isCrisisResponse?: boolean
-}
-Response: { success: true, message: Message }
-// 400 Error if content violates moderation rules
 
-// Upload image (Cloudinary)
+---Body: {
+
+  podId: string
+
+<div align="center">  userId: string
+
+  messageText: string
+
+### ⭐ Star this repo if you find it helpful!  imageUrl?: string
+
+  isCrisisResponse?: boolean
+
+**Built with ❤️ by [Brittytino](https://github.com/brittytino)**}
+
+Response: { success: true, message: Message }
+
+[Report Bug](https://github.com/brittytino/podlink/issues) · [Request Feature](https://github.com/brittytino/podlink/issues) · [Contribute](https://github.com/brittytino/podlink/pulls)// 400 Error if content violates moderation rules
+
+
+
+</div>// Upload image (Cloudinary)
+
 POST /api/pods/messages/upload-image
 Body: FormData with 'image' field (max 5MB)
 Response: { success: true, imageUrl: string }

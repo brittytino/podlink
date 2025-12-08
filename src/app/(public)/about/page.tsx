@@ -179,50 +179,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-20 px-6 bg-slate-50">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-slate-800 font-['Playfair_Display',serif]">
-              Meet Our Team
-            </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
-              A diverse group of passionate individuals committed to your success.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member, index) => (
-              <motion.div
-                key={member.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="bg-white rounded-2xl p-6 shadow-lg text-center"
-              >
-                <div className="relative w-32 h-32 mx-auto mb-4">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-full rounded-2xl object-cover ring-4 ring-white shadow-lg"
-                  />
-                </div>
-                <h3 className="text-xl font-bold mb-1 text-slate-800">{member.name}</h3>
-                <p className="text-purple-600 font-semibold mb-3">{member.role}</p>
-                <p className="text-sm text-slate-600">{member.bio}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+     
       {/* CTA Section */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto">

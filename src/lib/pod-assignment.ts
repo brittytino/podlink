@@ -272,7 +272,7 @@ async function createNewAIPod(userId: string, currentUser: UserWithGoal): Promis
     const existingBotNames: string[] = [];
     
     for (let i = 0; i < botCount; i++) {
-      const botName = generateAIBotName(existingBotNames);
+      const botName = await generateAIBotName(existingBotNames);
       existingBotNames.push(botName);
       
       // Sanitize bot name for email and username (remove spaces, special chars)
