@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -32,9 +33,6 @@ export function CheckInCard({ hasCheckedInToday, userId }: CheckInCardProps) {
           throw new Error(data.error || 'Failed to check in');
         }
 
-        const data = await response.json();
-
-        // Refresh the page to show updated streak and check-in status
         router.refresh();
       } catch (err: any) {
         console.error('Check-in error:', err);
@@ -44,82 +42,88 @@ export function CheckInCard({ hasCheckedInToday, userId }: CheckInCardProps) {
   };
 
   return (
-    <Card className="rounded-2xl shadow-sm border">
-      <CardHeader className="pb-3 sm:pb-4">
-        <CardTitle className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-tight flex items-center gap-3">
-          <span className="sr-only">Today&apos;s Check-In</span>
-          <span className="text-foreground">Today&apos;s Check-In</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {hasCheckedInToday ? (
-          <div className="flex flex-col items-center justify-center gap-2 sm:gap-3 py-6 sm:py-8 text-green-600 dark:text-green-400">
-            <CheckCircle2 className="h-6 w-6 sm:h-7 sm:w-7 shrink-0" />
-            <span className="text-sm sm:text-base font-semibold text-center max-w-md">
-              Already checked in today! Great job! 🎉
-            </span>
-          </div>
-        ) : (
-          <div className="space-y-4 sm:space-y-5">
-            <p className="text-center text-sm sm:text-base text-muted-foreground px-3">
-              Did you stay on track with your goal today?
-            </p>
-
-            {error && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <p className="text-sm text-destructive text-center">{error}</p>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, delay: 0.15 }}
+    >
+      <Card className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg rounded-[28px]">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-bold text-gray-900 dark:text-white">
+            Today&apos;s Check-In
+          </CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Today&apos;s Check-in is 1 welcome:
+          </p>
+        </CardHeader>
+        <CardContent className="pb-4">
+          {hasCheckedInToday ? (
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              className="flex flex-col items-center justify-center gap-2 py-4 text-green-600 dark:text-green-400"
+            >
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6" />
               </div>
-            )}
+              <span className="text-sm font-semibold text-center">
+                Already checked in today! Great job! 🎉
+              </span>
+            </motion.div>
+          ) : (
+            <div className="space-y-4">
+              {error && (
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                  <p className="text-sm text-destructive text-center">{error}</p>
+                </div>
+              )}
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Button
-                type="button"
-                variant="default"
-                className="w-full h-14 sm:h-16 text-sm sm:text-base font-medium shadow-md hover:shadow-lg transition-all flex items-center justify-center"
-                onClick={() => handleCheckIn(true)}
-                disabled={isPending}
-                aria-label="Check in - stayed on track"
-              >
-                {isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                )}
-                <span className="truncate">Yes, I stayed on track!</span>
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="button"
+                    className="w-full h-11 bg-green-500 hover:bg-green-600 text-white rounded-full shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 font-medium text-sm"
+                    onClick={() => handleCheckIn(true)}
+                    disabled={isPending}
+                  >
+                    {isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <CheckCircle2 className="h-5 w-5" />
+                        <span>Yes, I stayed on track!</span>
+                        <span className="text-lg">👍</span>
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-14 sm:h-16 text-sm sm:text-base font-medium hover:bg-destructive/5 hover:border-destructive/20 transition-all flex items-center justify-center"
-                onClick={() => handleCheckIn(false)}
-                disabled={isPending}
-                aria-label="Check in - did not stay on track"
-              >
-                {isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
-                ) : (
-                  <XCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                )}
-                <span className="truncate">No, I slipped today</span>
-              </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    type="button"
+                    className="w-full h-11 bg-red-100 hover:bg-red-200 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-700 dark:text-red-300 rounded-full shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 font-medium text-sm border-0"
+                    onClick={() => handleCheckIn(false)}
+                    disabled={isPending}
+                  >
+                    {isPending ? (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    ) : (
+                      <>
+                        <XCircle className="h-5 w-5" />
+                        <span>No, I slipped today</span>
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
+              </div>
+
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 pt-1">
+                Checking in helps keep your streak updated
+              </p>
             </div>
-
-            <p className="text-xs text-muted-foreground text-center">Checking in helps keep your streak updated and lets your pod know how you&apos;re doing.</p>
-          </div>
-        )}
-      </CardContent>
-      <style jsx>{`
-        /* subtle entrance for the card */
-        .card-enter {
-          animation: fade-in 320ms ease-out;
-        }
-
-        @keyframes fade-in {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

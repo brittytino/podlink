@@ -2,14 +2,13 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { formatDate } from '@/lib/utils';
+import { motion } from 'framer-motion';
 import { Users } from 'lucide-react';
 
 interface PodMember {
   id: string;
   fullName: string;
-  displayName?: string; // Anonymous name for privacy
+  displayName?: string;
   username: string;
   avatarUrl: string | null;
   currentStreak: number;
@@ -23,59 +22,57 @@ interface PodMembersListProps {
 
 export function PodMembersList({ members, podName }: PodMembersListProps) {
   return (
-    <Card className="rounded-2xl shadow-sm border">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-3 text-sm sm:text-base md:text-lg font-semibold">
-          
-          <div className="text-2xl sm:text-3xl md:text-4xl font-['Bebas_Neue',sans-serif] font-extrabold leading-none">
-            <span className="text-[#ff5370]">{podName}</span> Members
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3 sm:space-y-4">
-          {members.map((member) => {
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.2 }}
+    >
+      <Card className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg rounded-[28px] h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <CardTitle className="text-base font-bold text-gray-900 dark:text-white">
+            <span className="uppercase tracking-wide text-xs text-gray-500 dark:text-gray-400 font-semibold block">
+              {podName.toUpperCase()} MEMBERS
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2 space-y-2 overflow-y-auto flex-1">
+          {members.map((member, index) => {
             const displayName = member.displayName || member.fullName;
             return (
-              <div
+              <motion.div
                 key={member.id}
-                className="flex items-center justify-between p-3 sm:p-4 rounded-xl border bg-card hover:bg-accent/40 transition-colors"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="flex items-center gap-3 p-2.5 rounded-2xl bg-gradient-to-r from-blue-50/80 to-cyan-50/60 dark:from-blue-950/20 dark:to-cyan-950/10 border border-blue-100 dark:border-blue-900/30 hover:border-blue-200 dark:hover:border-blue-800 transition-all hover:shadow-sm"
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 ring-2 ring-white shadow-sm">
-                    <AvatarImage src={member.avatarUrl || ''} alt={displayName} />
-                    <AvatarFallback className="text-sm sm:text-base">
-                      {displayName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                <Avatar className="h-11 w-11 ring-2 ring-white dark:ring-gray-700 shadow-sm">
+                  <AvatarImage src={member.avatarUrl || ''} alt={displayName} />
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-cyan-500 text-white font-bold text-sm">
+                    {displayName.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm sm:text-base md:text-lg truncate">{displayName}</p>
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate">@{member.username}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate text-gray-900 dark:text-white">
+                    {displayName}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {member.currentStreak === 0 ? 'Low mnner' : member.currentStreak < 5 ? 'Low mnner' : 'High ranner'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
+                    <div className={`w-2 h-2 rounded-full ${member.currentStreak > 0 ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Status</span>
                   </div>
                 </div>
-
-                <div className="flex flex-col items-end gap-2 sm:gap-1 shrink-0 ml-4">
-                  <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-1 rounded-md">
-                    {member.currentStreak} 🔥
-                  </Badge>
-                  {member.lastCheckIn && (
-                    <span className="text-xs sm:text-sm text-muted-foreground whitespace-nowrap">
-                      {formatDate(member.lastCheckIn)}
-                    </span>
-                  )}
-                </div>
-              </div>
+              </motion.div>
             );
           })}
-        </div>
-      </CardContent>
-      <style jsx>{`
-        /* Make list feel denser on large screens and more touch-friendly on mobile */
-        @media (min-width: 1024px) {
-          .card-list-item { padding: 1rem; }
-        }
-      `}</style>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

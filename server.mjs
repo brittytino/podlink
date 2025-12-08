@@ -8,8 +8,8 @@ const httpServer = createServer();
 // Allow all origins in development, specific origins in production
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      process.env.NEXTAUTH_URL || 'https://your-app.vercel.app',
-      process.env.NEXT_PUBLIC_SOCKET_URL || 'https://your-app.vercel.app',
+      process.env.NEXTAUTH_URL || 'https://podlink-chi.vercel.app',
+      process.env.NEXT_PUBLIC_SOCKET_URL || 'https://podlink-chi.vercel.app',
     ].filter(Boolean)
   : [
       'http://localhost:3000',

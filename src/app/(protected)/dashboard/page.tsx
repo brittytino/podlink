@@ -2,11 +2,11 @@ import { getServerSession } from '@/lib/auth-helper';
 import prisma from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { StreakDisplay } from '@/components/dashboard/StreakDisplay';
-import { EmergencyButton } from '@/components/dashboard/EmergencyButton';
-import { PodMembersList } from '@/components/dashboard/PodMembersList';
+import { SwipeEmergencyButton } from '@/components/dashboard/SwipeEmergencyButton';
 import { WeeklyProgress } from '@/components/dashboard/WeeklyProgress';
-import { QuickAccessList } from '@/components/toolkit/QuickAccessList';
-import { CheckInCard } from '@/components/dashboard/CheckInCard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckInButtons } from '@/components/dashboard/CheckInButtons';
+import { PodMembersGrid } from '@/components/dashboard/PodMembersGrid';
 
 async function getDashboardData(userId: string) {
   const user = await prisma.user.findUnique({
@@ -18,7 +18,7 @@ async function getDashboardData(userId: string) {
             select: {
               id: true,
               fullName: true,
-              displayName: true, // Anonymous name for privacy
+              displayName: true,
               username: true,
               avatarUrl: true,
               currentStreak: true,
@@ -45,7 +45,6 @@ async function getDashboardData(userId: string) {
     orderBy: { date: 'desc' },
   });
 
-  // Get user's local today based on their timezone
   const getUserLocalDate = (utcDate: Date = new Date(), timezone?: string): Date => {
     if (!timezone) {
       const d = new Date(utcDate);
@@ -73,16 +72,9 @@ async function getDashboardData(userId: string) {
   const now = new Date();
   const userToday = getUserLocalDate(now, user.timezone || undefined);
   
-  // Check if user has checked in today (in their timezone)
   const todayCheckIn = checkIns.find((c: { date: Date }) => {
     const checkInDate = getUserLocalDate(new Date(c.date), user.timezone || undefined);
     return isSameDay(checkInDate, userToday);
-  });
-
-  const toolkitItems = await prisma.crisisToolkitItem.findMany({
-    where: { userId },
-    orderBy: { orderPosition: 'asc' },
-    take: 5,
   });
 
   return {
@@ -93,10 +85,6 @@ async function getDashboardData(userId: string) {
     })),
     hasCheckedInToday: !!todayCheckIn,
     userTimezone: user.timezone || 'UTC',
-    toolkitItems: toolkitItems.map((item: { id: string; title: string }) => ({
-      id: item.id,
-      title: item.title,
-    })),
   };
 }
 
@@ -113,123 +101,93 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const { user, checkIns, hasCheckedInToday, userTimezone, toolkitItems } = data;
-  
+  const { user, checkIns, hasCheckedInToday, userTimezone } = data;
   const userWithPod = user as any;
 
   return (
-    <div className="fixed inset-0 top-[56px] sm:top-[64px] flex bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
-      </div>
-
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="px-6 lg:px-10 xl:px-12 py-6 lg:py-8">
-            <div className="max-w-[1600px] mx-auto space-y-6 lg:space-y-8">{/* Header Section with Enhanced Design */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl blur-2xl -z-10 animate-pulse" />
-          <div className="bg-gradient-to-br from-card/80 to-card/60 backdrop-blur-sm rounded-3xl p-6 sm:p-8 border border-primary/10 shadow-2xl">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="space-y-2 flex-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent">
-                    Welcome back, {user.fullName}!
-                  </h1>
-                  <span className="text-3xl sm:text-4xl animate-wave inline-block">👋</span>
-                </div>
-                <p className="text-sm sm:text-base lg:text-lg text-muted-foreground max-w-2xl leading-relaxed">
-                  {user.goalDescription || 'Your accountability journey continues today'}
-                </p>
+    <div className="min-h-screen md:fixed md:inset-0 md:top-16 bg-gradient-to-br from-slate-100 via-slate-50 to-white dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 md:overflow-hidden overflow-y-auto">
+      <div className="h-full flex flex-col px-3 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+        {/* Header */}
+        <div className="mb-3 sm:mb-4 lg:mb-5 bg-white dark:bg-gray-900 rounded-[20px] sm:rounded-[28px] px-4 sm:px-6 py-2.5 sm:py-3.5 shadow-lg border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden border-2 border-white shadow-md">
+                <img src={user.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.fullName)}&background=random`} alt="Avatar" className="w-full h-full object-cover" />
               </div>
-              <div className="flex items-center gap-3">
-                {/* Streak Badge */}
-                {user.currentStreak > 0 && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 shadow-sm">
-                    <span className="text-lg animate-flicker">🔥</span>
-                    <span className="text-sm font-bold text-amber-700 dark:text-amber-400">
-                      {user.currentStreak} days
-                    </span>
-                  </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-green-500 rounded-full border-[3px] border-white dark:border-gray-900" />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">
+                Welcome back, {user.displayName || user.fullName}!
+              </h1>
+              <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 flex items-center gap-1.5 mt-0.5">
+                <span className="w-2 h-2 bg-green-500 rounded-full" />
+                Active Now
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col gap-3 sm:gap-4 min-h-0">
+          {/* Full Width Streaks Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <StreakDisplay streak={user.currentStreak} label="Your Streak" />
+            <StreakDisplay
+              streak={userWithPod.pod?.totalStreak || 1}
+              label="Pod Total Streak"
+              isPod
+            />
+          </div>
+
+          {/* Emergency Button - Full Width */}
+          <div className="bg-white dark:bg-gray-900 rounded-[20px] sm:rounded-[28px] p-3 sm:p-4 border border-gray-200 dark:border-gray-800 shadow-lg">
+            <SwipeEmergencyButton userId={user.id} podId={user.podId || ''} />
+          </div>
+
+          {/* Two Column Layout: Check-in/Members + Weekly Progress */}
+          <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-5 min-h-0">
+            {/* Left Column: Check-in and Pod Members */}
+            <div className="flex flex-col min-h-0 h-full">
+              <Card className="border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-lg rounded-[20px] sm:rounded-[28px] flex-1 flex flex-col">
+                {/* Check-in Section */}
+                <CardHeader className="pb-2 flex-shrink-0 px-4 sm:px-6">
+                  <CardTitle className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                    Today&apos;s Check-In
+                  </CardTitle>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {hasCheckedInToday 
+                      ? "✅ You've checked in today!" 
+                      : '👋 How did your day go?'}
+                  </p>
+                </CardHeader>
+                <CardContent className="pb-3 flex-shrink-0 px-4 sm:px-6">
+                  <CheckInButtons hasCheckedInToday={hasCheckedInToday} userId={user.id} />
+                </CardContent>
+
+                {/* Pod Members Section */}
+                {userWithPod.pod && (
+                  <>
+                    <div className="px-4 sm:px-6 pb-2 flex-shrink-0">
+                      <h3 className="text-[10px] sm:text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        {userWithPod.pod.name.toUpperCase()} MEMBERS
+                      </h3>
+                    </div>
+                    <div className="px-4 sm:px-6 pb-4 space-y-2 overflow-y-auto flex-1 min-h-0">
+                      <PodMembersGrid members={userWithPod.pod.members} />
+                    </div>
+                  </>
                 )}
-                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
-                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-medium text-primary">Active Now</span>
-                </div>
-              </div>
+              </Card>
             </div>
-          </div>
-        </div>
 
-        {/* Streak Section - Enhanced Cards */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
-          <div className="group relative overflow-hidden rounded-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-red-500/10 to-pink-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative">
-              <StreakDisplay streak={user.currentStreak} label="Your Streak" />
-            </div>
-          </div>
-          <div className="group relative overflow-hidden rounded-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
-            <div className="relative">
-              <StreakDisplay
-                streak={userWithPod.pod?.totalStreak || 0}
-                label="Pod Total Streak"
-                isPod
+            {/* Right Column: Weekly Progress */}
+            <div className="flex flex-col min-h-0 h-full">
+              <WeeklyProgress 
+                checkIns={checkIns} 
+                userTimezone={userTimezone}
+                currentStreak={user.currentStreak}
               />
-            </div>
-          </div>
-        </div>
-
-        {/* Emergency Button - Enhanced with Pulse Effect */}
-        <div className="relative group">
-          <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 via-orange-500/20 to-red-500/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          <div className="relative">
-            <EmergencyButton userId={user.id} podId={user.podId || ''} />
-          </div>
-        </div>
-
-        {/* Daily Check-in Card - Enhanced Design */}
-        <div className="relative overflow-hidden rounded-2xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-primary/10 to-transparent" />
-          <div className="relative">
-            <CheckInCard hasCheckedInToday={hasCheckedInToday} userId={user.id} />
-          </div>
-        </div>
-
-        {/* Pod Members & Progress - Enhanced Grid Layout */}
-        <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
-          {userWithPod.pod && (
-            <div className="group relative overflow-hidden rounded-2xl">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div className="relative h-full">
-                <PodMembersList
-                  members={userWithPod.pod.members}
-                  podName={userWithPod.pod.name}
-                />
-              </div>
-            </div>
-          )}
-          <div className="group relative overflow-hidden rounded-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="relative h-full">
-              <WeeklyProgress checkIns={checkIns} userTimezone={userTimezone} />
-            </div>
-          </div>
-        </div>
-
-              {/* Quick Access Toolkit - Enhanced Card */}
-              {toolkitItems.length > 0 && (
-                <div className="relative overflow-hidden rounded-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-purple-500/5 to-blue-500/5" />
-                  <div className="relative">
-                    <QuickAccessList items={toolkitItems} />
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

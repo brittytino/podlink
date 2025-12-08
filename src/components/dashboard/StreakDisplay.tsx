@@ -1,9 +1,8 @@
-// StreakDisplay.responsive.tsx
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { getStreakColor, getStreakEmoji } from '@/lib/utils';
-import { Flame, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 interface StreakDisplayProps {
   streak: number;
@@ -12,120 +11,162 @@ interface StreakDisplayProps {
 }
 
 export function StreakDisplay({ streak, label, isPod = false }: StreakDisplayProps) {
-  const emoji = getStreakEmoji(streak);
-  const colorClass = getStreakColor(streak);
+  const [prevStreak, setPrevStreak] = useState(streak);
+  const [isIncreasing, setIsIncreasing] = useState(false);
+
+  useEffect(() => {
+    if (streak > prevStreak) {
+      setIsIncreasing(true);
+      setTimeout(() => setIsIncreasing(false), 1500);
+    }
+    setPrevStreak(streak);
+  }, [streak, prevStreak]);
+
+  const getStreakEmoji = () => {
+    if (streak === 0) return '💤';
+    if (streak < 3) return '🔥';
+    if (streak < 7) return '🚀';
+    if (streak < 14) return '⭐';
+    if (streak < 30) return '💎';
+    return '👑';
+  };
+
+  const getStreakMessage = () => {
+    if (streak === 0) return 'Start your streak!';
+    if (streak === 1) return '1 Day Strong';
+    return `${streak} Days Strong`;
+  };
 
   return (
-    <Card
-      className={`
-        rounded-2xl overflow-hidden border-2 transition-all duration-300
-        hover:shadow-xl hover:-translate-y-1
-        ${isPod
-          ? 'border-purple-200 dark:border-purple-800/50 bg-gradient-to-br from-purple-50 via-white to-purple-50/30 dark:from-purple-950/30 dark:via-background dark:to-purple-950/10'
-          : 'border-orange-200 dark:border-orange-800/50 bg-gradient-to-br from-orange-50 via-white to-orange-50/30 dark:from-orange-950/30 dark:via-background dark:to-orange-950/10'
-        }
-      `}
-      role="region"
-      aria-label={`${label} streak card`}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      whileHover={{ scale: 1.02 }}
     >
-      {/* subtle background glow that appears on hover */}
-      <div
-        className={`
-          pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl -z-10
-          ${isPod ? 'bg-purple-400/12' : 'bg-orange-400/12'}
-        `}
-        aria-hidden
-      />
-
-      {/* decorative, low-contrast corner */}
-      <div
-        className={`
-          pointer-events-none absolute -top-8 -right-8 w-28 h-28 rounded-full opacity-8 -z-20
-          ${isPod ? 'bg-purple-500/6' : 'bg-orange-500/6'}
-        `}
-        aria-hidden
-      />
-
-      <CardContent className="relative p-4 sm:p-6">
-        <div className="flex items-center gap-4">
-          {/* Emoji / icon block */}
-          <div className="flex-shrink-0">
-            <div
-              className={`
-                relative flex items-center justify-center w-16 h-16 sm:w-18 sm:h-18 rounded-2xl
-                ${isPod ? 'bg-gradient-to-br from-purple-600 to-violet-500' : 'bg-gradient-to-br from-orange-500 to-yellow-500'}
-                text-white shadow-md ring-1 ring-white/10
-              `}
-              aria-hidden
+      <Card className="relative overflow-hidden border border-gray-200 dark:border-gray-700 shadow-lg rounded-[20px] sm:rounded-[28px] h-[100px] sm:h-[120px]">
+        {/* Background with wavy pattern */}
+        {isPod ? (
+          // Purple wavy background for pod streak
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-100/90 via-purple-50/70 to-purple-100/50 dark:from-purple-900/40 dark:via-purple-950/20 dark:to-gray-900">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 120" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#e9d5ff" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#c084fc" stopOpacity="0.1" />
+                </linearGradient>
+              </defs>
+              {/* Wavy lines */}
+              <path d="M0,60 Q100,20 200,60 T400,60" fill="none" stroke="url(#purpleGrad)" strokeWidth="40" opacity="0.3" />
+              <path d="M0,80 Q100,40 200,80 T400,80" fill="none" stroke="url(#purpleGrad)" strokeWidth="40" opacity="0.2" />
+              {/* Star burst */}
+              <g transform="translate(320, 60)">
+                <path d="M0,-15 L2,-2 L15,0 L2,2 L0,15 L-2,2 L-15,0 L-2,-2 Z" fill="#c084fc" opacity="0.2" />
+                <path d="M0,-25 L1,-3 L25,0 L1,3 L0,25 L-1,3 L-25,0 L-1,-3 Z" fill="#e9d5ff" opacity="0.15" />
+              </g>
+            </svg>
+          </div>
+        ) : (
+          // Beige/peach wavy background for personal streak  
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-50/80 via-amber-50/60 to-orange-50/40 dark:from-orange-900/20 dark:via-amber-950/10 dark:to-gray-900">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 120" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#fed7aa" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#fdba74" stopOpacity="0.2" />
+                </linearGradient>
+              </defs>
+              {/* Wavy lines */}
+              <path d="M0,50 Q100,30 200,50 T400,50" fill="none" stroke="url(#orangeGrad)" strokeWidth="30" opacity="0.4" />
+              <path d="M0,70 Q100,50 200,70 T400,70" fill="none" stroke="url(#orangeGrad)" strokeWidth="30" opacity="0.3" />
+              <path d="M0,90 Q100,70 200,90 T400,90" fill="none" stroke="url(#orangeGrad)" strokeWidth="20" opacity="0.2" />
+              {/* X marks */}
+              <g transform="translate(350, 40)" opacity="0.25">
+                <path d="M-8,-8 L8,8 M-8,8 L8,-8" stroke="#f97316" strokeWidth="3" strokeLinecap="round" />
+              </g>
+              <g transform="translate(380, 70)" opacity="0.2">
+                <path d="M-6,-6 L6,6 M-6,6 L6,-6" stroke="#fb923c" strokeWidth="2.5" strokeLinecap="round" />
+              </g>
+              <g transform="translate(320, 90)" opacity="0.15">
+                <path d="M-5,-5 L5,5 M-5,5 L5,-5" stroke="#fdba74" strokeWidth="2" strokeLinecap="round" />
+              </g>
+            </svg>
+          </div>
+        )}
+        
+        <CardContent className="relative p-3 sm:p-5 flex flex-col h-full justify-between">
+          {/* Top right label with emoji */}
+          <div className="absolute top-2 sm:top-3 right-3 sm:right-4 flex items-center gap-1">
+            <motion.span
+              key={streak}
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              className="text-base sm:text-xl"
             >
-              <span className="text-2xl sm:text-3xl">{emoji}</span>
-            </div>
+              {getStreakEmoji()}
+            </motion.span>
+            <span className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400">
+              {getStreakMessage()}
+            </span>
           </div>
-
-          {/* main numbers */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-baseline justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`
-                      text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight
-                      ${colorClass}
-                    `}
-                    aria-live="polite"
-                  >
-                    {streak}
-                  </span>
-
-                  {streak > 0 && (
-                    <Flame
-                      className={`
-                        h-5 w-5 sm:h-6 sm:w-6 animate-pulse
-                        ${isPod ? 'text-purple-400' : 'text-orange-500'}
-                      `}
-                      aria-hidden
-                    />
-                  )}
-                </div>
-
-                <p className="text-sm sm:text-base text-muted-foreground mt-1 truncate">
-                  {label}
-                </p>
-              </div>
-
-              {/* small helper on the right for larger screens */}
-              <div className="hidden sm:flex flex-col items-end">
-                {streak > 0 ? (
-                  <div
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/40 backdrop-blur-sm border"
-                    role="status"
-                    aria-label="streak progress"
-                  >
-                    <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                    <span className="text-xs font-semibold text-foreground/80">
-                      {streak} {streak === 1 ? 'Day' : 'Days'} Strong
-                    </span>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground/80">Start your streak today! 💪</p>
-                )}
-              </div>
+          
+          {/* Celebration particles */}
+          <AnimatePresence>
+            {isIncreasing && (
+              <>
+                {[...Array(6)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ 
+                      x: 0, 
+                      y: 0, 
+                      opacity: 1,
+                      scale: 1
+                    }}
+                    animate={{ 
+                      x: Math.cos((i * Math.PI * 2) / 6) * 80,
+                      y: Math.sin((i * Math.PI * 2) / 6) * 80,
+                      opacity: 0,
+                      scale: 0
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8, ease: 'easeOut' }}
+                    className="absolute top-1/2 left-1/2 w-2 h-2 bg-yellow-400 rounded-full"
+                  />
+                ))}
+              </>
+            )}
+          </AnimatePresence>
+          
+          {/* Bottom content */}
+          <div className="mt-auto">
+            <motion.div 
+              key={streak}
+              initial={{ scale: 1 }}
+              animate={{ 
+                scale: isIncreasing ? [1, 1.2, 1] : 1,
+              }}
+              transition={{ duration: 0.5 }}
+              className="text-4xl sm:text-5xl font-black text-gray-800 dark:text-white mb-1"
+            >
+              {streak}
+            </motion.div>
+            <div className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
+              {label}
             </div>
-
-            {/* footer for small screens */}
-            <div className="mt-3 sm:hidden">
-              {streak > 0 ? (
-                <div className="flex items-center justify-start gap-2 px-3 py-1 rounded-full bg-muted/40 border">
-                  <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
-                  <span className="text-xs font-semibold text-foreground/80">
-                    {streak} {streak === 1 ? 'Day' : 'Days'} Strong
-                  </span>
-                </div>
-              ) : null}
-            </div>
+            
+            {/* Progress bar for personal streak */}
+            {!isPod && (
+              <div className="mt-2 sm:mt-3 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-orange-400 to-amber-400 rounded-full transition-all duration-500"
+                  style={{ width: streak > 0 ? `${Math.min((streak / 30) * 100, 100)}%` : '0%' }}
+                />
+              </div>
+            )}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
