@@ -70,13 +70,14 @@ function LoginForm() {
           description,
           variant: 'destructive',
         });
+        setLoading(false);
       } else if (result?.ok) {
         toast({
           title: 'Welcome back!',
-          description: 'Redirecting...',
+          description: 'Logging you in...',
         });
         
-        // Let middleware handle the redirect based on onboarding status
+        // Force a hard redirect to ensure session is loaded
         window.location.href = '/dashboard';
       }
     } catch (error) {
@@ -86,14 +87,25 @@ function LoginForm() {
         description: 'Unable to connect to server',
         variant: 'destructive',
       });
-    } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = () => {
-    // Redirect to dashboard, middleware will handle onboarding redirect if needed
-    signIn('google', { callbackUrl: '/dashboard' });
+  const handleGoogleSignIn = async () => {
+    try {
+      // Redirect to dashboard, middleware will handle onboarding redirect if needed
+      await signIn('google', { 
+        callbackUrl: '/dashboard',
+        redirect: true 
+      });
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      toast({
+        title: 'Sign-in Error',
+        description: 'Failed to sign in with Google. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (

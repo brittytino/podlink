@@ -121,7 +121,6 @@ export default async function DashboardPage() {
                 Welcome back, {user.displayName || user.fullName}!
               </h1>
               <p className="text-[10px] sm:text-xs text-green-600 dark:text-green-400 flex items-center gap-1.5 mt-0.5">
-                <span className="w-2 h-2 bg-green-500 rounded-full" />
                 Active Now
               </p>
             </div>

@@ -5,6 +5,10 @@ import bcrypt from 'bcryptjs';
 import prisma from './prisma';
 import NextAuth from 'next-auth';
 
+// Ensure NEXTAUTH_URL is set for production
+const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+
 export const authConfig: NextAuthConfig = {
   providers: [
     CredentialsProvider({
@@ -76,7 +80,7 @@ export const authConfig: NextAuthConfig = {
             return null;
           }
 
-          console.log(`\u2705 User authenticated successfully: ${identifier}`);
+          console.log(`✅ User authenticated successfully: ${identifier}`);
 
           return {
             id: user.id,
@@ -85,6 +89,7 @@ export const authConfig: NextAuthConfig = {
             image: user.avatarUrl,
             username: user.username,
             onboardingComplete: user.onboardingComplete,
+            timezone: user.timezone,
           };
         } catch (error: any) {
           console.error('Auth error:', error);
@@ -108,7 +113,8 @@ export const authConfig: NextAuthConfig = {
           response_type: "code",
           scope: "openid email profile"
         }
-      }
+      },
+      allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
     }),
   ],
   callbacks: {
@@ -116,11 +122,12 @@ export const authConfig: NextAuthConfig = {
       // Handle Google OAuth sign-in
       if (account?.provider === 'google') {
         try {
-          const existingUser = await prisma.user.findUnique({
+          let existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
           });
 
           if (!existingUser) {
+            console.log('Creating new user from Google OAuth:', user.email);
             // Generate anonymous display name for Google OAuth users
             const existingUsers = await prisma.user.findMany({
               select: { displayName: true, username: true },
@@ -145,7 +152,7 @@ export const authConfig: NextAuthConfig = {
               counter++;
             }
             
-            await prisma.user.create({
+            existingUser = await prisma.user.create({
               data: {
                 email: user.email!,
                 username,
@@ -158,53 +165,78 @@ export const authConfig: NextAuthConfig = {
                 emailVerified: true, // Auto-verify Google OAuth users
               } as any,
             });
+            console.log('New user created successfully:', existingUser.email);
+          } else {
+            console.log('Existing user found for Google OAuth:', existingUser.email);
+            // Update avatar if it changed
+            if (user.image && existingUser.avatarUrl !== user.image) {
+              await prisma.user.update({
+                where: { id: existingUser.id },
+                data: { avatarUrl: user.image },
+              });
+            }
           }
         } catch (error) {
-          console.error('Error creating Google OAuth user:', error);
+          console.error('Error in Google OAuth signIn callback:', error);
           return false;
         }
       }
       return true;
     },
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session, account }) {
+      // Initial sign in
       if (user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+          });
 
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.username = dbUser.username;
-          token.onboardingComplete = dbUser.onboardingComplete;
-          token.podId = dbUser.podId;
-          token.avatarUrl = dbUser.avatarUrl;
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.username = dbUser.username;
+            token.onboardingComplete = dbUser.onboardingComplete;
+            token.podId = dbUser.podId;
+            token.avatarUrl = dbUser.avatarUrl;
+            token.timezone = dbUser.timezone;
+            console.log('JWT token populated for user:', dbUser.email);
+          }
+        } catch (error) {
+          console.error('Error fetching user in jwt callback:', error);
         }
       }
 
       // When session is updated (e.g., after profile update), fetch latest user data
       if (trigger === 'update') {
-        if (session?.user?.email) {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: session.user.email },
-          });
-          
-          if (dbUser) {
-            token.onboardingComplete = dbUser.onboardingComplete;
-            token.podId = dbUser.podId;
-            token.avatarUrl = dbUser.avatarUrl;
-            token.username = dbUser.username;
+        try {
+          if (session?.user?.email) {
+            const dbUser = await prisma.user.findUnique({
+              where: { email: session.user.email },
+            });
+            
+            if (dbUser) {
+              token.onboardingComplete = dbUser.onboardingComplete;
+              token.podId = dbUser.podId;
+              token.avatarUrl = dbUser.avatarUrl;
+              token.username = dbUser.username;
+              token.timezone = dbUser.timezone;
+            }
           }
-        }
-        
-        // Also accept direct session updates
-        if (session?.onboardingComplete !== undefined) {
-          token.onboardingComplete = session.onboardingComplete;
-        }
-        if (session?.podId !== undefined) {
-          token.podId = session.podId;
-        }
-        if (session?.avatarUrl !== undefined) {
-          token.avatarUrl = session.avatarUrl;
+          
+          // Also accept direct session updates
+          if (session?.onboardingComplete !== undefined) {
+            token.onboardingComplete = session.onboardingComplete;
+          }
+          if (session?.podId !== undefined) {
+            token.podId = session.podId;
+          }
+          if (session?.avatarUrl !== undefined) {
+            token.avatarUrl = session.avatarUrl;
+          }
+          if (session?.timezone !== undefined) {
+            token.timezone = session.timezone;
+          }
+        } catch (error) {
+          console.error('Error updating token:', error);
         }
       }
 
@@ -217,19 +249,35 @@ export const authConfig: NextAuthConfig = {
         session.user.onboardingComplete = token.onboardingComplete as boolean;
         session.user.podId = token.podId as string | null;
         session.user.image = (token.avatarUrl as string) || '';
+        session.user.timezone = token.timezone as string;
       }
       return session;
     },
   },
   pages: {
     signIn: '/login',
+    error: '/login', // Redirect to login on error
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
   debug: process.env.NODE_ENV === 'development',
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === 'production' 
+        ? '__Secure-next-auth.session-token'
+        : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
 } satisfies NextAuthConfig;
 
 // Create auth instance that can be used in middleware and route handlers
