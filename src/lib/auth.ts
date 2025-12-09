@@ -5,11 +5,17 @@ import bcrypt from 'bcryptjs';
 import prisma from './prisma';
 import NextAuth from 'next-auth';
 
-// Ensure NEXTAUTH_URL is set for production
-const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 
-  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+// Log environment info for debugging
+if (process.env.NODE_ENV === 'production') {
+  console.log('🔐 Auth Config - Production Mode');
+  console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL || 'Not set');
+  console.log('VERCEL_URL:', process.env.VERCEL_URL || 'Not set');
+  console.log('NEXTAUTH_SECRET:', process.env.NEXTAUTH_SECRET ? 'Set ✓' : 'Missing ✗');
+  console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Set ✓' : 'Missing ✗');
+}
 
 export const authConfig: NextAuthConfig = {
+  basePath: '/api/auth',
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -108,26 +114,31 @@ export const authConfig: NextAuthConfig = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
       authorization: {
         params: {
-          prompt: "consent",
+          prompt: "select_account",
           access_type: "offline",
-          response_type: "code",
-          scope: "openid email profile"
+          response_type: "code"
         }
       },
-      allowDangerousEmailAccountLinking: true, // Allow linking accounts with same email
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
+      console.log('🔐 SignIn callback triggered');
+      console.log('Provider:', account?.provider);
+      console.log('User email:', user.email);
+      
       // Handle Google OAuth sign-in
       if (account?.provider === 'google') {
         try {
+          console.log('Processing Google OAuth login for:', user.email);
+          
           let existingUser = await prisma.user.findUnique({
             where: { email: user.email! },
           });
 
           if (!existingUser) {
-            console.log('Creating new user from Google OAuth:', user.email);
+            console.log('✨ Creating new user from Google OAuth:', user.email);
             // Generate anonymous display name for Google OAuth users
             const existingUsers = await prisma.user.findMany({
               select: { displayName: true, username: true },
@@ -165,22 +176,26 @@ export const authConfig: NextAuthConfig = {
                 emailVerified: true, // Auto-verify Google OAuth users
               } as any,
             });
-            console.log('New user created successfully:', existingUser.email);
+            console.log('✅ New user created successfully:', existingUser.email);
           } else {
-            console.log('Existing user found for Google OAuth:', existingUser.email);
+            console.log('✅ Existing user found for Google OAuth:', existingUser.email);
             // Update avatar if it changed
             if (user.image && existingUser.avatarUrl !== user.image) {
               await prisma.user.update({
                 where: { id: existingUser.id },
                 data: { avatarUrl: user.image },
               });
+              console.log('Avatar updated for user:', existingUser.email);
             }
           }
+          console.log('✅ Google OAuth signIn callback completed successfully');
         } catch (error) {
-          console.error('Error in Google OAuth signIn callback:', error);
+          console.error('❌ Error in Google OAuth signIn callback:', error);
           return false;
         }
       }
+      
+      console.log('✅ SignIn callback returning true');
       return true;
     },
     async jwt({ token, user, trigger, session, account }) {
@@ -249,14 +264,17 @@ export const authConfig: NextAuthConfig = {
         session.user.onboardingComplete = token.onboardingComplete as boolean;
         session.user.podId = token.podId as string | null;
         session.user.image = (token.avatarUrl as string) || '';
-        session.user.timezone = token.timezone as string;
+        if (token.timezone) {
+          session.user.timezone = token.timezone as string;
+        }
       }
       return session;
     },
   },
   pages: {
     signIn: '/login',
-    error: '/login', // Redirect to login on error
+    error: '/login',
+    signOut: '/login',
   },
   session: {
     strategy: 'jwt',
@@ -264,12 +282,36 @@ export const authConfig: NextAuthConfig = {
   },
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
-  debug: process.env.NODE_ENV === 'development',
+  debug: false,
+  useSecureCookies: process.env.NODE_ENV === 'production',
   cookies: {
     sessionToken: {
       name: process.env.NODE_ENV === 'production' 
         ? '__Secure-next-auth.session-token'
         : 'next-auth.session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        domain: process.env.NODE_ENV === 'production' ? undefined : 'localhost',
+      },
+    },
+    callbackUrl: {
+      name: process.env.NODE_ENV === 'production'
+        ? '__Secure-next-auth.callback-url'
+        : 'next-auth.callback-url',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    csrfToken: {
+      name: process.env.NODE_ENV === 'production'
+        ? '__Host-next-auth.csrf-token'
+        : 'next-auth.csrf-token',
       options: {
         httpOnly: true,
         sameSite: 'lax',

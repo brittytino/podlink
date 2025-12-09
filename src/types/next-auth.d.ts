@@ -10,6 +10,7 @@ declare module 'next-auth' {
       username: string;
       onboardingComplete: boolean;
       podId: string | null;
+      timezone?: string;
     };
   }
 
@@ -30,5 +31,6 @@ declare module 'next-auth/jwt' {
     onboardingComplete: boolean;
     podId: string | null;
     avatarUrl: string | null;
+    timezone?: string;
   }
 }

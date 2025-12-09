@@ -92,14 +92,20 @@ function LoginForm() {
   };
 
   const handleGoogleSignIn = async () => {
+    setLoading(true);
     try {
-      // Redirect to dashboard, middleware will handle onboarding redirect if needed
-      await signIn('google', { 
+      console.log('Initiating Google sign-in...');
+      // Use redirect: true to let NextAuth handle the full OAuth flow
+      const result = await signIn('google', { 
         callbackUrl: '/dashboard',
         redirect: true 
       });
+      
+      // This code may not execute if redirect: true works correctly
+      console.log('Google sign-in result:', result);
     } catch (error) {
       console.error('Google sign-in error:', error);
+      setLoading(false);
       toast({
         title: 'Sign-in Error',
         description: 'Failed to sign in with Google. Please try again.',
