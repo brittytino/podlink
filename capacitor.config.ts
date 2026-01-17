@@ -5,7 +5,11 @@ const config: CapacitorConfig = {
   appName: 'podlink',
   webDir: 'out',
   server: {
-    androidScheme: 'https'
+    androidScheme: 'https',
+    allowNavigation: [
+      'podlink.tinobritty.me',
+      'podlink-chi.vercel.app'
+    ]
     // url: 'https://your-podlink-deployment.vercel.app', // Un-comment and set your production URL here
     // cleartext: true 
   }
