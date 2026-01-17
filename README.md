@@ -131,6 +131,34 @@ See `.env.example` for the full list.
 - Cron: Use Vercel Cron or another scheduler for streak resets and housekeeping.
 - Configure production secrets via your hosting provider; never commit secrets.
 
+## Mobile App (Capacitor)
+
+PodLink uses [Capacitor](https://capacitorjs.com) to package the application for Android (and iOS).
+
+### Setup
+
+1.  Build the web assets (optional, as we use server URL for production typically):
+    ```bash
+    npm run build
+    ```
+2.  Initialize/Update mobile platform:
+    ```bash
+    npm run mobile:sync
+    ```
+3.  Open in Android Studio:
+    ```bash
+    npm run mobile:open
+    ```
+
+### Configuration
+
+To point the mobile app to your production deployment (recommended for full functionality):
+
+1.  Open `capacitor.config.ts`.
+2.  Uncomment the `server.url` property.
+3.  Set it to your Vercel deployment URL (e.g., `https://your-app.vercel.app`).
+4.  Run `npm run mobile:sync`.
+
 ## Ownership & Attribution
 
 - Created and maintained by **Tino Britty J** ([github.com/brittytino](https://github.com/brittytino)).

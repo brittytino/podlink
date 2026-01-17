@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">podlink</string>
+    <string name="title_activity_main">podlink</string>
+    <string name="package_name">com.podlink.app</string>
+    <string name="custom_url_scheme">com.podlink.app</string>
+</resources>
