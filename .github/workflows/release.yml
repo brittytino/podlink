@@ -1,0 +1,92 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Initialize Capacitor Web Dir
+        run: |
+          mkdir -p out
+          cat > out/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+            <title>PodLink</title>
+            <style>
+              body { font-family: system-ui, sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; background: #fff; }
+              .msg { text-align: center; color: #333; }
+            </style>
+          </head>
+          <body>
+            <div class="msg">
+              <h2>PodLink Mobile</h2>
+              <p>Connecting to server...</p>
+            </div>
+            <script>
+              const URLS = ['https://podlink.tinobritty.me/', 'https://podlink-chi.vercel.app/'];
+              async function connect() {
+                  for (const url of URLS) {
+                      try {
+                          await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+                          window.location.replace(url);
+                          return;
+                      } catch (e) {}
+                  }
+                  window.location.replace(URLS[0]); // Default to first if checks fail
+              }
+              connect();
+            </script>
+          </body>
+          </html>
+          EOF
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Android APK (Debug)
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            android/app/build/outputs/apk/debug/app-debug.apk
+          draft: false
+          prerelease: false
+          generate_release_notes: true
